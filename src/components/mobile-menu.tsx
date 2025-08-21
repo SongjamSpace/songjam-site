@@ -28,15 +28,19 @@ export function MobileMenu({
       >
         <SheetHeader className="mb-6">
           <SheetTitle>
-            <div className="flex items-center gap-2">
-              <Image src="/images/logo.svg" alt="logo" width={36} height={12} />
-              <div
-                className={`text-xl font-bold ${
-                  inverse ? "text-[#48333D]" : ""
-                }`}
+            <div className="flex items-center space-x-2">
+              <img src="/images/logo1.png" alt="Logo" className="h-8 w-8" />
+              <span 
+                className="text-xl font-black text-white"
+                style={{ 
+                  fontFamily: 'Audiowide, cursive',
+                  textShadow: '0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.2)',
+                  letterSpacing: '0.1em',
+                  fontWeight: 400
+                }}
               >
-                EVA ONLINE
-              </div>
+                SONGJAM
+              </span>
             </div>
           </SheetTitle>
         </SheetHeader>
@@ -47,7 +51,7 @@ export function MobileMenu({
               inverse={inverse}
               className="w-full justify-start"
             >
-              ABOUT
+              AUTO DMs
             </Button>
           </AboutDialog>
           <Link href="/mirror" className="w-full">
@@ -120,7 +124,7 @@ export function MobileMenu({
           </Link>
         </div>
         <SheetFooter className="flex-row flex items-center gap-4">
-          <PrimaryButton inverse={inverse}>GO TO LAUNCH</PrimaryButton>
+          <PrimaryButton inverse={inverse}>CONNECT</PrimaryButton>
           <Link
             href="https://x.com/evaonlinexyz"
             target="_blank"

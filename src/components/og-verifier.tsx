@@ -89,7 +89,7 @@ export function OGVerifier({ twitterHandle, onVerification }: OGVerifierProps) {
       {!verificationResult.isVerified && (
         <div className="p-3 bg-red-100/80 rounded-lg border border-red-200">
           <p className="text-red-800 text-sm">
-            Your Twitter handle was not found in our OG list. Only early supporters who tweeted about Eva Online are
+            Your Twitter handle was not found in our OG list. Only early supporters who tweeted about Songjam are
             eligible for OG status.
           </p>
         </div>

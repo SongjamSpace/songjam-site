@@ -143,7 +143,7 @@ export default function ProfilePage() {
                 <div className="font-medium mb-1">Twitter Account Connected Successfully!</div>
                 <div className="text-sm">
                   Your Twitter account has been verified and connected. We&apos;re now checking if you&apos;re eligible for OG
-                  status based on early support for Eva Online.
+                  status based on early support for Songjam.
                 </div>
               </div>
             </div>
@@ -338,7 +338,7 @@ export default function ProfilePage() {
                 <div className="text-center space-y-4">
                   <EVAOGBadge size="large" />
                   <p className="text-green-800">
-                    Congratulations! Your Eva Online OG status has been officially registered and linked to your
+                    Congratulations! Your Songjam OG status has been officially registered and linked to your
                     wallet. Thank you for being an early supporter!
                   </p>
                   <div className="p-3 bg-white/60 rounded-lg border border-green-200 text-sm">
@@ -346,7 +346,7 @@ export default function ProfilePage() {
                     <div className="text-green-700 space-y-1">
                       <div>Twitter: {twitterHandle}</div>
                       <div className="font-mono text-xs break-all">Wallet: {walletAddress}</div>
-                      <div>Status: ✅ Eva Online OG (Registered)</div>
+                      <div>Status: ✅ Songjam OG (Registered)</div>
                       <div className="text-xs text-green-600 mt-2">
                         Your OG status is now permanently linked to your wallet address
                       </div>
@@ -441,7 +441,7 @@ export default function ProfilePage() {
       )}
 
       <div className="text-sm text-center mt-16 text-[#48333D]">
-        COPYRIGHT © 2025 EVA ONLINE
+        COPYRIGHT © 2025 SONGJAM
       </div>
     </div>
   )

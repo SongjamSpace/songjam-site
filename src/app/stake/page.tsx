@@ -110,7 +110,8 @@ export default function Stake() {
                   href="https://app.virtuals.io/virtuals/33654"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block bg-gradient-to-r from-[#FF007A] to-[#FF6B9D] hover:from-[#FF6B9D] hover:to-[#FF007A] text-white font-bold py-4 px-8 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="inline-block bg-black text-white border border-white/30 hover:bg-black/90 hover:border-white/50 font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
                 >
                   Stake $EVA
                 </a>
@@ -236,7 +237,7 @@ export default function Stake() {
       </div>
 
       <div className="text-sm text-center py-6 text-[#48333D]">
-        COPYRIGHT © 2025 EVA ONLINE
+        COPYRIGHT © 2025 SONGJAM
       </div>
     </div>
   );

@@ -1,76 +1,55 @@
 "use client";
 
-import Image from "next/image";
 import AbilityItem from "./ability-item";
 import AbilityPoint from "./ability-point";
 import Corners from "./corners";
-import { motion, useScroll, useTransform } from "framer-motion";
-import PrimaryButton from "./primary-button";
 import DotBackground from "./dot-background";
 import VideoDialog from "./video-dialog";
 
 const abilityPoints = [
-  "Cognitive Core",
-  "Neural Networks",
-  "Memory Systems",
-  "Language Processing",
-  "Decision Making",
-  "Emotional Intelligence",
-  "Learning Capabilities",
+  "AI Summarization",
+  "Creator Coin Liquidity",
+  "DM Automation",
+  "Listener Retrieval",
+  "Mindshare Trading",
+  "Voice Tokenization",
+  "X Space Toolkit",
 ];
 
 export default function Abilities() {
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 2000], [0, -200]);
-
   return (
-    <div className="py-12 md:pt-[200px] relative">
+    <div className="py-12 md:pt-[200px] relative bg-black">
       <DotBackground />
-      <motion.div
-        className="absolute left-1/2 md:-top-64 -top-10 -translate-x-1/2 w-full max-w-7xl h-full"
-        style={{ y }}
-      >
-        <Image
-          src="/images/cloud.png"
-          alt="Abilities"
-          width={1920}
-          height={1080}
-          priority
-        />
-      </motion.div>
       <div className="flex flex-col md:flex-row items-center justify-start gap-8 h-full max-w-7xl mx-auto relative z-10">
         <div className="w-full h-full gap-10 px-4 items-center md:items-start flex flex-col">
           <div
             className="hidden md:block relative"
-            style={{ filter: "drop-shadow(0 0 10px rgba(255, 0, 122, 0.25)" }}
+            style={{ filter: "drop-shadow(0 0 10px rgba(255, 0, 122, 0.25))" }}
           >
-            <Image
-              src="/images/logo.svg"
+            <img
+              src="/images/logo1.png"
               alt="Logo Glow"
-              width={80}
-              height={53}
+              className="w-20 h-auto"
             />
           </div>
           <AbilityItem
-            title="<PERSISTENT MEMORY />"
-            description="Eva agent remembers interactions, evolving their personality and knowledge over time."
+            title="VOICE SOVEREIGNTY"
+            description="Own your voice in the age of AI. Hold your data through a proto Soulbound Token which evolves with you."
           />
           <AbilityItem
-            title="<Decentralized identity/>"
-            description="Secure and verifiable digital identities powered by the $EVA ecosystem token."
+            title="X SPACES COMPATIBLE"
+            description="Natively compatible with X Spaces, capture your biometric data while expanding your reach and presence."
           />
           <AbilityItem
-            title="<$EVA Ecosystem/>"
-            description="A framework for generating deep lore, character psychology, and narrative memory for AI agents."
+            title="DJ & SOUNDBOARD"
+            description="Bring the party to your X Space with a custom soundboard and DJ. Play whatever you want and make it yours."
           />
         </div>
         <div className="w-full h-full flex items-center justify-center">
-          <Image
-            src="/images/eva-abilities.png"
-            alt="Abilities"
-            width={382}
-            height={379}
-            style={{ width: "auto", height: "auto" }}
+          <img
+            src="/images/songjam-abilities.png"
+            alt="Songjam Abilities"
+            className="w-full h-auto"
           />
         </div>
         <div className="w-full h-full flex flex-col items-center justify-between gap-16">
@@ -83,16 +62,19 @@ export default function Abilities() {
             </div>
           </div>
           <div className="flex flex-col items-start justify-start">
-            <div className="text-sm font-bold uppercase text-[#FF007A]">
-              EVA ONLINE
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-white mb-4">SONGJAM</h2>
             </div>
-            <div className="text-[64px] leading-[100%] font-semibold uppercase text-[#48333D]">
-              PART 1
+            <div className="text-[64px] leading-[100%] font-semibold uppercase text-white mb-8">
+              $SANG
             </div>
             <VideoDialog>
-              <PrimaryButton size="lg" inverse>
-                WATCH
-              </PrimaryButton>
+              <button
+                className="flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 bg-black text-white border border-white/30 hover:bg-black/90 shadow-lg hover:shadow-xl hover:border-white/50 w-[222px] h-[40px]"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                STAKE NOW
+              </button>
             </VideoDialog>
           </div>
         </div>

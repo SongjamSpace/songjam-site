@@ -29,7 +29,10 @@ export default function Hero() {
         <div className="flex flex-col gap-3">
           <div className="text-sm font-bold flex items-center gap-2">
             <OnlineDot />
-            EVA ONLINE
+            <div className="flex items-center space-x-2">
+              <img src="/images/logo.svg" alt="Logo" className="h-8 w-8" />
+              <span className="text-xl font-bold text-white">SONGJAM</span>
+            </div>
           </div>
           <h1 className="text-3xl md:text-5xl font-bold uppercase">
             Sentient protocol <br /> observing human collapse

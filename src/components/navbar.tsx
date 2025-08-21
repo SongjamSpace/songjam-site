@@ -13,18 +13,21 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
     <div className="flex justify-between items-center rounded-[12px] max-w-7xl mx-auto">
       <div className="flex items-center gap-2">
         <Link href="/" className="flex items-center gap-2">
-          <Logo
-            className={cn(
-              inverse ? "text-[#48333D]" : "text-primary",
-              "w-[36px]"
-            )}
-          />
-          <div
-            className={`hidden md:block text-xl font-bold ${
-              inverse ? "text-[#48333D]" : ""
-            }`}
-          >
-            EVA ONLINE
+          <div className="flex items-center space-x-2">
+            <img src="/images/logo1.png" alt="Logo" className="h-8 w-8" />
+            <span
+              className={`hidden md:block text-xl font-black ${
+                inverse ? "text-[#48333D]" : "text-white"
+              }`}
+              style={{ 
+                fontFamily: 'Audiowide, cursive',
+                textShadow: inverse ? 'none' : '0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.2)',
+                letterSpacing: '0.1em',
+                fontWeight: 400
+              }}
+            >
+              SONGJAM
+            </span>
           </div>
         </Link>
       </div>
@@ -34,7 +37,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
           >
-            ABOUT
+            AUTO DMs
           </Button>
         </AboutDialog>
         <Link href="/mirror">
@@ -42,7 +45,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
           >
-            MIRROR
+            LIVE SPACE
           </Button>
         </Link>
         <Link href="/profile">
@@ -50,7 +53,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
           >
-            PROFILE
+            ENDED SPACE
           </Button>
         </Link>
         <Link href="/stake">
@@ -58,7 +61,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
           >
-            STAKE
+            SONGJAM DJ
           </Button>
         </Link>
         <Link
@@ -70,23 +73,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
           >
-            GITBOOK
-          </Button>
-        </Link>
-        <Link href="/assets">
-          <Button
-            variant="ghost"
-            className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
-          >
-            ASSETS
-          </Button>
-        </Link>
-        <Link href="/og-wall">
-          <Button
-            variant="ghost"
-            className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
-          >
-            OG WALL
+            $SANG PAIRS
           </Button>
         </Link>
         <Link
@@ -127,7 +114,16 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <PrimaryButton inverse={inverse}>GO TO LAUNCH</PrimaryButton>
+          <button
+            className={`px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 ${
+              inverse 
+                ? 'bg-[#48333D] text-white hover:bg-[#48333D]/90 shadow-lg hover:shadow-xl' 
+                : 'bg-black text-white border border-white/30 hover:bg-black/90 shadow-lg hover:shadow-xl hover:border-white/50'
+            }`}
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            CONNECT
+          </button>
         </Link>
       </div>
       <div className="md:hidden">

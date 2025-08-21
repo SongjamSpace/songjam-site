@@ -38,8 +38,11 @@ export default function OGWallPage() {
           <h1 className="text-3xl lg:text-4xl font-bold uppercase">
             🧬 EVA OG Wall
           </h1>
-          <p className="text-base lg:text-lg">
-            Hall of fame for early Eva Online supporters
+          <p className="text-lg text-white/80 max-w-3xl mx-auto mb-8">
+            Hall of fame for early Songjam supporters
+          </p>
+          <p className="text-white/70 max-w-2xl mx-auto mb-12">
+            These community members showed early support for Songjam by tweeting about the project.
           </p>
           <div className="text-sm flex items-center gap-2 uppercase mt-2">
             <div className="size-[8px] bg-[#C0C0C0]" />
@@ -61,8 +64,8 @@ export default function OGWallPage() {
             </Link>
           </div>
           <p className="text-sm lg:text-base">
-            These community members showed early support for Eva Online by tweeting about the project. 
-            Their contributions are forever recorded in Eva&apos;s memory bank.
+            These community members showed early support for Songjam by tweeting about the project. 
+            Their contributions are forever recorded in Songjam&apos;s memory bank.
           </p>
         </div>
       </div>
@@ -133,7 +136,7 @@ export default function OGWallPage() {
         <div className="relative p-6 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
           <h3 className="text-lg font-bold text-[#48333D] mb-2">What makes someone an OG?</h3>
           <p className="text-sm text-gray-600 mb-4">
-            OG status is granted to community members who tweeted about Eva Online during the early days of the project. 
+            OG status is granted to community members who tweeted about Songjam during the early days of the project. 
             These supporters helped spread awareness and build the foundation of our community.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -151,8 +154,8 @@ export default function OGWallPage() {
         </div>
       </div>
 
-      <div className="text-sm text-center mt-16 text-[#48333D]">
-        COPYRIGHT © 2025 EVA ONLINE
+      <div className="text-center text-sm text-white/60 mt-12">
+        COPYRIGHT © 2025 SONGJAM
       </div>
     </div>
   )

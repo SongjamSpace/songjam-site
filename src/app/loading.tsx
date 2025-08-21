@@ -23,7 +23,7 @@ export default function Loading() {
     >
       <div className="w-32 h-32 relative">
         <Image
-          src="/images/logo-animated.svg"
+          src="/images/logo-animated.gif"
           alt="Loading..."
           width={224}
           height={224}

@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import Loading from "./loading";
 import { AnimatePresence } from "framer-motion";
-import Hero from "@/components/hero";
+import MindshareLeaderboard from "@/components/mindshare-leaderboard";
 import AboutShort from "@/components/about-short";
 import Abilities from "@/components/abilities";
+import GenesisCountdown from "@/components/genesis-countdown";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -18,7 +19,8 @@ export default function Home() {
 
   return (
     <>
-      <Hero />
+      <MindshareLeaderboard />
+      <GenesisCountdown />
       <Abilities />
       <AboutShort />
       <AnimatePresence>{isLoading && <Loading />}</AnimatePresence>

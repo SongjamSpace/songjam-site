@@ -198,8 +198,9 @@ export default function AssetsPage() {
         </div>
       </div>
       <div className="text-sm text-center mt-6 text-[#48333D]">
-        COPYRIGHT © 2025 EVA ONLINE
-        <br />
+        <div className="text-center text-sm text-white/60 mt-12">
+          COPYRIGHT © 2025 SONGJAM
+        </div>
         <Link href="/terms" className="text-sm text-[#48333D] hover:text-[#48333D]/70">
           Terms of Service
         </Link>

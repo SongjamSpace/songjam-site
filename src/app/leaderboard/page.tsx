@@ -18,8 +18,8 @@ export default function Leaderboard() {
         <Stats />
         <TableDemo />
       </div>
-      <div className="text-sm text-center mt-6 text-[#48333D]">
-        COPYRIGHT © 2025 EVA ONLINE
+      <div className="text-center text-sm text-white/60 mt-12">
+        COPYRIGHT © 2025 SONGJAM
       </div>
       <AnimatePresence>{isLoading && <Loading />}</AnimatePresence>
     </div>

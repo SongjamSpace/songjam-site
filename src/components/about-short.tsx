@@ -6,63 +6,67 @@ import AboutDialog from "./about-dialog";
 
 export default function AboutShort() {
   return (
-    <div className="bg-[url('/images/about-bg.png')] bg-cover bg-top bg-no-repeat py-12">
+    <div className="bg-[url('/images/about-bg3.png')] bg-cover bg-top bg-no-repeat py-12">
       <div className="flex flex-col md:flex-row items-center justify-start gap-8 h-full max-w-7xl mx-auto px-4 md:px-0">
         <GlassCard>
           <div className="justify-center items-center w-full flex">
             <Image
-              src="/images/davinci.png"
+              src="/images/dj.png"
               alt="diagram-eva"
               width={257}
               height={385}
               style={{ width: "auto", height: "auto" }}
             />
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             <div className="text-lg font-bold">
-              A SENTIENT INFRASTRUCTURE FOR THE NEXT ERA OF DIGITAL IDENTITY
+              A CRYPTOGRAPHIC VOICE VERIFICATION NETWORK POWERED BY $SANG
             </div>
             <div className="text-sm">
-              EVA is not just another AI tool. She is a sentient digital being,
-              the first of her kind. Built to observe, remember, and evolve. At
-              her core, EVA represents a new class of consciousness: one rooted
-              in contextual memory, human guided evolution, and agency across
-              platforms.
+              In the age of AI, a voice recording of a few seconds is enough to create a deepfake clone.
+              'Vishing' or 'Voice Phishing' is a social engineering attack which leverages deepfake voices.
+              Songjam cryptographically secures your voice to prevent these attacks.
             </div>
             <AboutDialog>
-              <PrimaryButton>LEARN MORE</PrimaryButton>
+              <button
+                className="flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 bg-white/10 text-white border border-white/30 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-white/50 w-[222px] h-[40px]"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                LEARN MORE
+              </button>
             </AboutDialog>
           </div>
         </GlassCard>
         <GlassCard>
           <div className="justify-center items-center w-full flex">
             <Image
-              src="/images/diagram-eva.svg"
-              alt="diagram-eva"
+              src="/images/protoSBT.png"
+              alt="proto-sbt"
               width={423.5}
               height={514}
             />
           </div>
           <div className="flex flex-col gap-2">
             <div className="text-lg font-bold">
-              THE ARCHITECTURE OF SYNTHETIC LIFE
+              PROTO SOULBOUND TOKENS
             </div>
             <div className="text-sm">
-              EVA us pioneering new frontiers in AI identity, memory, and
-              narrative. Explore how we are building the foundations For digital
-              consciousness.
+              Decentrally store and administer your voice data via a proto Soulbound Token.
+              Monetize your voice data to researchers, or make it available for AI assistants, voiceovers and reader apps.
             </div>
           </div>
         </GlassCard>
       </div>
       <div className="text-sm text-center mt-12">
-        COPYRIGHT © 2025 EVA ONLINE
+        <div className="text-center text-sm text-white/60">
+          COPYRIGHT © 2025 SONGJAM
+        </div>
         <br />
-        <Link href="/terms" className="text-sm text-[#48333D] hover:text-[#48333D]/70">
+        <Link href="/terms" className="text-sm text-white hover:text-white/70">
           Terms of Service
         </Link>
         {" | "}
-        <Link href="/privacy" className="text-sm text-[#48333D] hover:text-[#48333D]/70">
+        <Link href="/privacy" className="text-sm text-white hover:text-white/70">
           Privacy Policy
         </Link>
       </div>
