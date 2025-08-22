@@ -4,10 +4,10 @@ export interface LeaderboardEntry {
   username: string;
   userId: string;
   name: string;
-  engagementPoints: number;
+  // engagementPoints: number;
   totalPoints: number;
-  preGenesisPoints: number;
-  postGenesisPoints: number;
+  // preGenesisPoints: number;
+  // postGenesisPoints: number;
   flagCount: number;
   botScore: number;
 }
@@ -20,17 +20,13 @@ export interface LeaderboardResponse {
 
 async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
   const response = await fetch(
-    "https://evaonlinexyz-leaderboard.logesh-063.workers.dev/"
+    "https://songjamspace-leaderboard.logesh-063.workers.dev/songjamspace"
   );
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  const result: LeaderboardResponse = await response.json();
-  if (result.success) {
-    return result.result;
-  } else {
-    throw new Error("Failed to fetch leaderboard data");
-  }
+  const result: LeaderboardEntry[] = await response.json();
+  return result;
 }
 
 export function useLeaderboard() {
