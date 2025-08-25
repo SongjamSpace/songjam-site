@@ -6,11 +6,10 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 To use the staking balance checker feature, you'll need to set up an Alchemy API key:
 
-1. Get your API key from [Alchemy](https://www.alchemy.com/)
-2. Create a `.env.local` file in the root directory
-3. Add the following line to your `.env.local` file:
+1. Create a `.env.local` file in the root directory
+2. Add the following line to your `.env.local` file:
    ```
-   NEXT_PUBLIC_ALCHEMY_API_KEY=your_alchemy_api_key_here
+   NEXT_PUBLIC_API_KEY=your_api_key_here
    ```
 
 ### Development Server

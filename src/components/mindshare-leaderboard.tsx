@@ -207,11 +207,7 @@ export default function MindshareLeaderboard({
 
     // Transform and calculate percentages
     return (leaderboardData as LeaderboardRow[])
-      .slice()
-      .sort(
-        (a: LeaderboardRow, b: LeaderboardRow) => b.totalPoints - a.totalPoints
-      ) // Sort by points descending
-      .slice(0, 10) // Take top 10
+      .slice(0, 10) // Data is already sorted by points descending; take top 10
       .map((entry: LeaderboardRow, index: number) => {
         const percentage =
           totalPoints > 0 ? (entry.totalPoints / totalPoints) * 100 : 0;
@@ -233,6 +229,13 @@ export default function MindshareLeaderboard({
     const containerHeight = 600;
     return createTreemap(mindshareData, containerWidth, containerHeight);
   }, [mindshareData]);
+
+  // Full sorted list for table view (all users)
+  const sortedAllUsers = useMemo(() => {
+    if (!leaderboardData || (leaderboardData as LeaderboardRow[]).length === 0)
+      return [] as LeaderboardRow[];
+    return leaderboardData as LeaderboardRow[]; // Already sorted
+  }, [leaderboardData]);
 
   const handleTimeframeChange = (timeframe: "4H" | "24H" | "7D" | "30D") => {
     setSelectedTimeframe(timeframe);
@@ -490,7 +493,7 @@ export default function MindshareLeaderboard({
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 text-center">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
               <div
                 className="text-2xl font-bold text-white"
                 style={{ fontFamily: "Orbitron, sans-serif" }}
@@ -505,7 +508,7 @@ export default function MindshareLeaderboard({
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 text-center">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
               <div
                 className="text-2xl font-bold text-white"
                 style={{ fontFamily: "Orbitron, sans-serif" }}
@@ -522,7 +525,7 @@ export default function MindshareLeaderboard({
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 text-center">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
               <div
                 className="text-2xl font-bold text-white"
                 style={{ fontFamily: "Orbitron, sans-serif" }}
@@ -537,7 +540,7 @@ export default function MindshareLeaderboard({
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 text-center">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
               <div
                 className="text-2xl font-bold text-white"
                 style={{ fontFamily: "Orbitron, sans-serif" }}
@@ -550,6 +553,85 @@ export default function MindshareLeaderboard({
               >
                 Leader
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* All Users Table */}
+      <div className="px-4 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
+            <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+              <h3
+                className="text-lg font-semibold text-white"
+                style={{ fontFamily: "Orbitron, sans-serif" }}
+              >
+                {selectedTimeframe} Users
+              </h3>
+              <div
+                className="text-sm text-white/60"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                {sortedAllUsers.length.toLocaleString()} users
+              </div>
+            </div>
+            <div className="overflow-x-auto max-h-[40rem] overflow-y-auto">
+              <table className="min-w-full">
+                <thead className="sticky top-0 z-10 bg-black/60 border-b border-white/10 shadow-sm">
+                  <tr
+                    className="text-left text-white/70 text-sm"
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  >
+                    <th className="px-6 py-3">Rank</th>
+                    <th className="px-6 py-3">Yapper</th>
+                    <th className="px-6 py-3 text-right">Total Points</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedAllUsers.map((u, idx) => (
+                    <tr
+                      key={u.userId}
+                      className={`${
+                        idx % 2 === 0 ? "bg-white/0" : "bg-white/[0.03]"
+                      } border-t border-white/10`}
+                    >
+                      <td className="px-6 py-3 align-middle">
+                        <span
+                          className="text-white font-medium"
+                          style={{ fontFamily: "Inter, sans-serif" }}
+                        >
+                          {idx + 1}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3 align-middle">
+                        <div className="flex flex-col">
+                          <span
+                            className="text-white font-medium"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            {u.name || u.username}
+                          </span>
+                          <span
+                            className="text-white/60 text-sm"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            @{u.username}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-3 text-right align-middle">
+                        <span
+                          className="text-white font-medium"
+                          style={{ fontFamily: "Inter, sans-serif" }}
+                        >
+                          {u.totalPoints.toFixed(2)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
