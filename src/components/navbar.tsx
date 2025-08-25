@@ -74,14 +74,14 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             SONGJAM DJ
           </Button>
         </Link>
-        <Link href="" rel="noopener noreferrer">
+        {/* <Link href="" rel="noopener noreferrer">
           <Button
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
           >
             $SANG PAIRS
           </Button>
-        </Link>
+        </Link> */}
         <Link
           href="https://x.com/SongjamSpace"
           target="_blank"

@@ -140,12 +140,14 @@ export default function MindshareLeaderboard({
   title,
   moto,
   banner,
+  backgroundImageUrl,
 }: {
   projectId: string;
   timeframes: Array<"4H" | "24H" | "7D" | "30D">;
   title: string;
   moto: string;
   banner?: ReactNode;
+  backgroundImageUrl?: string;
 }) {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -244,314 +246,323 @@ export default function MindshareLeaderboard({
   };
 
   return (
-    <div className="relative bg-[url('/images/banner.png')] bg-cover bg-top p-4 min-h-screen md:min-h-auto md:pb-[200px]">
-      <Navbar />
+    <>
+      <div
+        className="relative bg-cover bg-top p-4 min-h-screen md:min-h-auto md:pb-[200px]"
+        style={{
+          backgroundImage: `url(${backgroundImageUrl ?? "/images/banner.png"})`,
+        }}
+      >
+        {/* Bottom gradient fade overlay */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[oklch(0.145_0_0)]" />
+        <Navbar />
 
-      {/* Header */}
-      <div className="text-center py-8 px-4">
-        <motion.h1
-          className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-lg"
-          style={{ fontFamily: "Orbitron, sans-serif" }}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          Who ${title}
-        </motion.h1>
-        <motion.p
-          className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-lg"
-          style={{ fontFamily: "Inter, sans-serif" }}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          {moto}
-        </motion.p>
-      </div>
+        {/* Header */}
+        <div className="relative z-10 text-center py-8 px-4">
+          <motion.h1
+            className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-lg"
+            style={{ fontFamily: "Orbitron, sans-serif" }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            {title === "SANG" ? `Who ${title}` : title}
+          </motion.h1>
+          <motion.p
+            className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-lg"
+            style={{ fontFamily: "Inter, sans-serif" }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            {moto}
+          </motion.p>
+        </div>
 
-      {/* Treemap Container */}
-      <div className="px-4 pb-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
-            <div className="flex items-center justify-between mb-6 gap-4">
-              <h2
-                className="text-2xl font-bold text-white"
-                style={{ fontFamily: "Orbitron, sans-serif" }}
-              >
-                Leaderboard
-              </h2>
-              {banner && (
-                <div className="flex-1 flex items-center justify-center">
-                  {banner}
-                </div>
-              )}
-              <div className="flex bg-white/10 rounded-lg p-1 border border-white/20">
-                {timeframes.map((timeframe) => (
-                  <button
-                    key={timeframe}
-                    onClick={() => handleTimeframeChange(timeframe)}
-                    className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                      selectedTimeframe === timeframe
-                        ? "bg-white/20 text-white shadow-sm"
-                        : "text-white/70 hover:text-white/90"
-                    }`}
-                    style={{ fontFamily: "Inter, sans-serif" }}
-                  >
-                    {timeframe}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Treemap Canvas */}
-            <div className="relative w-full h-[600px] bg-white/5 rounded-lg overflow-hidden">
-              {treemapItems.map((item, index) => (
-                <motion.div
-                  key={item.id}
-                  className={`absolute cursor-pointer transition-all duration-300 ${
-                    selectedItem === item.id
-                      ? "ring-4 ring-white ring-opacity-50"
-                      : ""
-                  } ${
-                    hoveredItem === item.id
-                      ? "scale-105 z-10"
-                      : "hover:scale-102"
-                  }`}
-                  style={{
-                    left: `${(item.x / 1200) * 100}%`,
-                    top: `${(item.y / 600) * 100}%`,
-                    width: `${(item.width / 1200) * 100}%`,
-                    height: `${(item.height / 600) * 100}%`,
-                    backgroundColor: "rgba(255, 255, 255, 0.08)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                  }}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  onClick={() =>
-                    setSelectedItem(selectedItem === item.id ? null : item.id)
-                  }
-                  onMouseEnter={() => setHoveredItem(item.id)}
-                  onMouseLeave={() => setHoveredItem(null)}
+        {/* Treemap Container */}
+        <div className="relative z-10 px-4 pb-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+              <div className="flex items-center justify-between mb-6 gap-4">
+                <h2
+                  className="text-2xl font-bold text-white"
+                  style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
-                  {/* Content */}
-                  <div className="absolute inset-0 p-3 flex flex-col justify-between">
-                    <div>
-                      <div
-                        className="text-white font-bold text-sm md:text-base truncate drop-shadow-lg"
-                        style={{ fontFamily: "Inter, sans-serif" }}
-                      >
-                        {item.name}
-                      </div>
-                      <div
-                        className="text-white/90 text-xs truncate drop-shadow-lg"
-                        style={{ fontFamily: "Inter, sans-serif" }}
-                      >
-                        {item.description}
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <div
-                        className="text-white font-bold text-lg md:text-xl drop-shadow-lg"
-                        style={{ fontFamily: "Inter, sans-serif" }}
-                      >
-                        {item.percentage}%
-                      </div>
-                      <div
-                        className="text-white/80 text-xs drop-shadow-lg"
-                        style={{ fontFamily: "Inter, sans-serif" }}
-                      >
-                        {item.points.toLocaleString()} pts
-                      </div>
-                    </div>
+                  Leaderboard
+                </h2>
+                {banner && (
+                  <div className="flex-1 flex items-center justify-center">
+                    {banner}
                   </div>
-
-                  {/* Hover/Selected Overlay */}
-                  {(hoveredItem === item.id || selectedItem === item.id) && (
-                    <motion.div
-                      className="absolute inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center rounded"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2 }}
+                )}
+                <div className="flex bg-white/10 rounded-lg p-1 border border-white/20">
+                  {timeframes.map((timeframe) => (
+                    <button
+                      key={timeframe}
+                      onClick={() => handleTimeframeChange(timeframe)}
+                      className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                        selectedTimeframe === timeframe
+                          ? "bg-white/20 text-white shadow-sm"
+                          : "text-white/70 hover:text-white/90"
+                      }`}
+                      style={{ fontFamily: "Inter, sans-serif" }}
                     >
-                      <div className="text-center text-white p-3">
+                      {timeframe}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Treemap Canvas */}
+              <div className="relative w-full h-[600px] bg-white/5 rounded-lg overflow-hidden">
+                {treemapItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    className={`absolute cursor-pointer transition-all duration-300 ${
+                      selectedItem === item.id
+                        ? "ring-4 ring-white ring-opacity-50"
+                        : ""
+                    } ${
+                      hoveredItem === item.id
+                        ? "scale-105 z-10"
+                        : "hover:scale-102"
+                    }`}
+                    style={{
+                      left: `${(item.x / 1200) * 100}%`,
+                      top: `${(item.y / 600) * 100}%`,
+                      width: `${(item.width / 1200) * 100}%`,
+                      height: `${(item.height / 600) * 100}%`,
+                      backgroundColor: "rgba(255, 255, 255, 0.08)",
+                      border: "1px solid rgba(255, 255, 255, 0.15)",
+                    }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    onClick={() =>
+                      setSelectedItem(selectedItem === item.id ? null : item.id)
+                    }
+                    onMouseEnter={() => setHoveredItem(item.id)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                  >
+                    {/* Content */}
+                    <div className="absolute inset-0 p-3 flex flex-col justify-between">
+                      <div>
                         <div
-                          className="font-bold text-base mb-1 drop-shadow-lg"
+                          className="text-white font-bold text-sm md:text-base truncate drop-shadow-lg"
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.name}
                         </div>
                         <div
-                          className="text-xs mb-1 drop-shadow-lg"
-                          style={{ fontFamily: "Inter, sans-serif" }}
-                        >
-                          {item.contribution}
-                        </div>
-                        <div
-                          className="text-xs opacity-90 leading-tight drop-shadow-lg"
+                          className="text-white/90 text-xs truncate drop-shadow-lg"
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.description}
                         </div>
                       </div>
-                    </motion.div>
-                  )}
-                </motion.div>
-              ))}
 
-              {isFetching && (
-                <motion.div
-                  className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px]"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-white/10 border border-white/20 shadow-md">
-                    <div className="h-4 w-4 rounded-full border-2 border-white/60 border-t-transparent animate-spin" />
-                    <span
-                      className="text-white/90 text-sm"
-                      style={{ fontFamily: "Inter, sans-serif" }}
-                    >
-                      Updating {selectedTimeframe} Leaderboard…
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-              {error && (
-                <motion.div
-                  className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px]"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-white/10 border border-white/20 shadow-md">
-                    <span
-                      className="text-white/90 text-sm"
-                      style={{ fontFamily: "Inter, sans-serif" }}
-                    >
-                      Error fetching the Leaderboard for {selectedTimeframe}{" "}
-                      timeframe
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-            </div>
+                      <div className="text-right">
+                        <div
+                          className="text-white font-bold text-lg md:text-xl drop-shadow-lg"
+                          style={{ fontFamily: "Inter, sans-serif" }}
+                        >
+                          {item.percentage}%
+                        </div>
+                        <div
+                          className="text-white/80 text-xs drop-shadow-lg"
+                          style={{ fontFamily: "Inter, sans-serif" }}
+                        >
+                          {item.points.toLocaleString()} pts
+                        </div>
+                      </div>
+                    </div>
 
-            {/* Powered By */}
-            <div className="mt-6 flex items-center justify-center gap-3 text-sm">
-              <span
-                className="text-white/60"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Powered by:
-              </span>
-              <span
-                className="text-white/80"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Arbus
-              </span>
-              <span className="text-white/40">•</span>
-              <span
-                className="text-white/80"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Lurky
-              </span>
-              <span className="text-white/40">•</span>
-              <span
-                className="text-white/80"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Zora
-              </span>
+                    {/* Hover/Selected Overlay */}
+                    {(hoveredItem === item.id || selectedItem === item.id) && (
+                      <motion.div
+                        className="absolute inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center rounded"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="text-center text-white p-3">
+                          <div
+                            className="font-bold text-base mb-1 drop-shadow-lg"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            {item.name}
+                          </div>
+                          <div
+                            className="text-xs mb-1 drop-shadow-lg"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            {item.contribution}
+                          </div>
+                          <div
+                            className="text-xs opacity-90 leading-tight drop-shadow-lg"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            {item.description}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                ))}
+
+                {isFetching && (
+                  <motion.div
+                    className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px]"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-white/10 border border-white/20 shadow-md">
+                      <div className="h-4 w-4 rounded-full border-2 border-white/60 border-t-transparent animate-spin" />
+                      <span
+                        className="text-white/90 text-sm"
+                        style={{ fontFamily: "Inter, sans-serif" }}
+                      >
+                        Updating {selectedTimeframe} Leaderboard…
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+                {error && (
+                  <motion.div
+                    className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px]"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-white/10 border border-white/20 shadow-md">
+                      <span
+                        className="text-white/90 text-sm"
+                        style={{ fontFamily: "Inter, sans-serif" }}
+                      >
+                        Error fetching the Leaderboard for {selectedTimeframe}{" "}
+                        timeframe
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Powered By */}
+              <div className="mt-6 flex items-center justify-center gap-3 text-sm">
+                <span
+                  className="text-white/60"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  Powered by:
+                </span>
+                <span
+                  className="text-white/80"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  Arbus
+                </span>
+                <span className="text-white/40">•</span>
+                <span
+                  className="text-white/80"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  Lurky
+                </span>
+                <span className="text-white/40">•</span>
+                <span
+                  className="text-white/80"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  Zora
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Stats Summary */}
-      <div className="px-4 pb-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <h3
-              className="text-lg font-semibold text-white"
-              style={{ fontFamily: "Orbitron, sans-serif" }}
-            >
-              {selectedTimeframe} Overview
-            </h3>
-            <div
-              className="text-sm text-white/60"
-              style={{ fontFamily: "Inter, sans-serif" }}
-            >
-              Total:{" "}
-              {mindshareData
-                .reduce((sum, item) => sum + item.points, 0)
-                .toLocaleString()}{" "}
-              points
-            </div>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
-              <div
-                className="text-2xl font-bold text-white"
+        {/* Stats Summary */}
+        <div className="relative z-10 px-4 pb-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3
+                className="text-lg font-semibold text-white"
                 style={{ fontFamily: "Orbitron, sans-serif" }}
               >
-                {mindshareData.length}
-              </div>
+                {selectedTimeframe} Overview
+              </h3>
               <div
-                className="text-white/70 text-sm"
+                className="text-sm text-white/60"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                Contributors
-              </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
-              <div
-                className="text-2xl font-bold text-white"
-                style={{ fontFamily: "Orbitron, sans-serif" }}
-              >
+                Total:{" "}
                 {mindshareData
                   .reduce((sum, item) => sum + item.points, 0)
-                  .toLocaleString()}
-              </div>
-              <div
-                className="text-white/70 text-sm"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Total Points
+                  .toLocaleString()}{" "}
+                points
               </div>
             </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
+                <div
+                  className="text-2xl font-bold text-white"
+                  style={{ fontFamily: "Orbitron, sans-serif" }}
+                >
+                  {mindshareData.length}
+                </div>
+                <div
+                  className="text-white/70 text-sm"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  Contributors
+                </div>
+              </div>
 
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
-              <div
-                className="text-2xl font-bold text-white"
-                style={{ fontFamily: "Orbitron, sans-serif" }}
-              >
-                {mindshareData[0]?.percentage || 0}%
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
+                <div
+                  className="text-2xl font-bold text-white"
+                  style={{ fontFamily: "Orbitron, sans-serif" }}
+                >
+                  {mindshareData
+                    .reduce((sum, item) => sum + item.points, 0)
+                    .toLocaleString()}
+                </div>
+                <div
+                  className="text-white/70 text-sm"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  Total Points
+                </div>
               </div>
-              <div
-                className="text-white/70 text-sm"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Top Share
-              </div>
-            </div>
 
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
-              <div
-                className="text-2xl font-bold text-white"
-                style={{ fontFamily: "Orbitron, sans-serif" }}
-              >
-                {mindshareData[0]?.name || "N/A"}
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
+                <div
+                  className="text-2xl font-bold text-white"
+                  style={{ fontFamily: "Orbitron, sans-serif" }}
+                >
+                  {mindshareData[0]?.percentage || 0}%
+                </div>
+                <div
+                  className="text-white/70 text-sm"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  Top Share
+                </div>
               </div>
-              <div
-                className="text-white/70 text-sm"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Leader
+
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
+                <div
+                  className="text-2xl font-bold text-white"
+                  style={{ fontFamily: "Orbitron, sans-serif" }}
+                >
+                  {mindshareData[0]?.name || "N/A"}
+                </div>
+                <div
+                  className="text-white/70 text-sm"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  Leader
+                </div>
               </div>
             </div>
           </div>
@@ -636,6 +647,6 @@ export default function MindshareLeaderboard({
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

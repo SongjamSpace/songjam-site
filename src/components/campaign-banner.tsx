@@ -11,8 +11,8 @@ interface CampaignBannerProps {
 }
 
 export default function CampaignBanner({
-  label = "Songjam Live Campaign",
-  value = "Pharma Chain AI",
+  label = "Live Mindshare Campaign",
+  value = "Pharmachain AI",
   icon,
   href = "/pharmachainai",
 }: CampaignBannerProps) {

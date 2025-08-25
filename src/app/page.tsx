@@ -25,6 +25,7 @@ export default function Home() {
         moto="Top Voices in the Battle for Voice Sovereignty"
         projectId="songjamspace"
         timeframes={["24H", "7D", "30D"]}
+        backgroundImageUrl="/images/banners/songjam.png"
         banner={<CampaignBanner />}
       />
       <GenesisCountdown />

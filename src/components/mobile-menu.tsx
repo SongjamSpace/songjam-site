@@ -93,7 +93,7 @@ export function MobileMenu({
               SONGJAM DJ
             </Button>
           </Link>
-          <Link href="" rel="noopener noreferrer">
+          {/* <Link href="" rel="noopener noreferrer">
             <Button
               variant="ghost"
               className={
@@ -102,7 +102,7 @@ export function MobileMenu({
             >
               $SANG PAIRS
             </Button>
-          </Link>
+          </Link> */}
         </div>
         <SheetFooter className="flex-row flex items-center gap-4">
           {/* <PrimaryButton inverse={inverse}>CONNECT</PrimaryButton> */}
