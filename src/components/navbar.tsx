@@ -8,6 +8,8 @@ import Logo from "./logo";
 import { cn } from "@/lib/utils";
 import VirtualsIcon from "./virtuals-icon";
 
+export const APP_BASE_URL = "https://app.songjam.space";
+
 export default function Navbar({ inverse }: { inverse?: boolean }) {
   return (
     <div className="flex justify-between items-center rounded-[12px] max-w-7xl mx-auto">
@@ -19,11 +21,13 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
               className={`hidden md:block text-xl font-black ${
                 inverse ? "text-[#48333D]" : "text-white"
               }`}
-              style={{ 
-                fontFamily: 'Audiowide, cursive',
-                textShadow: inverse ? 'none' : '0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.2)',
-                letterSpacing: '0.1em',
-                fontWeight: 400
+              style={{
+                fontFamily: "Audiowide, cursive",
+                textShadow: inverse
+                  ? "none"
+                  : "0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.2)",
+                letterSpacing: "0.1em",
+                fontWeight: 400,
               }}
             >
               SONGJAM
@@ -32,15 +36,21 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
         </Link>
       </div>
       <div className="hidden md:flex gap-4 items-center">
-        <AboutDialog>
+        <Link
+          href={`${APP_BASE_URL}/spaces-crm?action=boostSpace`}
+          target="_blank"
+        >
           <Button
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
           >
             AUTO DMs
           </Button>
-        </AboutDialog>
-        <Link href="/mirror">
+        </Link>
+        <Link
+          href={`${APP_BASE_URL}/spaces-crm?action=livespace`}
+          target="_blank"
+        >
           <Button
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
@@ -48,7 +58,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             LIVE SPACE
           </Button>
         </Link>
-        <Link href="/profile">
+        <Link href={`${APP_BASE_URL}/dashboard`} target="_blank">
           <Button
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
@@ -56,7 +66,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             ENDED SPACE
           </Button>
         </Link>
-        <Link href="/stake">
+        <Link href={`${APP_BASE_URL}/dj`} target="_blank">
           <Button
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
@@ -64,11 +74,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             SONGJAM DJ
           </Button>
         </Link>
-        <Link
-          href="https://eva-online.gitbook.io/eva-agent-online"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <Link href="" rel="noopener noreferrer">
           <Button
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
@@ -77,7 +83,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
           </Button>
         </Link>
         <Link
-          href="https://x.com/evaonlinexyz"
+          href="https://x.com/SongjamSpace"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -92,7 +98,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
           </Button>
         </Link>
         <Link
-          href="https://app.virtuals.io/geneses/6030"
+          href="https://app.virtuals.io/virtuals/29671"
           target="_blank"
           rel="noopener noreferrer"
           className="flex"
@@ -109,18 +115,14 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
         </Link>
       </div>
       <div className="hidden md:block">
-        <Link
-          href="https://app.virtuals.io/geneses/6030"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <Link href="" rel="noopener noreferrer">
           <button
             className={`px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 ${
-              inverse 
-                ? 'bg-[#48333D] text-white hover:bg-[#48333D]/90 shadow-lg hover:shadow-xl' 
-                : 'bg-black text-white border border-white/30 hover:bg-black/90 shadow-lg hover:shadow-xl hover:border-white/50'
+              inverse
+                ? "bg-[#48333D] text-white hover:bg-[#48333D]/90 shadow-lg hover:shadow-xl"
+                : "bg-black text-white border border-white/30 hover:bg-black/90 shadow-lg hover:shadow-xl hover:border-white/50"
             }`}
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            style={{ fontFamily: "Inter, sans-serif" }}
           >
             CONNECT
           </button>

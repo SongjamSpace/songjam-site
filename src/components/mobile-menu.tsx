@@ -11,6 +11,7 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import PrimaryButton from "./primary-button";
 import AboutDialog from "./about-dialog";
+import { APP_BASE_URL } from "./navbar";
 
 export function MobileMenu({
   children,
@@ -30,13 +31,14 @@ export function MobileMenu({
           <SheetTitle>
             <div className="flex items-center space-x-2">
               <img src="/images/logo1.png" alt="Logo" className="h-8 w-8" />
-              <span 
+              <span
                 className="text-xl font-black text-white"
-                style={{ 
-                  fontFamily: 'Audiowide, cursive',
-                  textShadow: '0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.2)',
-                  letterSpacing: '0.1em',
-                  fontWeight: 400
+                style={{
+                  fontFamily: "Audiowide, cursive",
+                  textShadow:
+                    "0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.2)",
+                  letterSpacing: "0.1em",
+                  fontWeight: 400,
                 }}
               >
                 SONGJAM
@@ -45,88 +47,67 @@ export function MobileMenu({
           </SheetTitle>
         </SheetHeader>
         <div className="flex flex-col gap-4">
-          <AboutDialog>
-            <Button
-              variant="ghost"
-              inverse={inverse}
-              className="w-full justify-start"
-            >
-              AUTO DMs
-            </Button>
-          </AboutDialog>
-          <Link href="/mirror" className="w-full">
-            <Button
-              variant="ghost"
-              inverse={inverse}
-              className="w-full justify-start"
-            >
-              MIRROR
-            </Button>
-          </Link>
-          <Link href="/profile" className="w-full">
-            <Button
-              variant="ghost"
-              inverse={inverse}
-              className="w-full justify-start"
-            >
-              PROFILE
-            </Button>
-          </Link>
-          <Link href="/stake" className="w-full">
-            <Button
-              variant="ghost"
-              inverse={inverse}
-              className="w-full justify-start"
-            >
-              STAKE
-            </Button>
-          </Link>
           <Link
-            href="https://eva-online.gitbook.io/eva-agent-online"
+            href={`${APP_BASE_URL}/spaces-crm?action=boostSpace`}
             target="_blank"
-            rel="noopener noreferrer"
-            className="w-full"
           >
             <Button
               variant="ghost"
-              inverse={inverse}
-              className="w-full justify-start"
+              className={
+                inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
+              }
             >
-              GITBOOK
+              AUTO DMs
             </Button>
           </Link>
-          <Link href="/assets" className="w-full">
+          <Link
+            href={`${APP_BASE_URL}/spaces-crm?action=livespace`}
+            target="_blank"
+          >
             <Button
               variant="ghost"
-              inverse={inverse}
-              className="w-full justify-start"
+              className={
+                inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
+              }
             >
-              ASSETS
+              LIVE SPACE
             </Button>
           </Link>
-          <Link href="/og-wall" className="w-full">
+          <Link href={`${APP_BASE_URL}/dashboard`} target="_blank">
             <Button
               variant="ghost"
-              inverse={inverse}
-              className="w-full justify-start"
+              className={
+                inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
+              }
             >
-              OG WALL
+              ENDED SPACE
             </Button>
           </Link>
-          <Link href="/og-checker" className="w-full">
+          <Link href={`${APP_BASE_URL}/dj`} target="_blank">
             <Button
               variant="ghost"
-              inverse={inverse}
-              className="w-full justify-start"
+              className={
+                inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
+              }
             >
-              OG CLAIM
+              SONGJAM DJ
+            </Button>
+          </Link>
+          <Link href="" rel="noopener noreferrer">
+            <Button
+              variant="ghost"
+              className={
+                inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
+              }
+            >
+              $SANG PAIRS
             </Button>
           </Link>
         </div>
         <SheetFooter className="flex-row flex items-center gap-4">
-          <PrimaryButton inverse={inverse}>CONNECT</PrimaryButton>
+          {/* <PrimaryButton inverse={inverse}>CONNECT</PrimaryButton> */}
           <Link
-            href="https://x.com/evaonlinexyz"
+            href="https://x.com/SongjamSpace"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -140,7 +121,7 @@ export function MobileMenu({
             </Button>
           </Link>
           <Link
-            href="https://app.virtuals.io/geneses/6030"
+            href="https://app.virtuals.io/virtuals/29671"
             target="_blank"
             rel="noopener noreferrer"
           >

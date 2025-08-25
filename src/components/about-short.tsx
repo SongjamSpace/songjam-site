@@ -12,7 +12,7 @@ export default function AboutShort() {
           <div className="justify-center items-center w-full flex">
             <Image
               src="/images/dj.png"
-              alt="diagram-eva"
+              alt="songjam-dj"
               width={257}
               height={385}
               style={{ width: "auto", height: "auto" }}
@@ -23,14 +23,15 @@ export default function AboutShort() {
               A CRYPTOGRAPHIC VOICE VERIFICATION NETWORK POWERED BY $SANG
             </div>
             <div className="text-sm">
-              In the age of AI, a voice recording of a few seconds is enough to create a deepfake clone.
-              'Vishing' or 'Voice Phishing' is a social engineering attack which leverages deepfake voices.
-              Songjam cryptographically secures your voice to prevent these attacks.
+              In the age of AI, a voice recording of a few seconds is enough to
+              create a deepfake clone. 'Vishing' or 'Voice Phishing' is a social
+              engineering attack which leverages deepfake voices. Songjam
+              cryptographically secures your voice to prevent these attacks.
             </div>
             <AboutDialog>
               <button
                 className="flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 bg-white/10 text-white border border-white/30 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-white/50 w-[222px] h-[40px]"
-                style={{ fontFamily: 'Inter, sans-serif' }}
+                style={{ fontFamily: "Inter, sans-serif" }}
               >
                 LEARN MORE
               </button>
@@ -47,12 +48,11 @@ export default function AboutShort() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <div className="text-lg font-bold">
-              PROTO SOULBOUND TOKENS
-            </div>
+            <div className="text-lg font-bold">PROTO SOULBOUND TOKENS</div>
             <div className="text-sm">
-              Decentrally store and administer your voice data via a proto Soulbound Token.
-              Monetize your voice data to researchers, or make it available for AI assistants, voiceovers and reader apps.
+              Decentrally store and administer your voice data via a proto
+              Soulbound Token. Monetize your voice data to researchers, or make
+              it available for AI assistants, voiceovers and reader apps.
             </div>
           </div>
         </GlassCard>
@@ -66,7 +66,10 @@ export default function AboutShort() {
           Terms of Service
         </Link>
         {" | "}
-        <Link href="/privacy" className="text-sm text-white hover:text-white/70">
+        <Link
+          href="/privacy"
+          className="text-sm text-white hover:text-white/70"
+        >
           Privacy Policy
         </Link>
       </div>
