@@ -277,7 +277,7 @@ export default function MindshareLeaderboard({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            {title === "SANG" ? `Who ${title}` : title}
+            {title === "SANG" ? `Who $${title}?` : title}
           </motion.h1>
           <motion.p
             className={`text-xl max-w-2xl mx-auto drop-shadow-lg ${

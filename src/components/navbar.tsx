@@ -115,7 +115,10 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
         </Link>
       </div>
       <div className="hidden md:block">
-        <Link href="" rel="noopener noreferrer">
+        <Link
+          href="https://app.virtuals.io/virtuals/29671"
+          rel="noopener noreferrer"
+        >
           <button
             className={`px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 ${
               inverse
