@@ -447,36 +447,6 @@ export default function MindshareLeaderboard({
                   </motion.div>
                 )}
               </div>
-
-              {/* Powered By */}
-              <div className="mt-6 flex items-center justify-center gap-3 text-sm">
-                <span
-                  className="text-white/60"
-                  style={{ fontFamily: "Inter, sans-serif" }}
-                >
-                  Powered by:
-                </span>
-                <span
-                  className="text-white/80"
-                  style={{ fontFamily: "Inter, sans-serif" }}
-                >
-                  Arbus
-                </span>
-                <span className="text-white/40">•</span>
-                <span
-                  className="text-white/80"
-                  style={{ fontFamily: "Inter, sans-serif" }}
-                >
-                  Lurky
-                </span>
-                <span className="text-white/40">•</span>
-                <span
-                  className="text-white/80"
-                  style={{ fontFamily: "Inter, sans-serif" }}
-                >
-                  Zora
-                </span>
-              </div>
             </div>
           </div>
         </div>
