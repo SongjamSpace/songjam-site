@@ -559,7 +559,7 @@ export default function MindshareLeaderboard({
                   }`}
                   style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
-                  {mindshareData.length}
+                  {leaderboardData?.length || "-"}
                 </div>
                 <div
                   className={`${
