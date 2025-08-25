@@ -36,10 +36,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
         </Link>
       </div>
       <div className="hidden md:flex gap-4 items-center">
-        <Link
-          href={`${APP_BASE_URL}/spaces-crm?action=boostSpace`}
-          target="_blank"
-        >
+        <Link href={`${APP_BASE_URL}/dashboard?tab=campaigns`} target="_blank">
           <Button
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
@@ -47,10 +44,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             AUTO DMs
           </Button>
         </Link>
-        <Link
-          href={`${APP_BASE_URL}/spaces-crm?action=livespace`}
-          target="_blank"
-        >
+        <Link href={`${APP_BASE_URL}/dashboard?tab=livespace`} target="_blank">
           <Button
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
@@ -58,7 +52,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             LIVE SPACE
           </Button>
         </Link>
-        <Link href={`${APP_BASE_URL}/dashboard`} target="_blank">
+        <Link href={`${APP_BASE_URL}/dashboard?tab=endedspace`} target="_blank">
           <Button
             variant="ghost"
             className={inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""}
