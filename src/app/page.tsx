@@ -7,6 +7,7 @@ import MindshareLeaderboard from "@/components/mindshare-leaderboard";
 import AboutShort from "@/components/about-short";
 import Abilities from "@/components/abilities";
 import GenesisCountdown from "@/components/genesis-countdown";
+import CampaignBanner from "@/components/campaign-banner";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -14,12 +15,18 @@ export default function Home() {
   useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
-    }, 2000);
+    }, 1000);
   }, []);
 
   return (
     <>
-      <MindshareLeaderboard />
+      <MindshareLeaderboard
+        title="SANG"
+        moto="Top Voices in the Battle for Voice Sovereignty"
+        projectId="songjamspace"
+        timeframes={["24H", "7D", "30D"]}
+        banner={<CampaignBanner />}
+      />
       <GenesisCountdown />
       <Abilities />
       <AboutShort />

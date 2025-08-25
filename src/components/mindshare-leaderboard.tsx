@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import Navbar from "./navbar";
 import OnlineDot from "./online";
-import { useState, useMemo } from "react";
+import { useState, useMemo, type ReactNode } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 
 interface LeaderboardRow {
@@ -134,21 +134,35 @@ function createTreemap(
   return squarify(itemsToShow, 0, 0, containerWidth, containerHeight);
 }
 
-export default function MindshareLeaderboard() {
+export default function MindshareLeaderboard({
+  projectId,
+  timeframes,
+  title,
+  moto,
+  banner,
+}: {
+  projectId: string;
+  timeframes: Array<"4H" | "24H" | "7D" | "30D">;
+  title: string;
+  moto: string;
+  banner?: ReactNode;
+}) {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState<
-    "24H" | "7D" | "30D"
-  >("24H");
+    "4H" | "24H" | "7D" | "30D"
+  >(timeframes[0]);
 
   // Resolve endpoint per timeframe
-  const getEndpointForTimeframe = (timeframe: "24H" | "7D" | "30D") => {
-    if (timeframe === "24H") {
-      return "https://songjamspace-leaderboard.logesh-063.workers.dev/songjamspace_daily";
+  const getEndpointForTimeframe = (timeframe: "4H" | "24H" | "7D" | "30D") => {
+    if (timeframe === "4H") {
+      return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}_hourly`;
+    } else if (timeframe === "24H") {
+      return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}_daily`;
     } else if (timeframe === "7D") {
-      return "https://songjamspace-leaderboard.logesh-063.workers.dev/songjamspace_weekly";
+      return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}_weekly`;
     }
-    return "https://songjamspace-leaderboard.logesh-063.workers.dev/songjamspace_monthly";
+    return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}_monthly`;
   };
 
   // Fetch leaderboard data by timeframe
@@ -213,23 +227,6 @@ export default function MindshareLeaderboard() {
       });
   }, [leaderboardData]);
 
-  // Helper function to assign contribution types based on ranking
-  const getContributionType = (index: number): string => {
-    const contributions = [
-      "Voice Verification",
-      "Blockchain Integration",
-      "AI Infrastructure",
-      "Security Protocols",
-      "Data Processing",
-      "User Experience",
-      "Algorithm Development",
-      "Network Infrastructure",
-      "Testing & QA",
-      "Community & Outreach",
-    ];
-    return contributions[index] || "Platform Contribution";
-  };
-
   // Calculate treemap layout using improved algorithm
   const treemapItems = useMemo(() => {
     const containerWidth = 1200;
@@ -237,61 +234,11 @@ export default function MindshareLeaderboard() {
     return createTreemap(mindshareData, containerWidth, containerHeight);
   }, [mindshareData]);
 
-  const handleTimeframeChange = (timeframe: "24H" | "7D" | "30D") => {
+  const handleTimeframeChange = (timeframe: "4H" | "24H" | "7D" | "30D") => {
     setSelectedTimeframe(timeframe);
     // Here you would typically fetch new data based on the selected timeframe
     // For now, we'll just update the state
   };
-
-  // Initial load fallback: only for very first load when no data present yet
-  const isInitialLoading = isLoading && mindshareData.length === 0;
-  if (isInitialLoading) {
-    return (
-      <div className="relative bg-[url('/images/banner.png')] bg-cover bg-top p-4 min-h-screen md:min-h-auto md:pb-[200px]">
-        <Navbar />
-        <div className="text-center py-8 px-4">
-          <motion.div
-            className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-lg"
-            style={{ fontFamily: "Orbitron, sans-serif" }}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            Loading Leaderboard...
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="relative bg-[url('/images/banner.png')] bg-cover bg-top p-4 min-h-screen md:min-h-auto md:pb-[200px]">
-        <Navbar />
-        <div className="text-center py-8 px-4">
-          <motion.div
-            className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-lg"
-            style={{ fontFamily: "Orbitron, sans-serif" }}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            Error Loading Leaderboard
-          </motion.div>
-          <motion.p
-            className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-lg"
-            style={{ fontFamily: "Inter, sans-serif" }}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            {error.message}
-          </motion.p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="relative bg-[url('/images/banner.png')] bg-cover bg-top p-4 min-h-screen md:min-h-auto md:pb-[200px]">
@@ -306,7 +253,7 @@ export default function MindshareLeaderboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Who $SANG?
+          Who ${title}
         </motion.h1>
         <motion.p
           className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-lg"
@@ -315,7 +262,7 @@ export default function MindshareLeaderboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
-          Top Voices in the Battle for Voice Sovereignty
+          {moto}
         </motion.p>
       </div>
 
@@ -323,15 +270,20 @@ export default function MindshareLeaderboard() {
       <div className="px-4 pb-8">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 gap-4">
               <h2
                 className="text-2xl font-bold text-white"
                 style={{ fontFamily: "Orbitron, sans-serif" }}
               >
                 Leaderboard
               </h2>
+              {banner && (
+                <div className="flex-1 flex items-center justify-center">
+                  {banner}
+                </div>
+              )}
               <div className="flex bg-white/10 rounded-lg p-1 border border-white/20">
-                {(["24H", "7D", "30D"] as const).map((timeframe) => (
+                {timeframes.map((timeframe) => (
                   <button
                     key={timeframe}
                     onClick={() => handleTimeframeChange(timeframe)}
@@ -459,6 +411,24 @@ export default function MindshareLeaderboard() {
                       style={{ fontFamily: "Inter, sans-serif" }}
                     >
                       Updating {selectedTimeframe} Leaderboard…
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+              {error && (
+                <motion.div
+                  className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-white/10 border border-white/20 shadow-md">
+                    <span
+                      className="text-white/90 text-sm"
+                      style={{ fontFamily: "Inter, sans-serif" }}
+                    >
+                      Error fetching the Leaderboard for {selectedTimeframe}{" "}
+                      timeframe
                     </span>
                   </div>
                 </motion.div>
