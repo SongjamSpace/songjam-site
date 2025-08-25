@@ -9,7 +9,7 @@ export default function Page() {
 "
       projectId="pharmachainai"
       timeframes={["4H", "24H", "7D"]}
-      backgroundImageUrl="/images/banners/songjam.png"
+      backgroundImageUrl="/images/banners/pharmachainai.jpeg"
     />
   );
 }

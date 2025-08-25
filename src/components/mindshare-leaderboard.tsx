@@ -149,6 +149,7 @@ export default function MindshareLeaderboard({
   banner?: ReactNode;
   backgroundImageUrl?: string;
 }) {
+  const isLight = projectId === "pharmachainai";
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState<
@@ -253,14 +254,24 @@ export default function MindshareLeaderboard({
           backgroundImage: `url(${backgroundImageUrl ?? "/images/banner.png"})`,
         }}
       >
+        {/* Softening overlay for light theme (pharmachainai) */}
+        {isLight && (
+          <div className="pointer-events-none absolute inset-0 backdrop-blur-sm bg-white/30" />
+        )}
         {/* Bottom gradient fade overlay */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[oklch(0.145_0_0)]" />
-        <Navbar />
+        <div
+          className={`pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent ${
+            isLight ? "to-white" : "to-[oklch(0.145_0_0)]"
+          }`}
+        />
+        {projectId === "songjamspace" && <Navbar inverse={isLight} />}
 
         {/* Header */}
         <div className="relative z-10 text-center py-8 px-4">
           <motion.h1
-            className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-lg"
+            className={`text-4xl md:text-6xl font-black mb-4 drop-shadow-lg ${
+              isLight ? "text-[#48333D]" : "text-white"
+            }`}
             style={{ fontFamily: "Orbitron, sans-serif" }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -269,7 +280,9 @@ export default function MindshareLeaderboard({
             {title === "SANG" ? `Who ${title}` : title}
           </motion.h1>
           <motion.p
-            className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow-lg"
+            className={`text-xl max-w-2xl mx-auto drop-shadow-lg ${
+              isLight ? "text-slate-700" : "text-white/90"
+            }`}
             style={{ fontFamily: "Inter, sans-serif" }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -282,10 +295,18 @@ export default function MindshareLeaderboard({
         {/* Treemap Container */}
         <div className="relative z-10 px-4 pb-8">
           <div className="max-w-7xl mx-auto">
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+            <div
+              className={`${
+                isLight
+                  ? "bg-black/5 border-black/10"
+                  : "bg-white/5 border-white/20"
+              } backdrop-blur-sm rounded-2xl border p-6`}
+            >
               <div className="flex items-center justify-between mb-6 gap-4">
                 <h2
-                  className="text-2xl font-bold text-white"
+                  className={`text-2xl font-bold ${
+                    isLight ? "text-[#48333D]" : "text-white"
+                  }`}
                   style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
                   Leaderboard
@@ -295,14 +316,24 @@ export default function MindshareLeaderboard({
                     {banner}
                   </div>
                 )}
-                <div className="flex bg-white/10 rounded-lg p-1 border border-white/20">
+                <div
+                  className={`flex rounded-lg p-1 border ${
+                    isLight
+                      ? "bg-black/5 border-black/10"
+                      : "bg-white/10 border-white/20"
+                  }`}
+                >
                   {timeframes.map((timeframe) => (
                     <button
                       key={timeframe}
                       onClick={() => handleTimeframeChange(timeframe)}
                       className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                         selectedTimeframe === timeframe
-                          ? "bg-white/20 text-white shadow-sm"
+                          ? isLight
+                            ? "bg-black/10 text-[#48333D] shadow-sm"
+                            : "bg-white/20 text-white shadow-sm"
+                          : isLight
+                          ? "text-slate-700 hover:text-slate-900"
                           : "text-white/70 hover:text-white/90"
                       }`}
                       style={{ fontFamily: "Inter, sans-serif" }}
@@ -314,7 +345,11 @@ export default function MindshareLeaderboard({
               </div>
 
               {/* Treemap Canvas */}
-              <div className="relative w-full h-[600px] bg-white/5 rounded-lg overflow-hidden">
+              <div
+                className={`relative w-full h-[600px] rounded-lg overflow-hidden ${
+                  isLight ? "bg-black/5" : "bg-white/5"
+                }`}
+              >
                 {treemapItems.map((item, index) => (
                   <motion.div
                     key={item.id}
@@ -332,8 +367,12 @@ export default function MindshareLeaderboard({
                       top: `${(item.y / 600) * 100}%`,
                       width: `${(item.width / 1200) * 100}%`,
                       height: `${(item.height / 600) * 100}%`,
-                      backgroundColor: "rgba(255, 255, 255, 0.08)",
-                      border: "1px solid rgba(255, 255, 255, 0.15)",
+                      backgroundColor: isLight
+                        ? "rgba(0,0,0,0.06)"
+                        : "rgba(255, 255, 255, 0.08)",
+                      border: isLight
+                        ? "1px solid rgba(0,0,0,0.12)"
+                        : "1px solid rgba(255, 255, 255, 0.15)",
                     }}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -348,13 +387,17 @@ export default function MindshareLeaderboard({
                     <div className="absolute inset-0 p-3 flex flex-col justify-between">
                       <div>
                         <div
-                          className="text-white font-bold text-sm md:text-base truncate drop-shadow-lg"
+                          className={`font-bold text-sm md:text-base truncate drop-shadow-lg ${
+                            isLight ? "text-slate-800" : "text-white"
+                          }`}
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.name}
                         </div>
                         <div
-                          className="text-white/90 text-xs truncate drop-shadow-lg"
+                          className={`text-xs truncate drop-shadow-lg ${
+                            isLight ? "text-slate-700" : "text-white/90"
+                          }`}
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.description}
@@ -363,13 +406,17 @@ export default function MindshareLeaderboard({
 
                       <div className="text-right">
                         <div
-                          className="text-white font-bold text-lg md:text-xl drop-shadow-lg"
+                          className={`font-bold text-lg md:text-xl drop-shadow-lg ${
+                            isLight ? "text-slate-900" : "text-white"
+                          }`}
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.percentage}%
                         </div>
                         <div
-                          className="text-white/80 text-xs drop-shadow-lg"
+                          className={`text-xs drop-shadow-lg ${
+                            isLight ? "text-slate-700" : "text-white/80"
+                          }`}
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.points.toLocaleString()} pts
@@ -380,12 +427,18 @@ export default function MindshareLeaderboard({
                     {/* Hover/Selected Overlay */}
                     {(hoveredItem === item.id || selectedItem === item.id) && (
                       <motion.div
-                        className="absolute inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center rounded"
+                        className={`absolute inset-0 backdrop-blur-sm flex items-center justify-center rounded ${
+                          isLight ? "bg-black/10" : "bg-white/20"
+                        }`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div className="text-center text-white p-3">
+                        <div
+                          className={`text-center p-3 ${
+                            isLight ? "text-slate-900" : "text-white"
+                          }`}
+                        >
                           <div
                             className="font-bold text-base mb-1 drop-shadow-lg"
                             style={{ fontFamily: "Inter, sans-serif" }}
@@ -417,10 +470,18 @@ export default function MindshareLeaderboard({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-white/10 border border-white/20 shadow-md">
+                    <div
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg shadow-md border ${
+                        isLight
+                          ? "bg-black/5 border-black/10"
+                          : "bg-white/10 border-white/20"
+                      }`}
+                    >
                       <div className="h-4 w-4 rounded-full border-2 border-white/60 border-t-transparent animate-spin" />
                       <span
-                        className="text-white/90 text-sm"
+                        className={`text-sm ${
+                          isLight ? "text-slate-800" : "text-white/90"
+                        }`}
                         style={{ fontFamily: "Inter, sans-serif" }}
                       >
                         Updating {selectedTimeframe} Leaderboard…
@@ -435,9 +496,17 @@ export default function MindshareLeaderboard({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-white/10 border border-white/20 shadow-md">
+                    <div
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg shadow-md border ${
+                        isLight
+                          ? "bg-black/5 border-black/10"
+                          : "bg-white/10 border-white/20"
+                      }`}
+                    >
                       <span
-                        className="text-white/90 text-sm"
+                        className={`text-sm ${
+                          isLight ? "text-slate-800" : "text-white/90"
+                        }`}
                         style={{ fontFamily: "Inter, sans-serif" }}
                       >
                         Error fetching the Leaderboard for {selectedTimeframe}{" "}
@@ -456,13 +525,17 @@ export default function MindshareLeaderboard({
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-4">
               <h3
-                className="text-lg font-semibold text-white"
+                className={`text-lg font-semibold ${
+                  isLight ? "text-[#48333D]" : "text-white"
+                }`}
                 style={{ fontFamily: "Orbitron, sans-serif" }}
               >
                 {selectedTimeframe} Overview
               </h3>
               <div
-                className="text-sm text-white/60"
+                className={`text-sm ${
+                  isLight ? "text-slate-600" : "text-white/60"
+                }`}
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 Total:{" "}
@@ -473,24 +546,42 @@ export default function MindshareLeaderboard({
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
+              <div
+                className={`${
+                  isLight
+                    ? "bg-black/5 border-black/10"
+                    : "bg-white/10 border-white/20"
+                } backdrop-blur-lg rounded-xl p-4 border text-center`}
+              >
                 <div
-                  className="text-2xl font-bold text-white"
+                  className={`text-2xl font-bold ${
+                    isLight ? "text-slate-900" : "text-white"
+                  }`}
                   style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
                   {mindshareData.length}
                 </div>
                 <div
-                  className="text-white/70 text-sm"
+                  className={`${
+                    isLight ? "text-slate-700" : "text-white/70"
+                  } text-sm`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Contributors
                 </div>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
+              <div
+                className={`${
+                  isLight
+                    ? "bg-black/5 border-black/10"
+                    : "bg-white/10 border-white/20"
+                } backdrop-blur-lg rounded-xl p-4 border text-center`}
+              >
                 <div
-                  className="text-2xl font-bold text-white"
+                  className={`text-2xl font-bold ${
+                    isLight ? "text-slate-900" : "text-white"
+                  }`}
                   style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
                   {mindshareData
@@ -498,37 +589,59 @@ export default function MindshareLeaderboard({
                     .toLocaleString()}
                 </div>
                 <div
-                  className="text-white/70 text-sm"
+                  className={`${
+                    isLight ? "text-slate-700" : "text-white/70"
+                  } text-sm`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Total Points
                 </div>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
+              <div
+                className={`${
+                  isLight
+                    ? "bg-black/5 border-black/10"
+                    : "bg-white/10 border-white/20"
+                } backdrop-blur-lg rounded-xl p-4 border text-center`}
+              >
                 <div
-                  className="text-2xl font-bold text-white"
+                  className={`text-2xl font-bold ${
+                    isLight ? "text-slate-900" : "text-white"
+                  }`}
                   style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
                   {mindshareData[0]?.percentage || 0}%
                 </div>
                 <div
-                  className="text-white/70 text-sm"
+                  className={`${
+                    isLight ? "text-slate-700" : "text-white/70"
+                  } text-sm`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Top Share
                 </div>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20 text-center">
+              <div
+                className={`${
+                  isLight
+                    ? "bg-black/5 border-black/10"
+                    : "bg-white/10 border-white/20"
+                } backdrop-blur-lg rounded-xl p-4 border text-center`}
+              >
                 <div
-                  className="text-2xl font-bold text-white"
+                  className={`text-2xl font-bold ${
+                    isLight ? "text-slate-900" : "text-white"
+                  }`}
                   style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
                   {mindshareData[0]?.name || "N/A"}
                 </div>
                 <div
-                  className="text-white/70 text-sm"
+                  className={`${
+                    isLight ? "text-slate-700" : "text-white/70"
+                  } text-sm`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Leader
