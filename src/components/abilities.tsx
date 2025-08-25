@@ -68,14 +68,17 @@ export default function Abilities() {
             <div className="text-[64px] leading-[100%] font-semibold uppercase text-white mb-8">
               $SANG
             </div>
-            <VideoDialog>
-              <button
-                className="flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 bg-black text-white border border-white/30 hover:bg-black/90 shadow-lg hover:shadow-xl hover:border-white/50 w-[222px] h-[40px]"
-                style={{ fontFamily: 'Inter, sans-serif' }}
-              >
-                STAKE NOW
-              </button>
-            </VideoDialog>
+            {/* <VideoDialog> */}
+            <button
+              className="flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 bg-black text-white border border-white/30 hover:bg-black/90 shadow-lg hover:shadow-xl hover:border-white/50 w-[222px] h-[40px]"
+              style={{ fontFamily: "Inter, sans-serif" }}
+              onClick={() =>
+                window.open("https://app.virtuals.io/virtuals/29671", "_blank")
+              }
+            >
+              STAKE NOW
+            </button>
+            {/* </VideoDialog> */}
           </div>
         </div>
       </div>

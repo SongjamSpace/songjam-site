@@ -116,7 +116,8 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
       </div>
       <div className="hidden md:block">
         <Link
-          href="https://app.virtuals.io/virtuals/29671"
+          href="https://leaderboard.songjam.space/"
+          target="_blank"
           rel="noopener noreferrer"
         >
           <button
