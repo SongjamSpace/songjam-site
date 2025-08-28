@@ -302,9 +302,9 @@ export default function MindshareLeaderboard({
                   : "bg-white/5 border-white/20"
               } backdrop-blur-sm rounded-2xl border p-6`}
             >
-              <div className="flex items-center justify-between mb-6 gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                 <h2
-                  className={`text-2xl font-bold ${
+                  className={`text-xl sm:text-2xl font-bold ${
                     isLight ? "text-[#48333D]" : "text-white"
                   }`}
                   style={{ fontFamily: "Orbitron, sans-serif" }}
@@ -312,12 +312,12 @@ export default function MindshareLeaderboard({
                   Leaderboard
                 </h2>
                 {banner && (
-                  <div className="flex-1 flex items-center justify-center">
+                  <div className="w-full sm:flex-1 flex items-center justify-center">
                     {banner}
                   </div>
                 )}
                 <div
-                  className={`flex rounded-lg p-1 border ${
+                  className={`flex rounded-lg p-1 border w-full sm:w-auto ${
                     isLight
                       ? "bg-black/5 border-black/10"
                       : "bg-white/10 border-white/20"
@@ -327,7 +327,7 @@ export default function MindshareLeaderboard({
                     <button
                       key={timeframe}
                       onClick={() => handleTimeframeChange(timeframe)}
-                      className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                      className={`flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 text-sm sm:text-base ${
                         selectedTimeframe === timeframe
                           ? isLight
                             ? "bg-black/10 text-[#48333D] shadow-sm"
