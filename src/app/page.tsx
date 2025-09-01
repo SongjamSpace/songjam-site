@@ -26,7 +26,13 @@ export default function Home() {
         projectId="songjamspace"
         timeframes={["24H", "7D", "30D"]}
         backgroundImageUrl="/images/banners/songjam.png"
-        banner={<CampaignBanner />}
+        banner={
+          <CampaignBanner
+            label="10X Points Multiplier:"
+            href="https://leaderboard.songjam.space/creator"
+            value="Mint Your Testnet Creator Coin"
+          />
+        }
       />
       <GenesisCountdown />
       <Abilities />
