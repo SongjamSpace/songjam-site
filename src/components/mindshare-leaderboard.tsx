@@ -134,6 +134,8 @@ function createTreemap(
   return squarify(itemsToShow, 0, 0, containerWidth, containerHeight);
 }
 
+type Timeframe = "4H" | "24H" | "7D" | "30D" | "ALL";
+
 export default function MindshareLeaderboard({
   projectId,
   timeframes,
@@ -143,7 +145,7 @@ export default function MindshareLeaderboard({
   backgroundImageUrl,
 }: {
   projectId: string;
-  timeframes: Array<"4H" | "24H" | "7D" | "30D">;
+  timeframes: Array<Timeframe>;
   title: string;
   moto: string;
   banner?: ReactNode;
@@ -152,20 +154,22 @@ export default function MindshareLeaderboard({
   const isLight = projectId === "pharmachainai";
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<
-    "4H" | "24H" | "7D" | "30D"
-  >(timeframes[0]);
+  const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>(
+    timeframes[0]
+  );
 
   // Resolve endpoint per timeframe
-  const getEndpointForTimeframe = (timeframe: "4H" | "24H" | "7D" | "30D") => {
+  const getEndpointForTimeframe = (timeframe: Timeframe) => {
     if (timeframe === "4H") {
       return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}_hourly`;
     } else if (timeframe === "24H") {
       return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}_daily`;
     } else if (timeframe === "7D") {
       return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}_weekly`;
+    } else if (timeframe === "30D") {
+      return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}_monthly`;
     }
-    return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}_monthly`;
+    return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}`;
   };
 
   // Fetch leaderboard data by timeframe
@@ -240,7 +244,7 @@ export default function MindshareLeaderboard({
     return leaderboardData as LeaderboardRow[]; // Already sorted
   }, [leaderboardData]);
 
-  const handleTimeframeChange = (timeframe: "4H" | "24H" | "7D" | "30D") => {
+  const handleTimeframeChange = (timeframe: Timeframe) => {
     setSelectedTimeframe(timeframe);
     // Here you would typically fetch new data based on the selected timeframe
     // For now, we'll just update the state
@@ -434,7 +438,7 @@ export default function MindshareLeaderboard({
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div
+                        {/* <div
                           className={`text-center p-3 ${
                             isLight ? "text-slate-900" : "text-white"
                           }`}
@@ -457,7 +461,7 @@ export default function MindshareLeaderboard({
                           >
                             {item.description}
                           </div>
-                        </div>
+                        </div> */}
                       </motion.div>
                     )}
                   </motion.div>
