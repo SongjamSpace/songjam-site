@@ -3,9 +3,8 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "Songjam - The Future of Engagement",
-  description:
-    "Agentic CRM and AI-powered outreach for X Spaces. Supercharge your engagement and grow your audience with the power of verifiable human connection.",
+  title: "JELLU",
+  description: "#1 somnia meme",
 };
 
 export default function RootLayout({
