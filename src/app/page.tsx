@@ -10,18 +10,34 @@ interface LeaderboardData {
   userId: string;
 }
 
+type FilterType = "ALL" | "24H" | "7D";
+
 export default function Home() {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<FilterType>("24H");
+
+  const getApiUrl = (filterType: FilterType) => {
+    const baseUrl =
+      "https://songjamspace-leaderboard.logesh-063.workers.dev/jellu69";
+    switch (filterType) {
+      case "24H":
+        return `${baseUrl}_daily`;
+      case "7D":
+        return `${baseUrl}_weekly`;
+      case "ALL":
+      default:
+        return baseUrl;
+    }
+  };
 
   useEffect(() => {
     const fetchLeaderboardData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          "https://songjamspace-leaderboard.logesh-063.workers.dev/jellu69"
-        );
+        const url = getApiUrl(filter);
+        const response = await fetch(url);
 
         if (!response.ok) {
           throw new Error("Failed to fetch leaderboard data");
@@ -37,12 +53,12 @@ export default function Home() {
     };
 
     fetchLeaderboardData();
-  }, []);
+  }, [filter]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-purple-900">
       {/* Header */}
-      <header className="flex items-center p-6">
+      <header className="flex items-center justify-between p-6">
         <div className="flex items-center space-x-4">
           {/* Logo */}
           {/* <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center"> */}
@@ -56,6 +72,25 @@ export default function Home() {
             <h1 className="text-4xl font-bold text-white">JELLU</h1>
             <p className="text-white text-sm">on Somnia Network</p>
           </div>
+        </div>
+
+        {/* Social Links */}
+        <div className="flex items-center space-x-4">
+          <a
+            href="https://x.com/jellu69"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/70 hover:text-white transition-colors duration-200"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+          </a>
         </div>
       </header>
 
@@ -88,13 +123,32 @@ export default function Home() {
             Who's the jelliest of them all?
           </p> */}
 
+          {/* Filter Options */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-black/30 backdrop-blur-sm rounded-xl border border-white/10 p-1 flex">
+              {(["24H", "7D", "ALL"] as FilterType[]).map((filterOption) => (
+                <button
+                  key={filterOption}
+                  onClick={() => setFilter(filterOption)}
+                  className={`px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    filter === filterOption
+                      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  {filterOption}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Table */}
           <div className="bg-black/30 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
             <div className="grid grid-cols-3 gap-4 p-6 border-b border-white/10">
               <div className="text-white font-semibold text-lg">RANK</div>
               <div className="text-white font-semibold text-lg">Yapper</div>
               <div className="text-white font-semibold text-lg text-right">
-                Yaps
+                Total Points
               </div>
             </div>
 
@@ -163,6 +217,21 @@ export default function Home() {
                 <p>No yappers found yet. Be the first to join!</p>
               </div>
             )}
+
+            {/* Powered by Songjam */}
+            <div className="p-4 border-t border-white/10 text-center">
+              <p className="text-white/40 text-sm">
+                Powered by{" "}
+                <a
+                  href="https://x.com/SongjamSpace"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white/60 font-medium hover:text-white transition-colors duration-200"
+                >
+                  Songjam
+                </a>
+              </p>
+            </div>
           </div>
 
           {/* Analytics Section */}
@@ -178,7 +247,7 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="text-white/60 text-sm font-medium uppercase tracking-wide">
-                      Total Yaps
+                      Total Points
                     </h4>
                     <p className="text-3xl font-bold text-pink-400 mt-2">
                       {leaderboardData
