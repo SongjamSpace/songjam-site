@@ -17,9 +17,9 @@ export default function AboutShort() {
             <Image
               src="/images/jellu-circle-bg.png"
               alt="jellu-circle"
-              width={257}
-              height={385}
-              style={{ width: "300px", height: "300px", borderRadius: "50%" }}
+              width={250}
+              height={250}
+              style={{ width: "250px", height: "250px", borderRadius: "50%" }}
             />
           </div>
           <div className="flex flex-col gap-4">
@@ -71,8 +71,8 @@ export default function AboutShort() {
         <div className="text-center text-lg">Legal Disclaimer</div>
         <div className="text-center text-lg mt-2 text-white">
           $JELLU is a meme mascot coin for entertainment and cultural purposes
-          only. Nothing here is financial advice, it's just jelly and all types
-          of life wobbling on the somnia blockchain.
+          only. <br /> Nothing here is financial advice, it's just jelly and all
+          types of life wobbling on the somnia blockchain.
         </div>
       </div>
     </div>

@@ -37,7 +37,7 @@ export default function Abilities() {
           />
           <AbilityItem
             title="There’s no promises, no roadmap, just pure jelly vibes."
-            description="The JellyDevs hold a total allocation of 16.9%, with the first 6.9% already set aside for our fellow Somnia yappers. The rest? The plan is to let it drift out fully to the wider community — to spread the chillz, the memes, and the wobbly Somnia flow. 🌊"
+            description="The JellyDevs hold a total allocation of 16.9%, with the first 6.9% already set aside for our fellow Somnia yappers. The rest? The plan is to let it drift out fully to the wider community to spread the chillz, the memes, and the wobbly Somnia flow."
           />
           <AbilityItem
             title="Jellu Enjoy Living Like U"
@@ -51,7 +51,7 @@ export default function Abilities() {
             loop
             muted
             playsInline
-            className="w-full h-auto rounded-lg"
+            className="w-80 h-80 rounded-full object-cover"
           />
         </div>
         <div className="w-full h-full flex flex-col items-center justify-between gap-16">

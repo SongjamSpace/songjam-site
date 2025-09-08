@@ -16,6 +16,70 @@ export default function Home() {
 
   return (
     <>
+      {/* Fixed Social Buttons - Near Title */}
+      <div className="fixed top-12 right-8 md:top-32 md:right-16 z-50 flex gap-3">
+        {/* X (Twitter) Button */}
+        <button
+          onClick={() => {
+            window.open("https://x.com/jellufun", "_blank");
+          }}
+          className="
+            flex items-center justify-center
+            w-12 h-12
+            rounded-full
+            bg-black/20 backdrop-blur-sm
+            border border-white/20
+            text-white
+            hover:bg-black/30 hover:border-white/30
+            active:scale-95
+            transition-all duration-300 ease-in-out
+            shadow-lg hover:shadow-xl
+            cursor-pointer
+            focus:outline-none focus:ring-2 focus:ring-white/50
+            group
+          "
+          title="Follow @jellufun on X"
+        >
+          <svg
+            className="w-6 h-6 group-hover:scale-110 transition-transform duration-200"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
+        </button>
+
+        {/* SomniaMeme Button */}
+        <button
+          onClick={() => {
+            window.open("https://somnia.meme", "_blank");
+          }}
+          className="
+            flex items-center justify-center
+            w-12 h-12
+            rounded-full
+            bg-black/20 backdrop-blur-sm
+            border border-white/20
+            text-white
+            hover:bg-black/30 hover:border-white/30
+            active:scale-95
+            transition-all duration-300 ease-in-out
+            shadow-lg hover:shadow-xl
+            cursor-pointer
+            focus:outline-none focus:ring-2 focus:ring-white/50
+            group
+          "
+          title="Visit SomniaMeme"
+        >
+          <img
+            src="/images/somnia-icon.webp"
+            alt="Somnia"
+            className="w-6 h-6 rounded-full group-hover:scale-110 transition-transform duration-200"
+          />
+        </button>
+      </div>
+
       {/* Hero Section with Jellu Landing */}
       <section className="relative min-h-screen overflow-hidden">
         {/* Jellu Background Image */}
@@ -29,7 +93,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent"></div>
 
         {/* Top Left Text Content */}
-        <div className="absolute top-20 left-8 md:top-32 md:left-16 z-10">
+        <div className="absolute top-40 left-8 md:top-64 md:left-48 z-10">
           <div className="text-white">
             <h1 className="text-3xl md:text-5xl font-bold mb-4 text-white drop-shadow-lg">
               #1 meme on somnia
@@ -50,68 +114,6 @@ export default function Home() {
                   );
                 }}
               />
-            </div>
-
-            {/* Social Buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  window.open("https://x.com/jellufun", "_blank");
-                }}
-                className="
-                  flex items-center justify-center gap-2
-                  px-6 py-3
-                  rounded-xl
-                  bg-black/20 backdrop-blur-sm
-                  border border-white/20
-                  text-white
-                  font-medium
-                  hover:bg-black/30 hover:border-white/30
-                  active:scale-95
-                  transition-all duration-300 ease-in-out
-                  shadow-lg hover:shadow-xl
-                  cursor-pointer
-                  focus:outline-none focus:ring-2 focus:ring-white/50
-                "
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-                <span>Follow @jellufun</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  window.open("https://somnia.meme", "_blank");
-                }}
-                className="
-                  flex items-center justify-center gap-2
-                  px-6 py-3
-                  rounded-xl
-                  bg-black/20 backdrop-blur-sm
-                  border border-white/20
-                  text-white
-                  font-medium
-                  hover:bg-black/30 hover:border-white/30
-                  active:scale-95
-                  transition-all duration-300 ease-in-out
-                  shadow-lg hover:shadow-xl
-                  cursor-pointer
-                  focus:outline-none focus:ring-2 focus:ring-white/50
-                "
-              >
-                <img
-                  src="/images/somnia-icon.webp"
-                  alt="Somnia"
-                  className="w-5 h-5 rounded-full"
-                />
-                <span>Visit SomniaMeme</span>
-              </button>
             </div>
           </div>
         </div>
@@ -154,7 +156,7 @@ export default function Home() {
       </section>
 
       {/* Origin Story Section */}
-      <section className="relative py-20 px-4 md:px-8 overflow-hidden">
+      <section className="relative py-20 px-8 md:px-8 overflow-hidden">
         {/* Animated Background */}
         {/* <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-pink-900/20"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.3),transparent_50%)]"></div>
@@ -232,6 +234,15 @@ export default function Home() {
                   .
                 </p>
               </div>
+            </div>
+
+            {/* Right Side - Image */}
+            <div className="hidden md:flex justify-center items-center mb-8 md:mb-0">
+              <img
+                src="/images/jelly-coffee.png"
+                alt="Jelly Coffee"
+                className="w-80 h-80 rounded-full shadow-2xl"
+              />
             </div>
           </div>
 
