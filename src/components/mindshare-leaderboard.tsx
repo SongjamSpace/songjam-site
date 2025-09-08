@@ -132,7 +132,7 @@ function createTreemap(
   return squarify(itemsToShow, 0, 0, containerWidth, containerHeight);
 }
 
-type Timeframe = "4H" | "24H" | "7D" | "30D" | "ALL";
+type Timeframe = "4H" | "24H" | "7D" | "30D" | "69D" | "ALL";
 
 export default function MindshareLeaderboard({
   projectId,

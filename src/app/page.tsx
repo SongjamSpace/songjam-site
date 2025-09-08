@@ -17,7 +17,7 @@ export default function Home() {
   return (
     <>
       {/* Fixed Social Buttons - Near Title */}
-      <div className="fixed top-12 right-8 md:top-16 md:right-16 z-50 flex gap-3">
+      <div className="fixed top-4 right-8 md:top-4 md:right-16 z-50 flex gap-3">
         {/* X (Twitter) Button */}
         <button
           onClick={() => {
@@ -274,7 +274,7 @@ export default function Home() {
         title="Who $JELLU?"
         moto="Top voices of the Jellu Memes in Somiaverse"
         projectId="jellu69"
-        timeframes={["24H", "7D", "ALL"]}
+        timeframes={["24H", "7D", "69D"]}
         backgroundImageUrl=""
       />
       <Abilities />
