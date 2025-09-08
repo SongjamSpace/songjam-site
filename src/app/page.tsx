@@ -17,7 +17,7 @@ export default function Home() {
   return (
     <>
       {/* Fixed Social Buttons - Near Title */}
-      <div className="fixed top-12 right-8 md:top-32 md:right-16 z-50 flex gap-3">
+      <div className="fixed top-12 right-8 md:top-16 md:right-16 z-50 flex gap-3">
         {/* X (Twitter) Button */}
         <button
           onClick={() => {
