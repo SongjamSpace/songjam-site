@@ -271,7 +271,7 @@ export default function Home() {
       </section>
 
       <MindshareLeaderboard
-        title="Who $JELLU?"
+        title="Who's $JELLU?"
         moto="Top voices of the Jellu Memes in Somiaverse"
         projectId="jellu69"
         timeframes={["24H", "7D", "69D"]}
