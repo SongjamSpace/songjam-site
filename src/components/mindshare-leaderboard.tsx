@@ -1,7 +1,5 @@
 "use client";
 import { motion } from "framer-motion";
-import Navbar from "./navbar";
-import OnlineDot from "./online";
 import { useState, useMemo, type ReactNode } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 
@@ -252,23 +250,25 @@ export default function MindshareLeaderboard({
 
   return (
     <>
-      <div
-        className="relative bg-cover bg-top p-4 min-h-screen md:min-h-auto md:pb-[200px]"
-        style={{
-          backgroundImage: `url(${backgroundImageUrl ?? "/images/banner.png"})`,
-        }}
-      >
+      <div className="relative min-h-screen bg-gradient-to-br from-purple-900 via-black to-purple-900 p-4 md:min-h-auto md:pb-[200px]">
         {/* Softening overlay for light theme (pharmachainai) */}
         {isLight && (
           <div className="pointer-events-none absolute inset-0 backdrop-blur-sm bg-white/30" />
         )}
+        {/* Top gradient fade overlay */}
+        <div
+          className={`pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b ${
+            isLight
+              ? "from-white to-transparent"
+              : "from-[oklch(0.145_0_0)] to-transparent"
+          }`}
+        />
         {/* Bottom gradient fade overlay */}
         <div
           className={`pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent ${
             isLight ? "to-white" : "to-[oklch(0.145_0_0)]"
           }`}
         />
-        {projectId === "songjamspace" && <Navbar inverse={isLight} />}
 
         {/* Header */}
         <div className="relative z-10 text-center py-8 px-4">
@@ -276,7 +276,6 @@ export default function MindshareLeaderboard({
             className={`text-4xl md:text-6xl font-black mb-4 drop-shadow-lg ${
               isLight ? "text-[#48333D]" : "text-white"
             }`}
-            style={{ fontFamily: "Orbitron, sans-serif" }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -287,7 +286,6 @@ export default function MindshareLeaderboard({
             className={`text-xl max-w-2xl mx-auto drop-shadow-lg ${
               isLight ? "text-slate-700" : "text-white/90"
             }`}
-            style={{ fontFamily: "Inter, sans-serif" }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -311,7 +309,6 @@ export default function MindshareLeaderboard({
                   className={`text-xl sm:text-2xl font-bold ${
                     isLight ? "text-[#48333D]" : "text-white"
                   }`}
-                  style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
                   Leaderboard
                 </h2>
@@ -340,7 +337,6 @@ export default function MindshareLeaderboard({
                           ? "text-slate-700 hover:text-slate-900"
                           : "text-white/70 hover:text-white/90"
                       }`}
-                      style={{ fontFamily: "Inter, sans-serif" }}
                     >
                       {timeframe}
                     </button>
@@ -394,7 +390,6 @@ export default function MindshareLeaderboard({
                           className={`font-bold text-sm md:text-base truncate drop-shadow-lg ${
                             isLight ? "text-slate-800" : "text-white"
                           }`}
-                          style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.name}
                         </div>
@@ -402,7 +397,6 @@ export default function MindshareLeaderboard({
                           className={`text-xs truncate drop-shadow-lg ${
                             isLight ? "text-slate-700" : "text-white/90"
                           }`}
-                          style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.description}
                         </div>
@@ -413,7 +407,6 @@ export default function MindshareLeaderboard({
                           className={`font-bold text-lg md:text-xl drop-shadow-lg ${
                             isLight ? "text-slate-900" : "text-white"
                           }`}
-                          style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.percentage}%
                         </div>
@@ -421,7 +414,6 @@ export default function MindshareLeaderboard({
                           className={`text-xs drop-shadow-lg ${
                             isLight ? "text-slate-700" : "text-white/80"
                           }`}
-                          style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.points.toLocaleString()} pts
                         </div>
@@ -437,32 +429,7 @@ export default function MindshareLeaderboard({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.2 }}
-                      >
-                        {/* <div
-                          className={`text-center p-3 ${
-                            isLight ? "text-slate-900" : "text-white"
-                          }`}
-                        >
-                          <div
-                            className="font-bold text-base mb-1 drop-shadow-lg"
-                            style={{ fontFamily: "Inter, sans-serif" }}
-                          >
-                            {item.name}
-                          </div>
-                          <div
-                            className="text-xs mb-1 drop-shadow-lg"
-                            style={{ fontFamily: "Inter, sans-serif" }}
-                          >
-                            {item.contribution}
-                          </div>
-                          <div
-                            className="text-xs opacity-90 leading-tight drop-shadow-lg"
-                            style={{ fontFamily: "Inter, sans-serif" }}
-                          >
-                            {item.description}
-                          </div>
-                        </div> */}
-                      </motion.div>
+                      ></motion.div>
                     )}
                   </motion.div>
                 ))}
@@ -486,7 +453,6 @@ export default function MindshareLeaderboard({
                         className={`text-sm ${
                           isLight ? "text-slate-800" : "text-white/90"
                         }`}
-                        style={{ fontFamily: "Inter, sans-serif" }}
                       >
                         Updating {selectedTimeframe} Leaderboard…
                       </span>
@@ -511,7 +477,6 @@ export default function MindshareLeaderboard({
                         className={`text-sm ${
                           isLight ? "text-slate-800" : "text-white/90"
                         }`}
-                        style={{ fontFamily: "Inter, sans-serif" }}
                       >
                         Error fetching the Leaderboard for {selectedTimeframe}{" "}
                         timeframe
@@ -532,7 +497,6 @@ export default function MindshareLeaderboard({
                 className={`text-lg font-semibold ${
                   isLight ? "text-[#48333D]" : "text-white"
                 }`}
-                style={{ fontFamily: "Orbitron, sans-serif" }}
               >
                 {selectedTimeframe} Overview
               </h3>
@@ -540,7 +504,6 @@ export default function MindshareLeaderboard({
                 className={`text-sm ${
                   isLight ? "text-slate-600" : "text-white/60"
                 }`}
-                style={{ fontFamily: "Inter, sans-serif" }}
               >
                 Total:{" "}
                 {mindshareData
@@ -561,7 +524,6 @@ export default function MindshareLeaderboard({
                   className={`text-2xl font-bold ${
                     isLight ? "text-slate-900" : "text-white"
                   }`}
-                  style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
                   {leaderboardData?.length || "-"}
                 </div>
@@ -569,7 +531,6 @@ export default function MindshareLeaderboard({
                   className={`${
                     isLight ? "text-slate-700" : "text-white/70"
                   } text-sm`}
-                  style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Contributors
                 </div>
@@ -586,7 +547,6 @@ export default function MindshareLeaderboard({
                   className={`text-2xl font-bold ${
                     isLight ? "text-slate-900" : "text-white"
                   }`}
-                  style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
                   {mindshareData
                     .reduce((sum, item) => sum + item.points, 0)
@@ -596,7 +556,6 @@ export default function MindshareLeaderboard({
                   className={`${
                     isLight ? "text-slate-700" : "text-white/70"
                   } text-sm`}
-                  style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Total Points
                 </div>
@@ -613,7 +572,6 @@ export default function MindshareLeaderboard({
                   className={`text-2xl font-bold ${
                     isLight ? "text-slate-900" : "text-white"
                   }`}
-                  style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
                   {mindshareData[0]?.percentage || 0}%
                 </div>
@@ -621,7 +579,6 @@ export default function MindshareLeaderboard({
                   className={`${
                     isLight ? "text-slate-700" : "text-white/70"
                   } text-sm`}
-                  style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Top Share
                 </div>
@@ -638,7 +595,6 @@ export default function MindshareLeaderboard({
                   className={`text-2xl font-bold ${
                     isLight ? "text-slate-900" : "text-white"
                   }`}
-                  style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
                   {mindshareData[0]?.name || "N/A"}
                 </div>
@@ -646,7 +602,6 @@ export default function MindshareLeaderboard({
                   className={`${
                     isLight ? "text-slate-700" : "text-white/70"
                   } text-sm`}
-                  style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Leader
                 </div>
@@ -661,26 +616,17 @@ export default function MindshareLeaderboard({
         <div className="max-w-7xl mx-auto">
           <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
             <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-              <h3
-                className="text-lg font-semibold text-white"
-                style={{ fontFamily: "Orbitron, sans-serif" }}
-              >
+              <h3 className="text-lg font-semibold text-white">
                 {selectedTimeframe} Users
               </h3>
-              <div
-                className="text-sm text-white/60"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
+              <div className="text-sm text-white/60">
                 {sortedAllUsers.length.toLocaleString()} users
               </div>
             </div>
             <div className="overflow-x-auto max-h-[40rem] overflow-y-auto">
               <table className="min-w-full">
                 <thead className="sticky top-0 z-10 bg-black/60 border-b border-white/10 shadow-sm">
-                  <tr
-                    className="text-left text-white/70 text-sm"
-                    style={{ fontFamily: "Inter, sans-serif" }}
-                  >
+                  <tr className="text-left text-white/70 text-sm">
                     <th className="px-6 py-3">Rank</th>
                     <th className="px-6 py-3">Yapper</th>
                     <th className="px-6 py-3 text-right">Total Points</th>
@@ -695,34 +641,22 @@ export default function MindshareLeaderboard({
                       } border-t border-white/10`}
                     >
                       <td className="px-6 py-3 align-middle">
-                        <span
-                          className="text-white font-medium"
-                          style={{ fontFamily: "Inter, sans-serif" }}
-                        >
+                        <span className="text-white font-medium">
                           {idx + 1}
                         </span>
                       </td>
                       <td className="px-6 py-3 align-middle">
                         <div className="flex flex-col">
-                          <span
-                            className="text-white font-medium"
-                            style={{ fontFamily: "Inter, sans-serif" }}
-                          >
+                          <span className="text-white font-medium">
                             {u.name || u.username}
                           </span>
-                          <span
-                            className="text-white/60 text-sm"
-                            style={{ fontFamily: "Inter, sans-serif" }}
-                          >
+                          <span className="text-white/60 text-sm">
                             @{u.username}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-3 text-right align-middle">
-                        <span
-                          className="text-white font-medium"
-                          style={{ fontFamily: "Inter, sans-serif" }}
-                        >
+                        <span className="text-white font-medium">
                           {u.totalPoints.toFixed(2)}
                         </span>
                       </td>

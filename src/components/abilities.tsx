@@ -7,13 +7,12 @@ import DotBackground from "./dot-background";
 import VideoDialog from "./video-dialog";
 
 const abilityPoints = [
-  "AI Summarization",
-  "Creator Coin Liquidity",
-  "DM Automation",
-  "Listener Retrieval",
-  "Mindshare Trading",
-  "Voice Tokenization",
-  "X Space Toolkit",
+  "Stay jelly, stay wobbly",
+  "Ride the somnia wavfe",
+  "Liquidity, Served with Jelly Jellu",
+  "No roadmap, be jelly",
+  "Meme. Wobble. Jellu. Repeat.",
+  "Drift free with Jellu Fun",
 ];
 
 export default function Abilities() {
@@ -22,7 +21,7 @@ export default function Abilities() {
       <DotBackground />
       <div className="flex flex-col md:flex-row items-center justify-start gap-8 h-full max-w-7xl mx-auto relative z-10">
         <div className="w-full h-full gap-10 px-4 items-center md:items-start flex flex-col">
-          <div
+          {/* <div
             className="hidden md:block relative"
             style={{ filter: "drop-shadow(0 0 10px rgba(255, 0, 122, 0.25))" }}
           >
@@ -31,25 +30,28 @@ export default function Abilities() {
               alt="Logo Glow"
               className="w-20 h-auto"
             />
-          </div>
+          </div> */}
           <AbilityItem
-            title="VOICE SOVEREIGNTY"
-            description="Own your voice in the age of AI. Hold your data through a proto Soulbound Token which evolves with you."
+            title="The wobble started as a playful splash, just a jelly drifting into Somnia waters."
+            description="Built meme-first, $JELLU is EVM-compatible and right now swims only on the Somnia Network at this address: 0xd5447af13a1df69add89e185155b20fb72d5e9a7"
           />
           <AbilityItem
-            title="X SPACES COMPATIBLE"
-            description="Natively compatible with X Spaces, capture your biometric data while expanding your reach and presence."
+            title="There’s no promises, no roadmap, just pure jelly vibes."
+            description="The JellyDevs hold a total allocation of 16.9%, with the first 6.9% already set aside for our fellow Somnia yappers. The rest? The plan is to let it drift out fully to the wider community — to spread the chillz, the memes, and the wobbly Somnia flow. 🌊"
           />
           <AbilityItem
-            title="DJ & SOUNDBOARD"
-            description="Bring the party to your X Space with a custom soundboard and DJ. Play whatever you want and make it yours."
+            title="Jellu Enjoy Living Like U"
+            description="The jellyfish lives, vibes, and grows just like you do: adapting to currents, glowing under pressure, and finding joy in simple moments. It makes $JELLU feel like a reflection of its vibes, soft, resilient, and always connected."
           />
         </div>
         <div className="w-full h-full flex items-center justify-center">
-          <img
-            src="/images/songjam-abilities.png"
-            alt="Songjam Abilities"
-            className="w-full h-auto"
+          <video
+            src="/images/jellu_animation.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto rounded-lg"
           />
         </div>
         <div className="w-full h-full flex flex-col items-center justify-between gap-16">
@@ -63,13 +65,13 @@ export default function Abilities() {
           </div>
           <div className="flex flex-col items-start justify-start">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-white mb-4">SONGJAM</h2>
+              <h2 className="text-3xl font-bold text-white mb-4">JELLU</h2>
             </div>
             <div className="text-[64px] leading-[100%] font-semibold uppercase text-white mb-8">
-              $SANG
+              $JELLU
             </div>
             {/* <VideoDialog> */}
-            <button
+            {/* <button
               className="flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 bg-black text-white border border-white/30 hover:bg-black/90 shadow-lg hover:shadow-xl hover:border-white/50 w-[222px] h-[40px]"
               style={{ fontFamily: "Inter, sans-serif" }}
               onClick={() =>
@@ -77,7 +79,7 @@ export default function Abilities() {
               }
             >
               STAKE NOW
-            </button>
+            </button> */}
             {/* </VideoDialog> */}
           </div>
         </div>

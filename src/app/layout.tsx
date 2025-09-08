@@ -3,9 +3,8 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "Songjam - The Future of Engagement",
-  description:
-    "Agentic CRM and AI-powered outreach for X Spaces. Supercharge your engagement and grow your audience with the power of verifiable human connection.",
+  title: "Jellu",
+  description: "#1 meme on somnia network",
 };
 
 export default function RootLayout({
@@ -16,16 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&family=Audiowide&display=swap"
-          rel="stylesheet"
-        />
+        {/* Ubuntu Title font is loaded locally via CSS @font-face */}
       </head>
       <body className="antialiased">
         <Providers>{children}</Providers>
