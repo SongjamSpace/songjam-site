@@ -48,24 +48,33 @@ export default function AboutShort() {
             </button>
           </div>
         </GlassCard>
-        {/* <GlassCard>
-          <div className="justify-center items-center w-full flex">
+        <GlassCard>
+          <div className="justify-center items-center w-full flex mt-auto mb-auto">
             <Image
-              src="/images/protoSBT.png"
-              alt="proto-sbt"
-              width={423.5}
-              height={514}
+              src="/images/30-stickers.jpg"
+              alt="30-stickers"
+              width={250}
+              height={250}
+              style={{ width: "250px", height: "250px", borderRadius: "50%" }}
             />
           </div>
           <div className="flex flex-col gap-2">
-            <div className="text-lg font-bold">PROTO SOULBOUND TOKENS</div>
-            <div className="text-sm">
-              Decentrally store and administer your voice data via a proto
-              Soulbound Token. Monetize your voice data to researchers, or make
-              it available for AI assistants, voiceovers and reader apps.
+            <div className="text-sm" style={{ marginBottom: "55px" }}>
+              30+ sticker packs are available in this Google Drive with their
+              originals on white backgrounds, perfect for video AI creation.
+              They’re being integrated as sticker packs on WhatsApp, Telegram,
+              and soon other messengers too. Remember: jelly is always better
+              when shared.
+              <br />
+              <br /> From accidently origins to a truly decentralized coin
+              today, Jellu reminds us that even small ripples can turn into big
+              waves. <br />
+              <br /> This is the beginning of the true OG memecoin that started
+              on Somnia, making waves in crypto as a fun, wobbly, playful
+              character. Let’s go J$ellu!! feel the vibes!
             </div>
           </div>
-        </GlassCard> */}
+        </GlassCard>
       </div>
       <div className="text-sm text-center mt-12">
         <div className="text-center text-lg">Legal Disclaimer</div>
