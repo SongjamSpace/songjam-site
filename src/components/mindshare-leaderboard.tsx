@@ -250,7 +250,7 @@ export default function MindshareLeaderboard({
 
   return (
     <>
-      <div className="relative min-h-screen bg-gradient-to-br from-purple-900 via-black to-purple-900 p-4 md:min-h-auto md:pb-[200px]">
+      <div className="relative min-h-screen bg-gradient-to-br from-purple-900 via-black to-purple-900 p-4 md:min-h-auto">
         {/* Softening overlay for light theme (pharmachainai) */}
         {isLight && (
           <div className="pointer-events-none absolute inset-0 backdrop-blur-sm bg-white/30" />

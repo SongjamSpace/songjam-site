@@ -38,8 +38,7 @@ export default function AboutShort() {
               about all of us glowing together.
             </div>
             <button
-              className="flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 bg-white/10 text-white border border-white/30 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-white/50 w-[222px] h-[40px]"
-              style={{ fontFamily: "Inter, sans-serif" }}
+              className="flex items-center justify-center px-6 py-3 rounded-xl text-2xl font-bold transition-all duration-300 transform hover:scale-105 bg-white/10 text-white border border-white/30 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-white/50 w-[222px] h-[40px]"
               onClick={() =>
                 window.open("https://giphy.com/channel/jellufun", "_blank")
               }
@@ -59,7 +58,7 @@ export default function AboutShort() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <div className="text-sm" style={{ marginBottom: "55px" }}>
+            <div className="text-sm">
               30+ sticker packs are available in this Google Drive with their
               originals on white backgrounds, perfect for video AI creation.
               They’re being integrated as sticker packs on WhatsApp, Telegram,
@@ -73,6 +72,18 @@ export default function AboutShort() {
               on Somnia, making waves in crypto as a fun, wobbly, playful
               character. Let’s go J$ellu!! feel the vibes!
             </div>
+
+            <button
+              className="flex items-center justify-center px-6 py-3 rounded-xl text-2xl font-bold transition-all duration-300 transform hover:scale-105 bg-white/10 text-white border border-white/30 hover:bg-white/20 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-white/50 w-[222px] h-[40px]"
+              onClick={() =>
+                window.open(
+                  "https://drive.google.com/drive/folders/1DPpelGHBKTSn9gK5VYRaH6adB1jeWy4J",
+                  "_blank"
+                )
+              }
+            >
+              DOWNLOAD HERE
+            </button>
           </div>
         </GlassCard>
       </div>
