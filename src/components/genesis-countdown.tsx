@@ -12,8 +12,8 @@ export default function GenesisCountdown() {
   });
 
   useEffect(() => {
-    // Target date: September 17, 2025 8:00 PM HKT (UTC+8)
-    const targetDate = new Date("2025-09-17T20:00:00+08:00").getTime();
+    // Target date: September 19, 2025 12:00 PM ET (UTC-4)
+    const targetDate = new Date("2025-09-19T12:00:00-04:00").getTime();
 
     const timer = setInterval(() => {
       const now = new Date().getTime();
