@@ -12,8 +12,8 @@ export default function GenesisCountdown() {
   });
 
   useEffect(() => {
-    // Target date: September 19, 2025 12:00 PM ET (UTC-4)
-    const targetDate = new Date("2025-09-19T12:00:00-04:00").getTime();
+    // Target date: October 15, 2025 12:00 PM ET (UTC-4)
+    const targetDate = new Date("2025-10-15T12:00:00-04:00").getTime();
 
     const timer = setInterval(() => {
       const now = new Date().getTime();
@@ -48,13 +48,13 @@ export default function GenesisCountdown() {
             className="text-xl md:text-2xl font-black text-white mb-2 drop-shadow-lg"
             style={{ fontFamily: 'Orbitron, sans-serif' }}
           >
-            Genesis Airdrop
+            Songjam: Episode II
           </h3>
           <p 
             className="text-sm text-white/80"
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            Claim your voice in the revolution
+            The next activation in the Songjam revolution
           </p>
         </div>
 

@@ -7,6 +7,7 @@ import { MobileMenu } from "./mobile-menu";
 import Logo from "./logo";
 import { cn } from "@/lib/utils";
 import VirtualsIcon from "./virtuals-icon";
+import NavbarDropdown from "./navbar-dropdown";
 
 export const APP_BASE_URL = "https://app.songjam.space";
 
@@ -68,6 +69,7 @@ export default function Navbar({ inverse }: { inverse?: boolean }) {
             SONGJAM DJ
           </Button>
         </Link>
+        <NavbarDropdown inverse={inverse} />
         {/* <Link href="" rel="noopener noreferrer">
           <Button
             variant="ghost"
