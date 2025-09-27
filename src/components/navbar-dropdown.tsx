@@ -15,7 +15,10 @@ export default function NavbarDropdown({ inverse }: NavbarDropdownProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -38,22 +41,22 @@ export default function NavbarDropdown({ inverse }: NavbarDropdownProps) {
         onClick={() => setIsOpen(!isOpen)}
       >
         MINDSHARE
-        <ChevronDown 
-          size={16} 
+        <ChevronDown
+          size={16}
           className={`transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
       </Button>
-      
+
       {isOpen && (
-        <div 
-          className="absolute top-full left-0 mt-1 w-48 bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg shadow-lg z-50"
+        <div
+          className="absolute top-full left-0 w-48 bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg shadow-lg z-50"
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
         >
           <div className="py-2">
-            <Link href="#hero">
+            <Link href="/genesis-leaderboard">
               <Button
                 variant="ghost"
                 className="w-full justify-start px-4 py-2 text-left hover:bg-white/20"
