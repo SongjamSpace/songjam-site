@@ -93,6 +93,16 @@ export function MobileMenu({
               SONGJAM DJ
             </Button>
           </Link>
+          <Link href="#hero">
+            <Button
+              variant="ghost"
+              className={
+                inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
+              }
+            >
+              Mindshare - Songjam Genesis
+            </Button>
+          </Link>
           {/* <Link href="" rel="noopener noreferrer">
             <Button
               variant="ghost"

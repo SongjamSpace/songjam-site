@@ -253,6 +253,7 @@ export default function MindshareLeaderboard({
   return (
     <>
       <div
+        id="leaderboard"
         className="relative bg-cover bg-top p-4 min-h-screen md:min-h-auto md:pb-[200px]"
         style={{
           backgroundImage: `url(${backgroundImageUrl ?? "/images/banner.png"})`,
