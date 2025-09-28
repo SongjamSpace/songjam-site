@@ -134,7 +134,7 @@ export default function HeroSection({
                   className="text-2xl font-bold text-white mb-6"
                   style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
-                  Top MindsharePerformers
+                  Top Mindshare Performers
                 </h2>
                 <div className="space-y-4">
                   {/* Project 1 */}
