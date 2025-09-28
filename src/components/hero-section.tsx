@@ -88,7 +88,7 @@ export default function HeroSection({
                     </h3>
                     <p className="text-white/80 text-sm">
                       Cryptographically verify your voiceprint with a Vode
-                      (voice node) paired with a Proof-of-Stake (Pos) consensus
+                      (voice node) paired with a Proof-of-Stake (PoS) consensus
                       mechanism.
                     </p>
                   </div>
@@ -123,7 +123,7 @@ export default function HeroSection({
                 </div>
               </motion.div>
 
-              {/* Right Side - Top Performers */}
+              {/* Right Side - Top MindsharePerformers */}
               <motion.div
                 className="bg-white/5 border-white/20 backdrop-blur-sm rounded-2xl border p-8"
                 initial={{ opacity: 0, x: 50 }}
@@ -134,7 +134,7 @@ export default function HeroSection({
                   className="text-2xl font-bold text-white mb-6"
                   style={{ fontFamily: "Orbitron, sans-serif" }}
                 >
-                  Top Performers
+                  Top MindsharePerformers
                 </h2>
                 <div className="space-y-4">
                   {/* Project 1 */}
