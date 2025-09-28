@@ -123,7 +123,7 @@ export default function HeroSection({
                 </div>
               </motion.div>
 
-              {/* Right Side - Top MindsharePerformers */}
+              {/* Right Side - Top Mindshare Performers */}
               <motion.div
                 className="bg-white/5 border-white/20 backdrop-blur-sm rounded-2xl border p-8"
                 initial={{ opacity: 0, x: 50 }}
