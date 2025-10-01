@@ -7,8 +7,8 @@ export default function Page() {
     <div className="relative bg-cover bg-top p-4 min-h-screen md:min-h-auto md:pb-[200px]">
       <Navbar />
       <MindshareLeaderboard
-        title="$ADAM"
-        moto="The Rise of Adam"
+        title="Who is $ADAM"
+        moto="The First Creator Coin in the Songjam Ecosystem - Seeded in SOL for a Cross-Chain Future"
         projectId="adam_songjam"
         timeframes={["ALL"]}
         backgroundImageUrl="/images/banners/songjam.png"
