@@ -10,6 +10,7 @@ interface LeaderboardRow {
   name: string;
   totalPoints: number;
   userId: string;
+  stakingMultiplier?: number;
 }
 
 // Mindshare data will be generated dynamically from leaderboard data
@@ -684,6 +685,28 @@ export default function MindshareLeaderboard({
                   >
                     <th className="px-6 py-3">Rank</th>
                     <th className="px-6 py-3">Yapper</th>
+                    <th className="px-6 py-3 text-center">
+                      <div className="flex items-center justify-center gap-1.5 group relative">
+                        <span>Staking Multiplier</span>
+                        <div className="relative inline-block">
+                          <span className="text-white/50 hover:text-white/80 transition-colors text-base">
+                            ⓘ
+                          </span>
+                          <div className="absolute left-1/2 -translate-x-1/2 mb-2 w-64 bg-black/95 text-white text-xs rounded-lg p-3 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-none z-50 shadow-2xl border border-white/30 whitespace-normal">
+                            {/* <div className="font-semibold mb-2 text-center">
+                              Formula:
+                            </div> */}
+                            <div className="font-mono bg-white/10 p-2 rounded mb-2 text-center">
+                              1 + √(Stake Amount / Minimum Stake)
+                            </div>
+                            <div className="text-white/80 text-center">
+                              Minimum Stake: 10,000 $SANG
+                            </div>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-[6px] border-transparent border-t-black/95"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </th>
                     <th className="px-6 py-3 text-right">Total Points</th>
                   </tr>
                 </thead>
@@ -718,6 +741,16 @@ export default function MindshareLeaderboard({
                             @{u.username}
                           </span>
                         </div>
+                      </td>
+                      <td className="px-6 py-3 text-center align-middle">
+                        <span
+                          className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-white font-semibold text-sm shadow-sm"
+                          style={{ fontFamily: "Inter, sans-serif" }}
+                        >
+                          {u.stakingMultiplier
+                            ? u.stakingMultiplier.toFixed(2) + "x"
+                            : "1.00x"}
+                        </span>
                       </td>
                       <td className="px-6 py-3 text-right align-middle">
                         <span
