@@ -4,6 +4,7 @@ import Navbar from "./navbar";
 import OnlineDot from "./online";
 import { useState, useMemo, type ReactNode } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import Link from "next/link";
 
 interface LeaderboardRow {
   username: string;
@@ -669,6 +670,19 @@ export default function MindshareLeaderboard({
               >
                 {selectedTimeframe} Users
               </h3>
+              {projectId === "adam_songjam" && (
+                <Link href="https://leaderboard.songjam.space" target="_blank">
+                  <motion.button
+                    className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 hover:border-purple-400/50 text-white font-medium rounded-full text-sm shadow-sm transition-all duration-200 hover:shadow-md"
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="mr-1.5">🎯</span>
+                    Stake and Activate multiplier
+                  </motion.button>
+                </Link>
+              )}
               <div
                 className="text-sm text-white/60"
                 style={{ fontFamily: "Inter, sans-serif" }}
@@ -744,7 +758,7 @@ export default function MindshareLeaderboard({
                           </span>
                         </div>
                       </td>
-                      {u.stakingMultiplier && (
+                      {u.stakingMultiplier ? (
                         <td className="px-6 py-3 text-center align-middle">
                           <span
                             className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-white font-semibold text-sm shadow-sm"
@@ -755,6 +769,8 @@ export default function MindshareLeaderboard({
                               : "1.00x"}
                           </span>
                         </td>
+                      ) : (
+                        <td></td>
                       )}
                       <td className="px-6 py-3 text-right align-middle">
                         <span
