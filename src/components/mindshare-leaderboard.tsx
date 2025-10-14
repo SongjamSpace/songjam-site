@@ -758,7 +758,7 @@ export default function MindshareLeaderboard({
                           </span>
                         </div>
                       </td>
-                      {u.stakingMultiplier ? (
+                      {u.stakingMultiplier && (
                         <td className="px-6 py-3 text-center align-middle">
                           <span
                             className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-white font-semibold text-sm shadow-sm"
@@ -769,8 +769,6 @@ export default function MindshareLeaderboard({
                               : "1.00x"}
                           </span>
                         </td>
-                      ) : (
-                        <td></td>
                       )}
                       <td className="px-6 py-3 text-right align-middle">
                         <span
