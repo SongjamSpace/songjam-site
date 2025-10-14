@@ -758,15 +758,19 @@ export default function MindshareLeaderboard({
                           </span>
                         </div>
                       </td>
-                      {u.stakingMultiplier && (
+                      {projectId === "adam_songjam" && (
                         <td className="px-6 py-3 text-center align-middle">
                           <span
-                            className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-white font-semibold text-sm shadow-sm"
+                            className={`inline-flex items-center px-3 py-1 rounded-full font-semibold text-sm shadow-sm ${
+                              u.stakingMultiplier && u.stakingMultiplier > 1
+                                ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-white"
+                                : "bg-gradient-to-r from-gray-500/20 to-gray-600/20 border border-gray-500/30 text-white/70"
+                            }`}
                             style={{ fontFamily: "Inter, sans-serif" }}
                           >
                             {u.stakingMultiplier
                               ? u.stakingMultiplier.toFixed(2) + "x"
-                              : "1.00x"}
+                              : "1x"}
                           </span>
                         </td>
                       )}
