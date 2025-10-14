@@ -73,7 +73,7 @@ export default function Abilities() {
               className="flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 bg-black text-white border border-white/30 hover:bg-black/90 shadow-lg hover:shadow-xl hover:border-white/50 w-[222px] h-[40px]"
               style={{ fontFamily: "Inter, sans-serif" }}
               onClick={() =>
-                window.open("https://app.virtuals.io/virtuals/29671", "_blank")
+                window.open("https://leaderboard.songjam.space/stake", "_blank")
               }
             >
               STAKE NOW
