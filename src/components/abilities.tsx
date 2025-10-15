@@ -18,7 +18,7 @@ const abilityPoints = [
 
 export default function Abilities() {
   return (
-    <div className="py-12 md:pt-[200px] relative bg-black">
+    <div className="mt-24 py-12 md:pt-[200px] relative bg-black">
       <DotBackground />
       <div className="flex flex-col md:flex-row items-center justify-start gap-8 h-full max-w-7xl mx-auto relative z-10">
         <div className="w-full h-full gap-10 px-4 items-center md:items-start flex flex-col">

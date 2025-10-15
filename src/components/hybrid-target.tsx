@@ -352,7 +352,7 @@ export default function HybridTarget({
                 <div className="mt-5">
                   <motion.a
                     href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                      "Lets sing for $SANG"
+                      "Why @adam_songjam?"
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"

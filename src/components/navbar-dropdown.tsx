@@ -71,7 +71,7 @@ export default function NavbarDropdown({ inverse }: NavbarDropdownProps) {
                 className="w-full justify-start px-4 py-2 text-left hover:bg-white/20"
                 onClick={() => setIsOpen(false)}
               >
-                Pharmachain AI
+                $ADAM
               </Button>
             </Link>
           </div>

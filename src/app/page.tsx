@@ -6,7 +6,8 @@ import { AnimatePresence } from "framer-motion";
 import HeroSection from "@/components/hero-section";
 import AboutShort from "@/components/about-short";
 import Abilities from "@/components/abilities";
-import GenesisCountdown from "@/components/genesis-countdown";
+// import GenesisCountdown from "@/components/genesis-countdown";
+import EpisodeThreeUnlock from "@/components/episode-three-unlock";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -20,7 +21,8 @@ export default function Home() {
   return (
     <>
       <HeroSection backgroundImageUrl="/images/voxpop.png" />
-      <GenesisCountdown />
+      {/* <GenesisCountdown /> */}
+      <EpisodeThreeUnlock />
       <Abilities />
       <AboutShort />
       <AnimatePresence>{isLoading && <Loading />}</AnimatePresence>
