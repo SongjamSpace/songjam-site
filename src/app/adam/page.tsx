@@ -27,7 +27,7 @@ export default function Page() {
       <Navbar />
       <HybridTarget currentYappers={totalUsersCount} />
       <MindshareLeaderboard
-        title="Who is $ADAM"
+        title="Why $ADAM?"
         moto="The First Creator Coin in the Songjam Ecosystem - Seeded in SOL for a Cross-Chain Future"
         projectId={projectId}
         timeframes={["ALL"]}
