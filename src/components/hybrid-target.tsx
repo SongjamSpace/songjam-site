@@ -13,13 +13,15 @@ import { Button } from "./ui/button";
 import { usePrivyWallet } from "@/lib/hooks/usePrivyWallet";
 
 // Mindshare Configuration
-const MINDSHARE_TARGET_YAPPERS = 1000; // Target number of yappers
-const MOCK_CURRENT_YAPPERS = 247; // Current yappers
-const MOCK_ENGAGEMENT_SCORE = 85; // Engagement score out of 100
+const MINDSHARE_TARGET_YAPPERS = 2500;
 
-export default function HybridTarget() {
-  const [currentYappers, setCurrentYappers] = useState(MOCK_CURRENT_YAPPERS);
-  const [engagementScore, setEngagementScore] = useState(MOCK_ENGAGEMENT_SCORE);
+export default function HybridTarget({
+  currentYappers,
+}: {
+  currentYappers: number;
+}) {
+  // const [currentYappers, setCurrentYappers] = useState(totalUsersCount);
+  // const [engagementScore, setEngagementScore] = useState(MOCK_ENGAGEMENT_SCORE);
 
   // Use Privy wallet hook
   const {
@@ -158,8 +160,8 @@ export default function HybridTarget() {
                     </span>
                   </div>
                   <p className="text-xs text-gray-400">
-                    Just hold 0.1+ SOL and sign the message to participate in
-                    the Pre-Sale.
+                    Just hold 0.1+ SOL and sign the message to indicate
+                    commitment to the Pre-Sale.
                   </p>
                 </div>
 
@@ -253,7 +255,7 @@ export default function HybridTarget() {
                       Mindshare Target
                     </h3>
                     <p className="text-sm text-gray-400">
-                      #1 Achieve 1k total yappers to go to the next unlock
+                      #1 Achieve 2.5k total Songjammers to go to the next unlock
                     </p>
                   </div>
                 </div>
@@ -261,7 +263,7 @@ export default function HybridTarget() {
                 {/* Mindshare Stats */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20 rounded-xl p-4">
-                    <p className="text-xs text-gray-400 mb-1">Yappers</p>
+                    <p className="text-xs text-gray-400 mb-1">Songjammers</p>
                     <motion.p
                       key={currentYappers}
                       initial={{ scale: 1.2, color: "#fb923c" }}
@@ -326,10 +328,10 @@ export default function HybridTarget() {
                   {/* Mindshare Milestone markers */}
                   <div className="relative mt-2 flex justify-between text-xs text-gray-500">
                     <span>0</span>
-                    <span className="text-orange-400">250</span>
-                    <span className="text-red-400">500</span>
-                    <span className="text-orange-400">750</span>
-                    <span className="text-white font-bold">1,000</span>
+                    <span className="text-orange-400">500</span>
+                    <span className="text-red-400">1,000</span>
+                    <span className="text-orange-400">1,750</span>
+                    <span className="text-white font-bold">2,500</span>
                   </div>
                 </div>
 
@@ -358,7 +360,7 @@ export default function HybridTarget() {
                     whileTap={{ scale: 0.95 }}
                   >
                     <MessageSquare className="w-5 h-5" />
-                    Yap now
+                    Sing now
                     <ExternalLink className="w-4 h-4" />
                   </motion.a>
                 </div>

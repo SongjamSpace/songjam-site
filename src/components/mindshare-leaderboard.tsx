@@ -1,7 +1,5 @@
 "use client";
 import { motion } from "framer-motion";
-import Navbar from "./navbar";
-import OnlineDot from "./online";
 import { useState, useMemo, type ReactNode } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import Link from "next/link";
@@ -261,6 +259,16 @@ export default function MindshareLeaderboard({
           backgroundImage: `url(${backgroundImageUrl ?? "/images/banner.png"})`,
         }}
       >
+        {/* Background opacity overlay */}
+        <div className="pointer-events-none absolute inset-0 bg-black/20" />
+
+        {/* Top gradient fade overlay */}
+        <div
+          className={`pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b ${
+            isLight ? "from-white" : "from-[oklch(0.145_0_0)]"
+          } to-transparent`}
+        />
+
         {/* Softening overlay for light theme (pharmachainai) */}
         {isLight && (
           <div className="pointer-events-none absolute inset-0 backdrop-blur-sm bg-white/30" />
@@ -271,7 +279,6 @@ export default function MindshareLeaderboard({
             isLight ? "to-white" : "to-[oklch(0.145_0_0)]"
           }`}
         />
-        {projectId === "songjamspace" && <Navbar inverse={isLight} />}
 
         {/* Header */}
         <div className="relative z-10 text-center py-8 px-4">

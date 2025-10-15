@@ -56,7 +56,7 @@ export default function NavbarDropdown({ inverse }: NavbarDropdownProps) {
           onMouseLeave={() => setIsOpen(false)}
         >
           <div className="py-2">
-            <Link href="/genesis-leaderboard">
+            <Link href="/genesis-leaderboard" target="_blank">
               <Button
                 variant="ghost"
                 className="w-full justify-start px-4 py-2 text-left hover:bg-white/20"
@@ -65,7 +65,7 @@ export default function NavbarDropdown({ inverse }: NavbarDropdownProps) {
                 Songjam Genesis
               </Button>
             </Link>
-            <Link href="/pharmachainai">
+            <Link href="/pharmachainai" target="_blank">
               <Button
                 variant="ghost"
                 className="w-full justify-start px-4 py-2 text-left hover:bg-white/20"
