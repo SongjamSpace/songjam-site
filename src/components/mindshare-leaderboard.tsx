@@ -294,7 +294,7 @@ export default function MindshareLeaderboard({
             {title === "SANG" ? `Who $${title}?` : title}
           </motion.h1>
           <motion.p
-            className={`text-xl max-w-2xl mx-auto drop-shadow-lg ${
+            className={`text-xl max-w-4xl mx-auto drop-shadow-lg ${
               isLight ? "text-slate-700" : "text-white/90"
             }`}
             style={{ fontFamily: "Inter, sans-serif" }}

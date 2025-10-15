@@ -28,9 +28,9 @@ export default function Page() {
       <HybridTarget currentYappers={totalUsersCount} />
       <MindshareLeaderboard
         title="Why $ADAM?"
-        moto="The First Creator Coin in the Songjam Ecosystem - Seeded in SOL for a Cross-Chain Future"
+        moto="1st Creator Coin in Songjam Ecosystem - Seeded in SOL for a Cross-Chain Future"
         projectId={projectId}
-        timeframes={["ALL"]}
+        timeframes={["4H", "24H", "ALL"]}
         backgroundImageUrl="/images/banners/adam.jpeg"
       />
     </div>

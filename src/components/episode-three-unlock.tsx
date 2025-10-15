@@ -29,7 +29,7 @@ export default function EpisodeThreeUnlock() {
       unlocked: false,
     },
     {
-      label: "Reveal Soon",
+      label: "#2 MSI Metric",
       value: "?",
       current: 0,
       target: 1,
@@ -37,7 +37,7 @@ export default function EpisodeThreeUnlock() {
       mystery: true,
     },
     {
-      label: "Reveal Soon",
+      label: "#3 MSI Metric",
       value: "?",
       current: 0,
       target: 1,
@@ -45,7 +45,7 @@ export default function EpisodeThreeUnlock() {
       mystery: true,
     },
     {
-      label: "Reveal Soon",
+      label: "#4 MSI Metric",
       value: "?",
       current: 0,
       target: 1,

@@ -117,7 +117,7 @@ export default function HybridTarget({
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-purple-300">
-                      Sign Message
+                      SOL Commit
                     </h3>
                     <p className="text-sm text-gray-400">
                       Minimum 0.1 SOL required to sign and participate
@@ -128,7 +128,7 @@ export default function HybridTarget({
                 {/* Sign Message Stats */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 rounded-xl p-4">
-                    <p className="text-xs text-gray-400 mb-1">Min Required</p>
+                    <p className="text-xs text-gray-400 mb-1">Min Balance</p>
                     <p className="text-lg font-bold text-purple-300">0.1 SOL</p>
                   </div>
                   <div className="bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-xl p-4">
@@ -146,7 +146,7 @@ export default function HybridTarget({
                         ? "Signed"
                         : authenticated && hasSolanaWallet
                         ? "Connected"
-                        : "Ready"}
+                        : "Not Signed"}
                     </p>
                   </div>
                 </div>
@@ -175,7 +175,7 @@ export default function HybridTarget({
                     >
                       <span className="flex items-center justify-center gap-2">
                         <Wallet className="w-5 h-5" />
-                        Connect Wallet
+                        Sign now
                       </span>
                     </Button>
                   ) : authenticated && !hasSolanaWallet ? (
@@ -255,7 +255,8 @@ export default function HybridTarget({
                       Mindshare Target
                     </h3>
                     <p className="text-sm text-gray-400">
-                      #1 Achieve 2.5k total Songjammers to go to the next unlock
+                      #1 Reach 2.5k total Songjammers to progress to next $ADAM
+                      MSI target
                     </p>
                   </div>
                 </div>
