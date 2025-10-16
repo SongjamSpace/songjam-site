@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Wallet,
@@ -10,7 +10,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { usePrivyWallet } from "@/lib/hooks/usePrivyWallet";
+import { useSolana } from "./solana-provider";
+import { WalletConnectButton } from "./wallet-connect-button";
 
 // Mindshare Configuration
 const MINDSHARE_TARGET_YAPPERS = 2500;
@@ -23,34 +24,60 @@ export default function HybridTarget({
   // const [currentYappers, setCurrentYappers] = useState(totalUsersCount);
   // const [engagementScore, setEngagementScore] = useState(MOCK_ENGAGEMENT_SCORE);
 
-  // Use Privy wallet hook
   const {
-    ready,
     authenticated,
-    user,
     solanaWallet,
     hasSolanaWallet,
     isSigning,
     isSigned,
     signature,
-    connectWallet,
     signMessage,
-    disconnectWallet,
     hasMinimumBalance,
-  } = usePrivyWallet();
+  } = useSolana();
 
   const mindshareProgress = Math.min(
     (currentYappers / MINDSHARE_TARGET_YAPPERS) * 100,
     100
   );
 
+  // Post signature to API once signed
+  useEffect(() => {
+    const postSignature = async () => {
+      if (isSigned && signature && solanaWallet && solanaWallet.address) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/leaderboard/update-signature`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                walletAddress: solanaWallet.address,
+                signature: signature,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Failed to submit signature:", errorData);
+          } else {
+            const data = await response.json();
+            console.log("Signature submitted successfully:", data);
+            alert("Signature submitted successfully.");
+          }
+        } catch (error) {
+          console.error("Error submitting signature:", error);
+        }
+      }
+    };
+
+    postSignature();
+  }, [isSigned, signature]);
+
   const handleSignMessage = async () => {
     try {
-      if (!authenticated) {
-        await connectWallet();
-        return;
-      }
-
       if (!hasSolanaWallet) {
         alert("Please connect a Solana wallet to sign the message.");
         return;
@@ -68,15 +95,6 @@ export default function HybridTarget({
     } catch (error) {
       console.error("Failed to sign message:", error);
       alert("Failed to sign message. Please try again.");
-    }
-  };
-
-  const handleConnectWallet = async () => {
-    try {
-      await connectWallet();
-    } catch (error) {
-      console.error("Failed to connect wallet:", error);
-      alert("Failed to connect wallet. Please try again.");
     }
   };
 
@@ -168,78 +186,48 @@ export default function HybridTarget({
                 {/* Wallet Connection and Sign Message Button */}
                 <div className="mt-4 space-y-3">
                   {!authenticated ? (
-                    <Button
-                      onClick={handleConnectWallet}
-                      disabled={!ready}
-                      className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
-                      <span className="flex items-center justify-center gap-2">
-                        <Wallet className="w-5 h-5" />
-                        Sign now
-                      </span>
-                    </Button>
-                  ) : authenticated && !hasSolanaWallet ? (
-                    <div className="text-center">
-                      <p className="text-sm text-yellow-400 mb-2">
-                        Please connect a Solana wallet to continue
+                    <div className="flex flex-col gap-3">
+                      <WalletConnectButton />
+                      <p className="text-xs text-center text-gray-400">
+                        Connect your Solana wallet to participate
                       </p>
-                      <Button
-                        onClick={handleConnectWallet}
-                        variant="outline"
-                        className="w-full border-purple-500/50 text-purple-300 hover:bg-purple-500/10"
-                      >
-                        <span className="flex items-center justify-center gap-2">
-                          <ExternalLink className="w-4 h-4" />
-                          Add Solana Wallet
-                        </span>
-                      </Button>
                     </div>
                   ) : (
-                    <Button
-                      onClick={handleSignMessage}
-                      disabled={isSigning || isSigned}
-                      className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
-                      {isSigning ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{
-                              duration: 1,
-                              repeat: Infinity,
-                              ease: "linear",
-                            }}
-                            className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                          />
-                          Signing...
-                        </span>
-                      ) : isSigned ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <MessageSquare className="w-5 h-5" />
-                          Message Signed ✓
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center gap-2">
-                          <MessageSquare className="w-5 h-5" />
-                          Sign Message
-                        </span>
-                      )}
-                    </Button>
-                  )}
-
-                  {/* Wallet Info */}
-                  {authenticated && hasSolanaWallet && solanaWallet && (
-                    <div className="text-center">
-                      <p className="text-xs text-gray-400">
-                        Connected: {solanaWallet.address.slice(0, 8)}...
-                        {solanaWallet.address.slice(-8)}
-                      </p>
-                      {signature && (
-                        <p className="text-xs text-green-400 mt-1">
-                          Signature: {signature.slice(0, 16)}...
-                        </p>
-                      )}
-                    </div>
+                    <>
+                      <Button
+                        onClick={handleSignMessage}
+                        disabled={isSigning || isSigned}
+                        className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      >
+                        {isSigning ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{
+                                duration: 1,
+                                repeat: Infinity,
+                                ease: "linear",
+                              }}
+                              className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                            />
+                            Signing...
+                          </span>
+                        ) : isSigned ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <MessageSquare className="w-5 h-5" />
+                            Message Signed ✓
+                          </span>
+                        ) : (
+                          <span className="flex items-center justify-center gap-2">
+                            <MessageSquare className="w-5 h-5" />
+                            Sign Message
+                          </span>
+                        )}
+                      </Button>
+                      <div className="flex justify-center">
+                        <WalletConnectButton />
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
