@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Wallet,
@@ -10,7 +9,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { usePrivyWallet } from "@/lib/hooks/usePrivyWallet";
 
 // Mindshare Configuration
 const MINDSHARE_TARGET_YAPPERS = 2500;
@@ -20,65 +18,10 @@ export default function HybridTarget({
 }: {
   currentYappers: number;
 }) {
-  // const [currentYappers, setCurrentYappers] = useState(totalUsersCount);
-  // const [engagementScore, setEngagementScore] = useState(MOCK_ENGAGEMENT_SCORE);
-
-  // Use Privy wallet hook
-  const {
-    ready,
-    authenticated,
-    user,
-    solanaWallet,
-    hasSolanaWallet,
-    isSigning,
-    isSigned,
-    signature,
-    connectWallet,
-    signMessage,
-    disconnectWallet,
-    hasMinimumBalance,
-  } = usePrivyWallet();
-
   const mindshareProgress = Math.min(
     (currentYappers / MINDSHARE_TARGET_YAPPERS) * 100,
     100
   );
-
-  const handleSignMessage = async () => {
-    try {
-      if (!authenticated) {
-        await connectWallet();
-        return;
-      }
-
-      if (!hasSolanaWallet) {
-        alert("Please connect a Solana wallet to sign the message.");
-        return;
-      }
-
-      const hasEnoughBalance = await hasMinimumBalance(0.1);
-      if (!hasEnoughBalance) {
-        alert("You need at least 0.1 SOL to participate.");
-        return;
-      }
-
-      await signMessage(
-        "Sign this message to participate in the Songjam Pre-Sale"
-      );
-    } catch (error) {
-      console.error("Failed to sign message:", error);
-      alert("Failed to sign message. Please try again.");
-    }
-  };
-
-  const handleConnectWallet = async () => {
-    try {
-      await connectWallet();
-    } catch (error) {
-      console.error("Failed to connect wallet:", error);
-      alert("Failed to connect wallet. Please try again.");
-    }
-  };
 
   return (
     <div className="max-w-4xl mx-auto my-8 px-4">
@@ -131,24 +74,6 @@ export default function HybridTarget({
                     <p className="text-xs text-gray-400 mb-1">Min Balance</p>
                     <p className="text-lg font-bold text-purple-300">0.1 SOL</p>
                   </div>
-                  <div className="bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-xl p-4">
-                    <p className="text-xs text-gray-400 mb-1">Status</p>
-                    <p
-                      className={`text-lg font-bold ${
-                        isSigned
-                          ? "text-green-400"
-                          : authenticated && hasSolanaWallet
-                          ? "text-blue-400"
-                          : "text-yellow-400"
-                      }`}
-                    >
-                      {isSigned
-                        ? "Signed"
-                        : authenticated && hasSolanaWallet
-                        ? "Connected"
-                        : "Not Signed"}
-                    </p>
-                  </div>
                 </div>
 
                 {/* Simple Info */}
@@ -167,80 +92,21 @@ export default function HybridTarget({
 
                 {/* Wallet Connection and Sign Message Button */}
                 <div className="mt-4 space-y-3">
-                  {!authenticated ? (
-                    <Button
-                      onClick={handleConnectWallet}
-                      disabled={!ready}
-                      className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
-                      <span className="flex items-center justify-center gap-2">
-                        <Wallet className="w-5 h-5" />
-                        Sign now
-                      </span>
-                    </Button>
-                  ) : authenticated && !hasSolanaWallet ? (
-                    <div className="text-center">
-                      <p className="text-sm text-yellow-400 mb-2">
-                        Please connect a Solana wallet to continue
-                      </p>
-                      <Button
-                        onClick={handleConnectWallet}
-                        variant="outline"
-                        className="w-full border-purple-500/50 text-purple-300 hover:bg-purple-500/10"
-                      >
-                        <span className="flex items-center justify-center gap-2">
-                          <ExternalLink className="w-4 h-4" />
-                          Add Solana Wallet
-                        </span>
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      onClick={handleSignMessage}
-                      disabled={isSigning || isSigned}
-                      className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
-                      {isSigning ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{
-                              duration: 1,
-                              repeat: Infinity,
-                              ease: "linear",
-                            }}
-                            className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                          />
-                          Signing...
-                        </span>
-                      ) : isSigned ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <MessageSquare className="w-5 h-5" />
-                          Message Signed ✓
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center gap-2">
-                          <MessageSquare className="w-5 h-5" />
-                          Sign Message
-                        </span>
-                      )}
-                    </Button>
-                  )}
-
-                  {/* Wallet Info */}
-                  {authenticated && hasSolanaWallet && solanaWallet && (
-                    <div className="text-center">
-                      <p className="text-xs text-gray-400">
-                        Connected: {solanaWallet.address.slice(0, 8)}...
-                        {solanaWallet.address.slice(-8)}
-                      </p>
-                      {signature && (
-                        <p className="text-xs text-green-400 mt-1">
-                          Signature: {signature.slice(0, 16)}...
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  <Button
+                    onClick={() => {
+                      window.open(
+                        "https://leaderboard.songjam.space/adam",
+                        "_blank"
+                      );
+                    }}
+                    className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-bold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      <Wallet className="w-5 h-5" />
+                      Sign Message
+                      <ExternalLink className="w-4 h-4" />
+                    </span>
+                  </Button>
                 </div>
               </div>
 
