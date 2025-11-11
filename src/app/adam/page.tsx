@@ -30,7 +30,7 @@ export default function Page() {
         title="Why $ADAM?"
         moto="1st Creator Coin in Songjam Ecosystem - Seeded in SOL for a Cross-Chain Future"
         projectId={projectId}
-        timeframes={["4H", "24H", "ALL"]}
+        timeframes={["24H", "7D", "ALL"]}
         backgroundImageUrl="/images/banners/adam.jpeg"
       />
     </div>
