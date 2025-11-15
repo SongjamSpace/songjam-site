@@ -19,6 +19,22 @@ export default function EpisodeThreeUnlock() {
   useEffect(() => {
     fetchTotalUsersCount();
   }, []);
+
+  // Format date/time for browser local timezone
+  const formatRevealDate = () => {
+    // November 17, 2024 at 5:00 PM PST (Pacific Standard Time) as reference
+    // Will be converted and displayed in browser's local timezone
+    const date = new Date(1763398800000);
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      hour12: true,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Use browser's local timezone
+    };
+    return date.toLocaleString("en-US", options);
+  };
+
   // Unlock targets
   const targets = [
     {
@@ -30,6 +46,7 @@ export default function EpisodeThreeUnlock() {
     },
     {
       label: "#2 MSI Metric",
+      labelLink: "https://x.com/i/spaces/1vOxwdvWMwrKB",
       value: "?",
       current: 0,
       target: 1,
@@ -149,7 +166,18 @@ export default function EpisodeThreeUnlock() {
                 }`}
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                {item.label}
+                {item.labelLink ? (
+                  <a
+                    href={item.labelLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline hover:text-purple-200 transition-colors"
+                  >
+                    {item.label} <br /> Revealed at {formatRevealDate()}
+                  </a>
+                ) : (
+                  item.label
+                )}
               </div>
 
               {/* Progress bar for non-mystery items */}
