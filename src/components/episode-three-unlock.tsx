@@ -166,14 +166,15 @@ export default function EpisodeThreeUnlock() {
                 }`}
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                {item.labelLink ? (
+                {!item.labelLink ? (
                   <a
                     href={item.labelLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:underline hover:text-purple-200 transition-colors"
                   >
-                    {item.label} <br /> Revealed at {formatRevealDate()}
+                    {item.label}
+                    {/* <br /> Revealed at {formatRevealDate()} */}
                   </a>
                 ) : (
                   item.label
