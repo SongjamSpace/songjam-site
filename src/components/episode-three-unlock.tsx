@@ -13,7 +13,7 @@ export default function EpisodeThreeUnlock() {
       `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/leaderboard/latest-lb-users-count/adam_songjam`
     );
     if (res.data.usersCount) {
-      setTotalUsersCount(res.data.usersCount);
+      setTotalUsersCount(2503);
     }
   };
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function EpisodeThreeUnlock() {
   const formatRevealDate = () => {
     // November 17, 2024 at 5:00 PM PST (Pacific Standard Time) as reference
     // Will be converted and displayed in browser's local timezone
-    const date = new Date(1763398800000);
+    const date = new Date(1763591400000);
     const options: Intl.DateTimeFormatOptions = {
       month: "short",
       day: "numeric",
@@ -166,7 +166,7 @@ export default function EpisodeThreeUnlock() {
                 }`}
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                {!item.labelLink ? (
+                {item.labelLink ? (
                   <a
                     href={item.labelLink}
                     target="_blank"
@@ -174,7 +174,7 @@ export default function EpisodeThreeUnlock() {
                     className="hover:underline hover:text-purple-200 transition-colors"
                   >
                     {item.label}
-                    {/* <br /> Revealed at {formatRevealDate()} */}
+                    <br /> Revealed at {formatRevealDate()}
                   </a>
                 ) : (
                   item.label
