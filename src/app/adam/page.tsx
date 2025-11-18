@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import MindshareLeaderboard from "@/components/mindshare-leaderboard";
 import Navbar from "@/components/navbar";
 import HybridTarget from "@/components/hybrid-target";
@@ -23,22 +23,22 @@ export default function Page() {
   const [agentState, setAgentState] = useState<AgentState>("disconnected");
 
   const fetchTotalUsersCount = async () => {
-    // const res = await axios.get(
-    //   `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/leaderboard/latest-lb-users-count/${projectId}`
-    // );
-    // if (res.data.usersCount) {
-    setTotalUsersCount(2503);
-    // }
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/leaderboard/latest-lb-users-count/${projectId}`
+    );
+    if (res.data.usersCount) {
+      setTotalUsersCount(res.data.usersCount);
+    }
   };
 
-  const handleVolumeChange = (input: number, output: number) => {
+  const handleVolumeChange = useCallback((input: number, output: number) => {
     setInputVolume(input);
     setOutputVolume(output);
-  };
+  }, []);
 
-  const handleStateChange = (state: AgentState) => {
+  const handleStateChange = useCallback((state: AgentState) => {
     setAgentState(state);
-  };
+  }, []);
 
   useEffect(() => {
     fetchTotalUsersCount();

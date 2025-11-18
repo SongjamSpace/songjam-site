@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { useConversation } from "@elevenlabs/react";
 import { Orb } from "@/components/ui/orb";
 
@@ -30,6 +30,10 @@ export default function AgentConversation({
 }: AgentConversationProps) {
   const [agentState, setAgentState] = useState<AgentState>("disconnected");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const lastVolumesRef = useRef<{ input: number; output: number }>({
+    input: 0,
+    output: 0,
+  });
 
   const conversation = useConversation({
     onConnect: () => console.log("Connected"),
@@ -96,40 +100,42 @@ export default function AgentConversation({
 
   const getInputVolume = useCallback(() => {
     const rawValue = conversation.getInputVolume?.() ?? 0;
-    const volume = Math.min(1.0, Math.pow(rawValue, 0.5) * 2.5);
-    if (onVolumeChange) {
-      const outputVolume = Math.min(
-        1.0,
-        Math.pow(conversation.getOutputVolume?.() ?? 0, 0.5) * 2.5
-      );
-      onVolumeChange(volume, outputVolume);
-    }
-    return volume;
-  }, [conversation, onVolumeChange]);
+    return Math.min(1.0, Math.pow(rawValue, 0.5) * 2.5);
+  }, [conversation]);
 
   const getOutputVolume = useCallback(() => {
     const rawValue = conversation.getOutputVolume?.() ?? 0;
-    const volume = Math.min(1.0, Math.pow(rawValue, 0.5) * 2.5);
-    if (onVolumeChange) {
-      const inputVolume = Math.min(
-        1.0,
-        Math.pow(conversation.getInputVolume?.() ?? 0, 0.5) * 2.5
-      );
-      onVolumeChange(inputVolume, volume);
-    }
-    return volume;
-  }, [conversation, onVolumeChange]);
+    return Math.min(1.0, Math.pow(rawValue, 0.5) * 2.5);
+  }, [conversation]);
 
   // Update volumes continuously when connected
   useEffect(() => {
-    if (isCallActive) {
+    if (isCallActive && onVolumeChange) {
       const interval = setInterval(() => {
-        getInputVolume();
-        getOutputVolume();
+        const inputVolume = getInputVolume();
+        const outputVolume = getOutputVolume();
+
+        // Only call onVolumeChange if the volume actually changed
+        const threshold = 0.01; // Small threshold to avoid unnecessary updates
+        const inputChanged =
+          Math.abs(inputVolume - lastVolumesRef.current.input) > threshold;
+        const outputChanged =
+          Math.abs(outputVolume - lastVolumesRef.current.output) > threshold;
+
+        if (inputChanged || outputChanged) {
+          lastVolumesRef.current = { input: inputVolume, output: outputVolume };
+          onVolumeChange(inputVolume, outputVolume);
+        }
       }, 50); // Update every 50ms for smooth animation
       return () => clearInterval(interval);
+    } else {
+      // Reset volumes when disconnected
+      lastVolumesRef.current = { input: 0, output: 0 };
+      if (onVolumeChange) {
+        onVolumeChange(0, 0);
+      }
     }
-  }, [isCallActive, getInputVolume, getOutputVolume]);
+  }, [isCallActive, getInputVolume, getOutputVolume, onVolumeChange]);
 
   const getStatusText = () => {
     switch (agentState) {
