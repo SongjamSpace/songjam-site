@@ -284,9 +284,9 @@ export default function MindshareLeaderboard({
         />
 
         {/* Header */}
-        <div className="relative z-10 text-center py-8 px-4">
+        <div className="relative z-10 text-center py-4 md:py-8 px-3 md:px-4">
           <motion.h1
-            className={`text-4xl md:text-6xl font-black mb-4 drop-shadow-lg ${
+            className={`text-2xl md:text-6xl font-black mb-2 md:mb-4 drop-shadow-lg break-words ${
               isLight ? "text-[#48333D]" : "text-white"
             }`}
             style={{ fontFamily: "Orbitron, sans-serif" }}
@@ -297,7 +297,7 @@ export default function MindshareLeaderboard({
             {title === "SANG" ? `Who $${title}?` : title}
           </motion.h1>
           <motion.p
-            className={`text-xl max-w-4xl mx-auto drop-shadow-lg ${
+            className={`text-sm md:text-xl max-w-4xl mx-auto drop-shadow-lg px-2 md:px-0 break-words ${
               isLight ? "text-slate-700" : "text-white/90"
             }`}
             style={{ fontFamily: "Inter, sans-serif" }}
@@ -310,7 +310,7 @@ export default function MindshareLeaderboard({
         </div>
 
         {/* Treemap Container */}
-        <div className="relative z-10 px-4 pb-8">
+        <div className="relative z-10 pb-8">
           <div className="max-w-7xl mx-auto">
             <div
               className={`${
@@ -538,7 +538,7 @@ export default function MindshareLeaderboard({
         </div>
 
         {/* Stats Summary */}
-        <div className="relative z-10 px-4 pb-8">
+        <div className="relative z-10 pb-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-4">
               <h3
@@ -670,31 +670,32 @@ export default function MindshareLeaderboard({
       </div>
 
       {/* All Users Table */}
-      <div className="px-4 pb-8">
+      <div className="pb-8">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
-            <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+            <div className="px-3 md:px-6 py-3 md:py-4 border-b border-white/10 flex items-center justify-between">
               <h3
-                className="text-lg font-semibold text-white"
+                className="text-base md:text-lg font-semibold text-white"
                 style={{ fontFamily: "Orbitron, sans-serif" }}
               >
-                {selectedTimeframe} Users
+                {selectedTimeframe}{" "}
+                <span className="hidden md:inline">Users</span>
               </h3>
               {projectId === "adam_songjam" && (
                 <Link href="https://leaderboard.songjam.space" target="_blank">
                   <motion.button
-                    className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 hover:border-purple-400/50 text-white font-medium rounded-full text-sm shadow-sm transition-all duration-200 hover:shadow-md"
+                    className="inline-flex items-center px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 hover:border-purple-400/50 text-white font-medium rounded-full text-xs md:text-sm shadow-sm transition-all duration-200 hover:shadow-md whitespace-nowrap"
                     style={{ fontFamily: "Inter, sans-serif" }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <span className="mr-1.5">🎯</span>
-                    Stake and Activate multiplier
+                    <span className="mr-1 md:mr-1.5">🎯</span>
+                    <span className="inline">Stake & Activate multiplier</span>
                   </motion.button>
                 </Link>
               )}
               <div
-                className="text-sm text-white/60"
+                className="text-xs md:text-sm text-white/60 whitespace-nowrap"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 {sortedAllUsers.length.toLocaleString()} users
@@ -704,17 +705,24 @@ export default function MindshareLeaderboard({
               <table className="min-w-full">
                 <thead className="sticky top-0 z-10 bg-black/60 border-b border-white/10 shadow-sm">
                   <tr
-                    className="text-left text-white/70 text-sm"
+                    className="text-left text-white/70 text-xs md:text-sm"
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
-                    <th className="px-6 py-3">Rank</th>
-                    <th className="px-6 py-3">Yapper</th>
+                    <th className="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap">
+                      Rank
+                    </th>
+                    <th className="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap min-w-[120px] md:min-w-0">
+                      Yapper
+                    </th>
                     {projectId === "adam_songjam" && (
-                      <th className="px-6 py-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5 group relative">
-                          <span>Staking Multiplier</span>
+                      <th className="px-2 md:px-6 py-2 md:py-3 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1 md:gap-1.5 group relative">
+                          <span className="hidden md:inline">
+                            Staking Multiplier
+                          </span>
+                          <span className="md:hidden">Multiplier</span>
                           <div className="relative inline-block">
-                            <span className="text-white/50 hover:text-white/80 transition-colors text-base">
+                            <span className="text-white/50 hover:text-white/80 transition-colors text-xs md:text-base">
                               ⓘ
                             </span>
                             <div className="absolute left-1/2 -translate-x-1/2 mb-2 w-64 bg-black/95 text-white text-xs rounded-lg p-3 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-none z-50 shadow-2xl border border-white/30 whitespace-normal">
@@ -722,7 +730,7 @@ export default function MindshareLeaderboard({
                               Formula:
                             </div> */}
                               <div className="font-mono bg-white/10 p-2 rounded mb-2 text-center">
-                                1 + √(Stake Amount / Minimum Stake)
+                                1 + √(Stake Amount / Minimum Stake)
                               </div>
                               <div className="text-white/80 text-center">
                                 Minimum Stake: 10,000 $SANG
@@ -734,9 +742,15 @@ export default function MindshareLeaderboard({
                       </th>
                     )}
                     {showSpacePoints && (
-                      <th className="px-6 py-3 text-right">Space Points</th>
+                      <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
+                        <span className="hidden md:inline">Space Points</span>
+                        <span className="md:hidden">Space</span>
+                      </th>
                     )}
-                    <th className="px-6 py-3 text-right">Total Points</th>
+                    <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
+                      <span className="hidden md:inline">Total Points</span>
+                      <span className="md:hidden">Points</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -747,34 +761,36 @@ export default function MindshareLeaderboard({
                         idx % 2 === 0 ? "bg-white/0" : "bg-white/[0.03]"
                       } border-t border-white/10`}
                     >
-                      <td className="px-6 py-3 align-middle">
+                      <td className="px-2 md:px-6 py-2 md:py-3 align-middle">
                         <span
-                          className="text-white font-medium"
+                          className="text-white font-medium text-xs md:text-sm"
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {idx + 1}
                         </span>
                       </td>
-                      <td className="px-6 py-3 align-middle">
+                      <td className="px-2 md:px-6 py-2 md:py-3 align-middle min-w-[120px] md:min-w-0">
                         <div className="flex flex-col">
                           <span
-                            className="text-white font-medium"
+                            className="text-white font-medium text-xs md:text-sm truncate max-w-[100px] md:max-w-none"
                             style={{ fontFamily: "Inter, sans-serif" }}
+                            title={u.name || u.username}
                           >
                             {u.name || u.username}
                           </span>
                           <span
-                            className="text-white/60 text-sm"
+                            className="text-white/60 text-xs truncate max-w-[100px] md:max-w-none"
                             style={{ fontFamily: "Inter, sans-serif" }}
+                            title={`@${u.username}`}
                           >
                             @{u.username}
                           </span>
                         </div>
                       </td>
                       {projectId === "adam_songjam" && (
-                        <td className="px-6 py-3 text-center align-middle">
+                        <td className="px-2 md:px-6 py-2 md:py-3 text-center align-middle">
                           <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full font-semibold text-sm shadow-sm ${
+                            className={`inline-flex items-center px-2 md:px-3 py-0.5 md:py-1 rounded-full font-semibold text-xs md:text-sm shadow-sm ${
                               u.stakingMultiplier && u.stakingMultiplier > 1
                                 ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-white"
                                 : "bg-gradient-to-r from-gray-500/20 to-gray-600/20 border border-gray-500/30 text-white/70"
@@ -788,18 +804,18 @@ export default function MindshareLeaderboard({
                         </td>
                       )}
                       {showSpacePoints && (
-                        <td className="px-6 py-3 text-right align-middle">
+                        <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
                           <span
-                            className="text-white/70 font-medium"
+                            className="text-white/70 font-medium text-xs md:text-sm"
                             style={{ fontFamily: "Inter, sans-serif" }}
                           >
                             {u.spacePoints?.toFixed(2) || "-"}
                           </span>
                         </td>
                       )}
-                      <td className="px-6 py-3 text-right align-middle">
+                      <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
                         <span
-                          className="text-white font-medium"
+                          className="text-white font-medium text-xs md:text-sm"
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {u.totalPoints.toFixed(2)}

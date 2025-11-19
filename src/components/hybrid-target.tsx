@@ -99,7 +99,7 @@ export default function HybridTarget({
   );
 
   return (
-    <div className="max-w-4xl mx-auto my-8 px-4">
+    <div className="max-w-4xl mx-auto my-8">
       {/* Main Progress Container */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
