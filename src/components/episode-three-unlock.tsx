@@ -7,13 +7,20 @@ import { useState } from "react";
 
 export default function EpisodeThreeUnlock() {
   const [totalUsersCount, setTotalUsersCount] = useState(0);
+  const [totalMentions, setTotalMentions] = useState(0);
 
   const fetchTotalUsersCount = async () => {
-    const res = await axios.get(
+    const audiofiRes = await axios.get(
+      `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/audiofi/discussion-count/adam_songjam`
+    );
+    if (audiofiRes.data.count) {
+      setTotalMentions(audiofiRes.data.count);
+    }
+    const infofiRes = await axios.get(
       `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/leaderboard/latest-lb-users-count/adam_songjam`
     );
-    if (res.data.usersCount) {
-      setTotalUsersCount(2503);
+    if (infofiRes.data.usersCount) {
+      setTotalUsersCount(infofiRes.data.usersCount);
     }
   };
   useEffect(() => {
@@ -43,16 +50,16 @@ export default function EpisodeThreeUnlock() {
       value: "2.5K",
       current: totalUsersCount, // This should be dynamic from your backend
       target: 2500,
-      unlocked: false,
+      unlocked: true,
     },
     {
-      label: "#2 MSI Metric",
-      labelLink: "https://x.com/i/spaces/1dRKZaAeazXxB",
-      value: "?",
-      current: 0,
-      target: 1,
+      label: "Space Mentions",
+      labelLink: "",
+      value: "5k",
+      current: totalMentions,
+      target: 5000,
       unlocked: false,
-      mystery: true,
+      mystery: false,
     },
     {
       label: "#3 MSI Metric",
@@ -107,7 +114,7 @@ export default function EpisodeThreeUnlock() {
               viewport={{ once: true }}
               className={`relative overflow-hidden backdrop-blur-sm rounded-xl p-4 text-center transition-all duration-300 ${
                 item.unlocked
-                  ? "bg-gradient-to-br from-green-500/20 to-green-600/10 border-2 border-green-500/60 shadow-lg shadow-green-500/20"
+                  ? "bg-gradient-to-br from-green-500/5 to-green-600/3 border border-green-500/20"
                   : item.mystery
                   ? "bg-gradient-to-br from-purple-500/10 to-pink-500/5 border-2 border-purple-400/40 hover:border-purple-400/60 hover:shadow-lg hover:shadow-purple-500/10"
                   : "bg-white/10 border-2 border-white/30 hover:bg-white/15 hover:border-white/40"
@@ -126,7 +133,7 @@ export default function EpisodeThreeUnlock() {
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-400/50 flex items-center justify-center relative">
                       {item.unlocked ? (
                         <svg
-                          className="w-8 h-8 text-green-400"
+                          className="w-8 h-8 text-green-300/70"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -151,7 +158,7 @@ export default function EpisodeThreeUnlock() {
                 ) : (
                   <div
                     className={`text-3xl md:text-4xl font-black ${
-                      item.unlocked ? "text-green-400" : "text-white"
+                      item.unlocked ? "text-green-300/70" : "text-white"
                     }`}
                     style={{ fontFamily: "Orbitron, sans-serif" }}
                   >
