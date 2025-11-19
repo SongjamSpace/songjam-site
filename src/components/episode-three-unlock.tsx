@@ -24,11 +24,12 @@ export default function EpisodeThreeUnlock() {
   const formatRevealDate = () => {
     // November 17, 2024 at 5:00 PM PST (Pacific Standard Time) as reference
     // Will be converted and displayed in browser's local timezone
-    const date = new Date(1763591400000);
+    const date = new Date(1763571600000);
     const options: Intl.DateTimeFormatOptions = {
       month: "short",
       day: "numeric",
       hour: "numeric",
+      minute: "numeric",
       hour12: true,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Use browser's local timezone
     };
@@ -46,7 +47,7 @@ export default function EpisodeThreeUnlock() {
     },
     {
       label: "#2 MSI Metric",
-      labelLink: "https://x.com/i/spaces/1vOxwdvWMwrKB",
+      labelLink: "https://x.com/i/spaces/1dRKZaAeazXxB",
       value: "?",
       current: 0,
       target: 1,
