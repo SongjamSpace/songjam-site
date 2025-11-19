@@ -65,6 +65,10 @@ function InfoPopover() {
           }}
         >
           <div className="space-y-2.5 text-sm text-gray-300">
+            <p className="text-gray-300 leading-relaxed font-bold">
+              To qualify as a mention, the $ADAM Creator Coin must be discussed
+              within the broader context of the Songjam ecosystem:
+            </p>
             <p className="text-gray-300 leading-relaxed">
               - The utility of Creator Coins within Mindshare Capital Markets -
               tokenized leaderboards for sybil-resistant InfoFi
@@ -291,9 +295,7 @@ export default function HybridTarget({
                 {/* Yap now button */}
                 <div className="mt-5">
                   <motion.a
-                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                      "Why @adam_songjam?"
-                    )}`}
+                    href={`https://x.com/i/spaces/start`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 hover:from-cyan-500/20 hover:to-transparent hover:border-cyan-500/30 text-cyan-300 hover:text-cyan-200 font-bold py-1 rounded-xl transition-all duration-300 transform hover:scale-105"
