@@ -10,6 +10,7 @@ interface LeaderboardRow {
   totalPoints: number;
   userId: string;
   stakingMultiplier?: number;
+  spacePoints?: number;
 }
 
 // Mindshare data will be generated dynamically from leaderboard data
@@ -143,6 +144,7 @@ export default function MindshareLeaderboard({
   moto,
   banner,
   backgroundImageUrl,
+  showSpacePoints = false,
 }: {
   projectId: string;
   timeframes: Array<Timeframe>;
@@ -150,6 +152,7 @@ export default function MindshareLeaderboard({
   moto: string;
   banner?: ReactNode;
   backgroundImageUrl?: string;
+  showSpacePoints?: boolean;
 }) {
   const isLight = projectId === "pharmachainai";
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
@@ -730,6 +733,9 @@ export default function MindshareLeaderboard({
                         </div>
                       </th>
                     )}
+                    {showSpacePoints && (
+                      <th className="px-6 py-3 text-right">Space Points</th>
+                    )}
                     <th className="px-6 py-3 text-right">Total Points</th>
                   </tr>
                 </thead>
@@ -778,6 +784,16 @@ export default function MindshareLeaderboard({
                             {u.stakingMultiplier
                               ? u.stakingMultiplier.toFixed(2) + "x"
                               : "1x"}
+                          </span>
+                        </td>
+                      )}
+                      {showSpacePoints && (
+                        <td className="px-6 py-3 text-right align-middle">
+                          <span
+                            className="text-white/70 font-medium"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            {u.spacePoints?.toFixed(2) || "-"}
                           </span>
                         </td>
                       )}

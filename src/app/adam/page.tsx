@@ -24,10 +24,10 @@ export default function Page() {
 
   const fetchTotalUsersCount = async () => {
     const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/leaderboard/latest-lb-users-count/${projectId}`
+      `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/audiofi/discussion-count/${projectId}`
     );
-    if (res.data.usersCount) {
-      setTotalUsersCount(res.data.usersCount);
+    if (res.data.count) {
+      setTotalUsersCount(res.data.count);
     }
   };
 
@@ -68,6 +68,7 @@ export default function Page() {
           projectId={projectId}
           timeframes={["24H", "7D", "ALL"]}
           backgroundImageUrl="/images/banners/adam.jpeg"
+          showSpacePoints
         />
       </div>
 

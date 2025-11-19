@@ -49,13 +49,23 @@ export default function AgentConversation({
         console.log("Client tool totalUsersCount called");
         return metaDetails.totalUsersCount;
       },
-      routeUser: (type: "signMessage" | "staking") => {
+      stakeOrSignMessage: (type: "signMessage" | "staking") => {
         console.log("Client tool routeUser called");
         if (type === "signMessage") {
           window.open("https://leaderboard.songjam.space/adam", "_blank");
         } else if (type === "staking") {
           window.open("https://leaderboard.songjam.space/stake", "_blank");
         }
+      },
+      getLeaderboardData: () => {
+        console.log("Client tool getLeaderboardData called");
+        // Scroll to leaderboard
+        window.scrollTo({ top: 2000, behavior: "smooth" });
+        return "";
+      },
+      createRequest: ({ username, issueDetails }) => {
+        console.log("Issue reported: ", username, issueDetails);
+        return "Request created";
       },
     },
   });
@@ -165,6 +175,7 @@ export default function AgentConversation({
               volumeMode="manual"
               getInputVolume={getInputVolume}
               getOutputVolume={getOutputVolume}
+              imageSrc="/images/adam-dp.jpg"
             />
           </div>
         </div>

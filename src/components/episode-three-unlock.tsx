@@ -7,13 +7,20 @@ import { useState } from "react";
 
 export default function EpisodeThreeUnlock() {
   const [totalUsersCount, setTotalUsersCount] = useState(0);
+  const [totalMentions, setTotalMentions] = useState(0);
 
   const fetchTotalUsersCount = async () => {
-    const res = await axios.get(
+    const audiofiRes = await axios.get(
+      `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/audiofi/discussion-count/adam_songjam`
+    );
+    if (audiofiRes.data.count) {
+      setTotalMentions(audiofiRes.data.count);
+    }
+    const infofiRes = await axios.get(
       `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/leaderboard/latest-lb-users-count/adam_songjam`
     );
-    if (res.data.usersCount) {
-      setTotalUsersCount(2503);
+    if (infofiRes.data.usersCount) {
+      setTotalUsersCount(infofiRes.data.usersCount);
     }
   };
   useEffect(() => {
