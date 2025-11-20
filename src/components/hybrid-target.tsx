@@ -208,7 +208,12 @@ export default function HybridTarget({
                 {/* Mindshare Stats */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-xl p-4">
-                    <p className="text-xs text-gray-400 mb-1">Mentions</p>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs text-gray-400">Mentions</p>
+                      <span className="text-xs font-semibold bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 px-2 py-0.5 rounded-full">
+                        30D
+                      </span>
+                    </div>
                     <motion.p
                       key={currentYappers}
                       initial={{ scale: 1.2, color: "#06b6d4" }}
@@ -220,7 +225,7 @@ export default function HybridTarget({
                   </div>
                   <div className="bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 rounded-xl p-4">
                     <p className="text-xs text-gray-400 mb-1">Target</p>
-                    <p className="text-lg font-bold text-blue-100">
+                    <p className="text-lg font-bold text-blue-100 mt-2.5">
                       {MINDSHARE_TARGET_YAPPERS.toLocaleString()}
                     </p>
                   </div>
