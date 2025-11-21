@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import Link from "next/link";
 import localFont from "next/font/local";
+import { AlertCircle } from "lucide-react";
+// import mockLeaderboardData from "./mock-leaderboard.json";
 
 const williamsFont = localFont({
   src: "../../../public/fonts/Williams-SemiBold.ttf",
@@ -205,6 +207,10 @@ export default function MindshareLeaderboard({
   } = useQuery<LeaderboardRow[], Error>({
     queryKey: ["leaderboard", selectedTimeframe],
     queryFn: async (): Promise<LeaderboardRow[]> => {
+      // Use mock data for development
+      // return mockLeaderboardData as LeaderboardRow[];
+
+      // Uncomment below to use real API
       const endpoint = getEndpointForTimeframe(selectedTimeframe);
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -881,44 +887,64 @@ export default function MindshareLeaderboard({
                             </span>
                           </td>
                         )}
-                        <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
-                          <button
-                            onClick={() =>
-                              setExpandedUndoneRow(
-                                expandedUndoneRow === u.userId ? null : u.userId
-                              )
-                            }
-                            className="inline-flex items-center justify-center px-2 md:px-3 py-1 md:py-1.5 rounded text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
-                            style={{ fontFamily: "Inter, sans-serif" }}
-                            title="View points breakdown"
-                          >
-                            <span className="text-xs md:text-sm font-medium">
-                              {u.undonePoints !== undefined
-                                ? u.undonePoints.toFixed(2)
-                                : u.undonePointsBreakdown
-                                ? calculatePointsFromBreakdown(
-                                    u.undonePointsBreakdown
-                                  ).toFixed(2)
-                                : ""}
-                            </span>
-                            <svg
-                              className={`ml-1.5 w-3 h-3 transition-transform duration-200 ${
-                                expandedUndoneRow === u.userId
-                                  ? "rotate-180"
-                                  : ""
-                              }`}
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2.5}
+                        <td className="px-2 py-2 text-right align-middle">
+                          {!u.undonePoints ? (
+                            <div className="inline-flex items-center justify-center px-2 md:px-3 py-1 md:py-1.5 rounded text-red-400/80 group relative">
+                              <AlertCircle className="w-4 h-4" />
+                              <div className="absolute right-0 bottom-full mb-2 w-56 bg-black/95 text-white text-xs rounded-lg p-2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-auto z-50 shadow-2xl border border-white/30 whitespace-normal">
+                                <a
+                                  href="https://bit.ly/unWF1"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-white/90 text-center hover:text-white block"
+                                >
+                                  Play <span className="underline">Undone</span>{" "}
+                                  to qualify
+                                </a>
+                                <div className="absolute top-full right-4 -mt-1 border-[6px] border-transparent border-t-black/95"></div>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                setExpandedUndoneRow(
+                                  expandedUndoneRow === u.userId
+                                    ? null
+                                    : u.userId
+                                )
+                              }
+                              className="inline-flex items-center justify-center px-2 md:px-3 py-1 md:py-1.5 rounded text-white/50 hover:text-white/70 hover:bg-white/5 transition-colors"
+                              style={{ fontFamily: "Inter, sans-serif" }}
+                              title="View points breakdown"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M19 9l-7 7-7-7"
-                              />
-                            </svg>
-                          </button>
+                              <span className="text-xs md:text-sm font-medium">
+                                {u.undonePoints !== undefined
+                                  ? u.undonePoints.toFixed(2)
+                                  : u.undonePointsBreakdown
+                                  ? calculatePointsFromBreakdown(
+                                      u.undonePointsBreakdown
+                                    ).toFixed(2)
+                                  : ""}
+                              </span>
+                              <svg
+                                className={`ml-1.5 w-3 h-3 transition-transform duration-200 ${
+                                  expandedUndoneRow === u.userId
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2.5}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+                          )}
                         </td>
                         <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
                           <span

@@ -70,9 +70,7 @@ export default function Page() {
     <div className={williamsFont.variable}>
       <MindshareLeaderboard
         title="Undone x Williams Racing"
-        moto="Your wrist. Your rules. ⌚
-UNDONE watches are where individuality meets precision.
-Designed by you, shipped worldwide. 🌍"
+        moto="More than a mindshare campaign. Precision watchmaking meets motorsport engineering. Developed by UNDONE's Japan-based design team. Shipping Worldwide."
         projectId="undonewatches"
         timeframes={["24H", "7D", "ALL"]}
         backgroundImageUrl="/images/banners/undone.png"
@@ -94,8 +92,8 @@ Designed by you, shipped worldwide. 🌍"
                 className="text-sm md:text-base text-white/80 max-w-3xl"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                On top of your yapping points, earn additional points for using
-                the Undone app. Check out the gallery below to see what's
+                On top of your Space and Sing points, earn additional points for
+                using the Undone app. Check out the gallery below to see what's
                 possible!
               </p>
             </div>
@@ -236,53 +234,139 @@ Designed by you, shipped worldwide. 🌍"
                         </div>
                       </motion.div>
                     ))}
+                    <motion.div
+                      className="mt-6 p-5 rounded-xl border-2 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-purple-400/50 shadow-lg shadow-purple-500/20 backdrop-blur-sm bg-black/40 relative overflow-hidden"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      {/* Racing accent stripe */}
+                      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-400/80 via-pink-400/60 to-transparent"></div>
+
+                      <div className="flex items-center justify-between relative z-10">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={"/images/undone/watch.png"}
+                            className="h-10 rounded"
+                          />
+                          <div>
+                            <div
+                              className="font-semibold text-white text-base md:text-lg drop-shadow-lg"
+                              style={{ fontFamily: "Inter, sans-serif" }}
+                            >
+                              {appPointsInfo.multiplier.description}
+                            </div>
+                            <div
+                              className="text-xs text-white/80 mt-1"
+                              style={{ fontFamily: "Inter, sans-serif" }}
+                            >
+                              Special bonus multiplier
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          className="text-3xl md:text-4xl font-bold text-white bg-white/20 px-4 py-2 rounded-lg drop-shadow-lg"
+                          style={{
+                            fontFamily: "var(--font-williams), sans-serif",
+                          }}
+                        >
+                          {appPointsInfo.multiplier.value}
+                        </div>
+                      </div>
+                    </motion.div>
                   </div>
                 </div>
 
-                {/* Multiplier Card */}
-                {appPointsInfo.multiplier && (
+                {/* App branding */}
+                <motion.a
+                  href="https://bit.ly/unWF1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative overflow-hidden rounded-xl border-2 from-yellow-500/30 to-orange-500/30 border-yellow-400/50 p-5 cursor-pointer backdrop-blur-sm bg-black/40 shadow-lg shadow-yellow-500/20 mt-4 block"
+                  whileHover={{ scale: 1.03, y: -4 }}
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.3 }}
+                >
+                  {/* Animated gradient background */}
                   <motion.div
-                    className="mt-6 p-5 rounded-xl border-2 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-purple-400/50 shadow-lg shadow-purple-500/20 backdrop-blur-sm bg-black/40 relative overflow-hidden"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    {/* Racing accent stripe */}
-                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-400/80 via-pink-400/60 to-transparent"></div>
+                    className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-pink-500/20"
+                    animate={{
+                      backgroundPosition: ["0% 0%", "100% 100%"],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      repeatType: "reverse",
+                    }}
+                    style={{
+                      backgroundSize: "200% 200%",
+                    }}
+                  />
 
-                    <div className="flex items-center justify-between relative z-10">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={"/images/undone/watch.png"}
-                          className="h-10 rounded"
-                        />
-                        <div>
-                          <div
-                            className="font-semibold text-white text-base md:text-lg drop-shadow-lg"
-                            style={{ fontFamily: "Inter, sans-serif" }}
+                  {/* Racing stripe accent */}
+                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-yellow-400/80 via-orange-400/60 to-transparent"></div>
+
+                  {/* Speed line effect */}
+                  <motion.div
+                    className="absolute inset-0"
+                    animate={{
+                      x: ["-100%", "100%"],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatType: "loop",
+                      ease: "linear",
+                    }}
+                  >
+                    <div className="w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                  </motion.div>
+
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl">🎮</div>
+                      <div>
+                        <div
+                          className="font-bold text-white text-lg md:text-xl drop-shadow-lg"
+                          style={{
+                            fontFamily: "var(--font-williams), sans-serif",
+                          }}
+                        >
+                          Play the Undone now!
+                        </div>
+                        <div
+                          className="text-sm text-white/80 mt-1 flex items-center gap-1"
+                          style={{ fontFamily: "Inter, sans-serif" }}
+                        >
+                          <span>bit.ly/unWF1</span>
+                          <motion.svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            animate={{ x: [0, 4, 0] }}
+                            transition={{
+                              duration: 1.5,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }}
                           >
-                            {appPointsInfo.multiplier.description}
-                          </div>
-                          <div
-                            className="text-xs text-white/80 mt-1"
-                            style={{ fontFamily: "Inter, sans-serif" }}
-                          >
-                            Special bonus multiplier
-                          </div>
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 7l5 5m0 0l-5 5m5-5H6"
+                            />
+                          </motion.svg>
                         </div>
                       </div>
-                      <div
-                        className="text-3xl md:text-4xl font-bold text-white bg-white/20 px-4 py-2 rounded-lg drop-shadow-lg"
-                        style={{
-                          fontFamily: "var(--font-williams), sans-serif",
-                        }}
-                      >
-                        {appPointsInfo.multiplier.value}
-                      </div>
                     </div>
-                  </motion.div>
-                )}
+                    <div className="text-2xl md:text-3xl">✨</div>
+                  </div>
+                </motion.a>
               </div>
 
               {/* Gallery Carousel */}
