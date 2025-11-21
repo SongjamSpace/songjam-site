@@ -898,7 +898,8 @@ export default function MindshareLeaderboard({
                                   rel="noopener noreferrer"
                                   className="text-white/90 text-center hover:text-white block"
                                 >
-                                  Play <span className="underline">Undone</span>{" "}
+                                  Play the{" "}
+                                  <span className="underline">Undone game</span>{" "}
                                   to qualify
                                 </a>
                                 <div className="absolute top-full right-4 -mt-1 border-[6px] border-transparent border-t-black/95"></div>

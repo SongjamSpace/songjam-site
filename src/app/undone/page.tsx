@@ -20,6 +20,17 @@ const galleryImages = [
   `${imageBaseUrl}_3.png${imageToken}`,
 ];
 
+// const prizes = [
+//   {
+//     name: "UNDONE x Atlassian Williams Racing - FW47 Watch",
+//     image: "/images/undone/780.webp",
+//   },
+//   {
+//     name: "UNDONE x Atlassian Williams Racing - Carbono Watch",
+//     image: "/images/undone/380.webp",
+//   },
+// ];
+
 const appPointsInfo = {
   actions: [
     { action: "daily_spins", points: 5, icon: "🎰" },
@@ -335,7 +346,7 @@ export default function Page() {
                             fontFamily: "var(--font-williams), sans-serif",
                           }}
                         >
-                          Play the Undone now!
+                          Play the game now!
                         </div>
                         <div
                           className="text-sm text-white/80 mt-1 flex items-center gap-1"
