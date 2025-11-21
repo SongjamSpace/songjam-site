@@ -278,10 +278,18 @@ export default function HybridTarget({
                   {/* Mindshare Milestone markers */}
                   <div className="relative mt-2 flex justify-between text-xs text-gray-500">
                     <span>0</span>
-                    <span className="text-cyan-400">500</span>
-                    <span className="text-blue-400">1,000</span>
-                    <span className="text-cyan-400">1,750</span>
-                    <span className="text-white font-bold">2,500</span>
+                    <span className="text-cyan-400">
+                      {(MINDSHARE_TARGET_YAPPERS * 0.25).toLocaleString()}
+                    </span>
+                    <span className="text-blue-400">
+                      {(MINDSHARE_TARGET_YAPPERS * 0.5).toLocaleString()}
+                    </span>
+                    <span className="text-cyan-400">
+                      {(MINDSHARE_TARGET_YAPPERS * 0.75).toLocaleString()}
+                    </span>
+                    <span className="text-white font-bold">
+                      {MINDSHARE_TARGET_YAPPERS.toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
