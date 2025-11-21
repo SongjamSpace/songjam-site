@@ -73,7 +73,7 @@ export default function Page() {
         moto="Your wrist. Your rules. ⌚
 UNDONE watches are where individuality meets precision.
 Designed by you, shipped worldwide. 🌍"
-        projectId="songjamspace"
+        projectId="undonewatches"
         timeframes={["24H", "7D", "ALL"]}
         backgroundImageUrl="/images/banners/undone.png"
       />
