@@ -131,7 +131,7 @@ export default function Page() {
                       rel="noopener noreferrer"
                       className="text-blue-400 hover:text-blue-300 underline font-semibold"
                     >
-                      Undone
+                      UndoneWatches
                     </a>{" "}
                     &{" "}
                     <a
@@ -140,7 +140,7 @@ export default function Page() {
                       rel="noopener noreferrer"
                       className="text-blue-400 hover:text-blue-300 underline font-semibold"
                     >
-                      Williams
+                      WilliamsRacing
                     </a>{" "}
                     X accounts you need to share this TG MiniApp link that is
                     set-up just for this collab:{" "}
