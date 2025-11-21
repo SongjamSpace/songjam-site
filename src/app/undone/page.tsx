@@ -109,6 +109,90 @@ export default function Page() {
               </p>
             </div>
 
+            {/* Participation Instructions */}
+            <div className="mb-6 p-5 md:p-6 rounded-xl bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 border border-white/20 backdrop-blur-sm">
+              <h4
+                className="text-lg md:text-xl font-semibold mb-4 text-white"
+                style={{ fontFamily: "var(--font-williams), sans-serif" }}
+              >
+                How to Participate
+              </h4>
+              <div
+                className="space-y-4 text-sm md:text-base text-white/90"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                <div>
+                  <p className="mb-3">
+                    In order to participate on the timeline, as well as tagging
+                    the{" "}
+                    <a
+                      href="https://x.com/UndoneWatches"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline font-semibold"
+                    >
+                      Undone
+                    </a>{" "}
+                    &{" "}
+                    <a
+                      href="https://x.com/WilliamsRacing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline font-semibold"
+                    >
+                      Williams
+                    </a>{" "}
+                    X accounts you need to share this TG MiniApp link that is
+                    set-up just for this collab:{" "}
+                    <span>
+                      <a
+                        href="https://bit.ly/unWF1"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 underline font-mono text-lg font-semibold"
+                      >
+                        bit.ly/unWF1
+                      </a>
+                    </span>
+                  </p>
+                </div>
+
+                <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-4">
+                  <p className="font-semibold text-yellow-200 mb-2">
+                    ⚠️ Important:
+                  </p>
+                  <p>
+                    It is imperative that you connect your X account inside the
+                    MiniApp in order to be eligible for the prizes!
+                  </p>
+                </div>
+
+                <div>
+                  <p className="mb-2">
+                    You can score extra points by performing actions in the App
+                    (it's got more inGame prizes too!) and you can unlock
+                    further juicy multipliers by staking $SANG.
+                  </p>
+                </div>
+
+                <div className="border-t border-white/20 pt-4 mt-4">
+                  <p className="font-semibold text-white mb-3">
+                    Discussions are covered across Spaces too - in order to
+                    qualify you should mention these 3 talking points:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 ml-2">
+                    <li>Undone Watches</li>
+                    <li>Williams Racing</li>
+                    <li>& the TG MiniApp</li>
+                  </ul>
+                  <p className="mt-3 font-semibold text-yellow-200">
+                    As well as sharing the exact link from above to the MiniApp
+                    in the Space Jumbotron
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 lg:items-stretch">
               {/* Points System */}
