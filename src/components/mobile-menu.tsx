@@ -93,16 +93,11 @@ export function MobileMenu({
               SONGJAM DJ
             </Button>
           </Link>
-          <Link href="/genesis-leaderboard">
-            <Button
-              variant="ghost"
-              className={
-                inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
-              }
-            >
-              Mindshare - Songjam Genesis
-            </Button>
-          </Link>
+          <div className="mt-4 mb-2 pt-4 border-t border-white/20">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-white/60 px-2">
+              Mindshare
+            </h3>
+          </div>
           <Link href="/adam">
             <Button
               variant="ghost"
@@ -113,16 +108,26 @@ export function MobileMenu({
               $ADAM
             </Button>
           </Link>
-          {/* <Link href="" rel="noopener noreferrer">
+          <Link href="/undone" target="_blank">
             <Button
               variant="ghost"
               className={
                 inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
               }
             >
-              $SANG PAIRS
+              Undone
             </Button>
-          </Link> */}
+          </Link>
+          <Link href="/genesis-leaderboard">
+            <Button
+              variant="ghost"
+              className={
+                inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
+              }
+            >
+              Songjam Genesis
+            </Button>
+          </Link>
         </div>
         <SheetFooter className="flex-row flex items-center gap-4">
           {/* <PrimaryButton inverse={inverse}>CONNECT</PrimaryButton> */}
