@@ -122,38 +122,57 @@ export default function Page() {
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 <div>
+                  <p className="font-semibold text-white mb-2">
+                    On the X timeline:
+                  </p>
                   <p className="mb-3">
-                    In order to participate on the timeline, as well as tagging
-                    the{" "}
+                    Tag{" "}
                     <a
                       href="https://x.com/UndoneWatches"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-400 hover:text-blue-300 underline font-semibold"
                     >
-                      UndoneWatches
+                      @UndoneWatches
                     </a>{" "}
-                    &{" "}
                     <a
                       href="https://x.com/WilliamsRacing"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-400 hover:text-blue-300 underline font-semibold"
                     >
-                      WilliamsRacing
+                      @WilliamsRacing
                     </a>{" "}
-                    X accounts you need to share this TG MiniApp link that is
-                    set-up just for this collab:{" "}
-                    <span>
-                      <a
-                        href="https://bit.ly/unWF1"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:text-blue-300 underline font-mono text-lg font-semibold"
-                      >
-                        bit.ly/unWF1
-                      </a>
-                    </span>
+                    and share link to TG MiniApp:{" "}
+                    <a
+                      href="https://bit.ly/unWF1"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline font-mono text-lg font-semibold"
+                    >
+                      bit.ly/unWF1
+                    </a>{" "}
+                    share your takes on the watches, the miniapp and the races!
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-white mb-2">
+                    Inside X Spaces:
+                  </p>
+                  <p className="mb-3">
+                    Discuss Undone Watches, Williams F1 Team and share the link
+                    to the miniApp on the Space Jumbotron:{" "}
+                    <a
+                      href="https://bit.ly/unWF1"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline font-mono text-lg font-semibold"
+                    >
+                      bit.ly/unWF1
+                    </a>{" "}
+                    highlight the awesome watches, your wins in the miniApp and
+                    the Gran Prix itself!
                   </p>
                 </div>
 
@@ -162,32 +181,16 @@ export default function Page() {
                     ⚠️ Important:
                   </p>
                   <p>
-                    It is imperative that you connect your X account inside the
-                    MiniApp in order to be eligible for the prizes!
+                    You must connect your X account inside the MiniApp to be
+                    eligible for the prizes!
                   </p>
                 </div>
 
                 <div>
                   <p className="mb-2">
-                    You can score extra points by performing actions in the App
-                    (it's got more inGame prizes too!) and you can unlock
-                    further juicy multipliers by staking $SANG.
-                  </p>
-                </div>
-
-                <div className="border-t border-white/20 pt-4 mt-4">
-                  <p className="font-semibold text-white mb-3">
-                    Discussions are covered across Spaces too - in order to
-                    qualify you should mention these 3 talking points:
-                  </p>
-                  <ul className="list-disc list-inside space-y-2 ml-2">
-                    <li>Undone Watches</li>
-                    <li>Williams Racing</li>
-                    <li>& the TG MiniApp</li>
-                  </ul>
-                  <p className="mt-3 font-semibold text-yellow-200">
-                    As well as sharing the exact link from above to the MiniApp
-                    in the Space Jumbotron
+                    Score extra points by performing actions in the miniApp
+                    including playing the Game (see guidelines below), unlock
+                    multipliers by staking $SANG.
                   </p>
                 </div>
               </div>
