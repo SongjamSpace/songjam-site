@@ -685,7 +685,7 @@ export default function MindshareLeaderboard({
                 >
                   {mindshareData
                     .reduce((sum, item) => sum + item.points, 0)
-                    .toLocaleString()}
+                    .toFixed(2)}
                 </div>
                 <div
                   className={`${
@@ -693,7 +693,7 @@ export default function MindshareLeaderboard({
                   } text-sm`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
-                  Total Points
+                  Sing Points
                 </div>
               </div>
 
@@ -830,7 +830,7 @@ export default function MindshareLeaderboard({
                       <span className="md:hidden">Undone</span>
                     </th>
                     <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
-                      <span className="hidden md:inline">Total Points</span>
+                      <span className="hidden md:inline">Sing Points</span>
                       <span className="md:hidden">Points</span>
                     </th>
                   </tr>
