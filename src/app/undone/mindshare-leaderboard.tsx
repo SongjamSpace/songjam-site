@@ -13,13 +13,19 @@ const williamsFont = localFont({
   display: "swap",
 });
 
-interface UndonePointsBreakdown {
-  stickers?: { count: number; metadata?: any };
-  helmet_stickers?: { count: number; metadata?: any };
-  tasks?: { completed: number; metadata?: any };
-  daily_spins?: { count: number; metadata?: any };
-  watch_orders?: { count: number; metadata?: any };
-  rounds?: { completed: number; metadata?: any };
+export interface UndonePointsBreakdown {
+  stickers: {
+    count: number;
+    metadata: { stickers: { id: string; name: string; file_url: string }[] };
+  };
+  helmet_stickers: {
+    count: number;
+    metadata: { stickers: { id: string; name: string; file_url: string }[] };
+  };
+  tasks: { completed: number };
+  daily_spins: { count: number };
+  watch_orders: { count: number };
+  rounds: { completed: number };
 }
 
 interface LeaderboardRow {
@@ -30,7 +36,7 @@ interface LeaderboardRow {
   stakingMultiplier?: number;
   spacePoints?: number;
   undonePoints?: number;
-  undonePointsBreakdown?: UndonePointsBreakdown;
+  activity?: UndonePointsBreakdown;
 }
 
 // Mindshare data will be generated dynamically from leaderboard data
@@ -921,9 +927,9 @@ export default function MindshareLeaderboard({
                               <span className="text-xs md:text-sm font-medium">
                                 {u.undonePoints !== undefined
                                   ? u.undonePoints.toFixed(2)
-                                  : u.undonePointsBreakdown
+                                  : u.activity
                                   ? calculatePointsFromBreakdown(
-                                      u.undonePointsBreakdown
+                                      u.activity
                                     ).toFixed(2)
                                   : ""}
                               </span>
@@ -975,9 +981,9 @@ export default function MindshareLeaderboard({
                                 className="overflow-hidden"
                               >
                                 <div className="py-4">
-                                  {u.undonePointsBreakdown ? (
+                                  {u.activity ? (
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1 md:gap-2">
-                                      {u.undonePointsBreakdown.daily_spins && (
+                                      {u.activity.daily_spins && (
                                         <div className="text-center">
                                           <div
                                             className="text-white/60 text-[10px] leading-tight"
@@ -993,13 +999,12 @@ export default function MindshareLeaderboard({
                                               fontFamily: "Inter, sans-serif",
                                             }}
                                           >
-                                            {u.undonePointsBreakdown.daily_spins
-                                              .count * 5}{" "}
+                                            {u.activity.daily_spins.count * 5}{" "}
                                             pts
                                           </div>
                                         </div>
                                       )}
-                                      {u.undonePointsBreakdown.stickers && (
+                                      {u.activity.stickers && (
                                         <div className="text-center">
                                           <div
                                             className="text-white/60 text-[10px] leading-tight"
@@ -1015,14 +1020,11 @@ export default function MindshareLeaderboard({
                                               fontFamily: "Inter, sans-serif",
                                             }}
                                           >
-                                            {u.undonePointsBreakdown.stickers
-                                              .count * 20}{" "}
-                                            pts
+                                            {u.activity.stickers.count * 20} pts
                                           </div>
                                         </div>
                                       )}
-                                      {u.undonePointsBreakdown
-                                        .helmet_stickers && (
+                                      {u.activity.helmet_stickers && (
                                         <div className="text-center">
                                           <div
                                             className="text-white/60 text-[10px] leading-tight"
@@ -1038,13 +1040,13 @@ export default function MindshareLeaderboard({
                                               fontFamily: "Inter, sans-serif",
                                             }}
                                           >
-                                            {u.undonePointsBreakdown
-                                              .helmet_stickers.count * 50}{" "}
+                                            {u.activity.helmet_stickers.count *
+                                              50}{" "}
                                             pts
                                           </div>
                                         </div>
                                       )}
-                                      {u.undonePointsBreakdown.tasks && (
+                                      {u.activity.tasks && (
                                         <div className="text-center">
                                           <div
                                             className="text-white/60 text-[10px] leading-tight"
@@ -1060,13 +1062,12 @@ export default function MindshareLeaderboard({
                                               fontFamily: "Inter, sans-serif",
                                             }}
                                           >
-                                            {u.undonePointsBreakdown.tasks
-                                              .completed * 100}{" "}
+                                            {u.activity.tasks.completed * 100}{" "}
                                             pts
                                           </div>
                                         </div>
                                       )}
-                                      {u.undonePointsBreakdown.rounds && (
+                                      {u.activity.rounds && (
                                         <div className="text-center">
                                           <div
                                             className="text-white/60 text-[10px] leading-tight"
@@ -1082,13 +1083,12 @@ export default function MindshareLeaderboard({
                                               fontFamily: "Inter, sans-serif",
                                             }}
                                           >
-                                            {u.undonePointsBreakdown.rounds
-                                              .completed * 200}{" "}
+                                            {u.activity.rounds.completed * 200}{" "}
                                             pts
                                           </div>
                                         </div>
                                       )}
-                                      {u.undonePointsBreakdown.watch_orders && (
+                                      {u.activity.watch_orders && (
                                         <div className="text-center">
                                           <div
                                             className="text-white/60 text-[10px] leading-tight"
@@ -1104,8 +1104,7 @@ export default function MindshareLeaderboard({
                                               fontFamily: "Inter, sans-serif",
                                             }}
                                           >
-                                            {u.undonePointsBreakdown
-                                              .watch_orders.count > 0
+                                            {u.activity.watch_orders.count > 0
                                               ? "x2"
                                               : "-"}
                                           </div>

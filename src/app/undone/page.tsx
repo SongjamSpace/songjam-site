@@ -83,7 +83,7 @@ export default function Page() {
         title="Undone x Williams Racing"
         moto="More than a mindshare campaign. Precision watchmaking meets motorsport engineering. Developed by UNDONE's Japan-based design team. Shipping Worldwide."
         projectId="undonewatches"
-        timeframes={["24H", "7D", "ALL"]}
+        timeframes={["ALL"]}
         backgroundImageUrl="/images/banners/undone.png"
       />
 
