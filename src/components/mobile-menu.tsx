@@ -115,7 +115,7 @@ export function MobileMenu({
                 inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
               }
             >
-              Undone
+              Undone X Williams
             </Button>
           </Link>
           <Link href="/genesis-leaderboard">
