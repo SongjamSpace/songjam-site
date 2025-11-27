@@ -163,6 +163,106 @@ function createTreemap(
 
 type Timeframe = "4H" | "24H" | "7D" | "30D" | "ALL";
 
+// Mobile View Component
+function MindshareLeaderboardMobile({
+  items,
+  isLight,
+}: {
+  items: any[];
+  isLight: boolean;
+}) {
+  const getCardStyle = (index: number) => {
+    // Stepped layout: Bigger to smaller
+    // grid-cols-6 allows for 1 (6), 2 (3+3), and 3 (2+2+2) items per row
+    if (index === 0) return "col-span-6 h-72"; // Rank 1: Huge
+    if (index < 3) return "col-span-3 h-60";   // Rank 2, 3: Large
+    if (index < 5) return "col-span-3 h-52";   // Rank 4, 5: Medium-Large
+    if (index < 7) return "col-span-3 h-44";   // Rank 6, 7: Medium
+    // Rank 8, 9, 10: Small, 3 in a row
+    return "col-span-2 h-40";
+  };
+
+  const getTextSizes = (index: number) => {
+    if (index === 0) return { name: "text-3xl", percent: "text-6xl", rank: "text-6xl" };
+    if (index < 3) return { name: "text-xl", percent: "text-4xl", rank: "text-4xl" };
+    if (index < 5) return { name: "text-lg", percent: "text-3xl", rank: "text-3xl" };
+    if (index < 7) return { name: "text-base", percent: "text-2xl", rank: "text-2xl" };
+    return { name: "text-xs", percent: "text-lg", rank: "text-lg" }; // Smaller text for 3-col items
+  };
+
+  return (
+    <div className="grid grid-cols-6 gap-2">
+      {items.map((item, index) => {
+        const gridClass = getCardStyle(index);
+        const textSizes = getTextSizes(index);
+        const isWide = gridClass.includes("col-span-6");
+
+        return (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            className={`relative overflow-hidden rounded-xl border p-3 flex flex-col justify-between ${gridClass} ${isLight
+                ? "bg-white/40 border-black/5"
+                : "bg-white/5 border-white/10"
+              }`}
+          >
+            {/* Rank Badge */}
+            <div className="absolute top-2 right-2 flex flex-col items-end">
+              <span className={`font-black opacity-20 leading-none ${textSizes.rank}`}>
+                #{index + 1}
+              </span>
+            </div>
+
+            {/* Content Top */}
+            <div className="relative z-10 mt-1 max-w-[85%]">
+              <div className={`font-bold truncate leading-tight ${textSizes.name} ${isLight ? "text-slate-900" : "text-white"}`}
+                style={{ fontFamily: "var(--font-williams), sans-serif" }}
+              >
+                {item.name}
+              </div>
+              <div className={`truncate opacity-70 ${index < 3 ? "text-sm" : "text-[10px]"} ${isLight ? "text-slate-700" : "text-white"}`}>
+                {item.description}
+              </div>
+            </div>
+
+            {/* Content Bottom (Stats) */}
+            <div className="relative z-10">
+              {/* Spacer */}
+              <div className="flex-1" />
+
+              <div className="flex items-end justify-between mt-2">
+                <div>
+                  <div className={`font-bold leading-none ${textSizes.percent} ${isLight ? "text-slate-900" : "text-white"}`}
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  >
+                    {item.percentage}%
+                  </div>
+                  <div className={`mt-1 opacity-60 ${index < 3 ? "text-sm" : "text-[10px]"} ${isLight ? "text-slate-700" : "text-white"}`}>
+                    {item.points.toLocaleString()} pts
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Bar / Background Fill */}
+            <div
+              className={`absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t ${isLight ? "from-black/5 to-transparent" : "from-white/5 to-transparent"
+                }`}
+            />
+            <div
+              className={`absolute bottom-0 left-0 h-1.5 ${isLight ? "bg-black/20" : "bg-white/30"
+                }`}
+              style={{ width: `${item.percentage}%` }}
+            />
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function MindshareLeaderboard({
   projectId,
   timeframes,
@@ -349,9 +449,8 @@ export default function MindshareLeaderboard({
 
         {/* Top gradient fade overlay */}
         <div
-          className={`pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b ${
-            isLight ? "from-white" : "from-[oklch(0.145_0_0)]"
-          } to-transparent`}
+          className={`pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b ${isLight ? "from-white" : "from-[oklch(0.145_0_0)]"
+            } to-transparent`}
         />
 
         {/* Softening overlay for light theme (pharmachainai) */}
@@ -360,17 +459,15 @@ export default function MindshareLeaderboard({
         )}
         {/* Bottom gradient fade overlay */}
         <div
-          className={`pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent ${
-            isLight ? "to-white" : "to-[oklch(0.145_0_0)]"
-          }`}
+          className={`pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent ${isLight ? "to-white" : "to-[oklch(0.145_0_0)]"
+            }`}
         />
 
         {/* Header */}
         <div className="relative z-10 text-center py-4 md:py-8 px-3 md:px-4">
           <motion.h1
-            className={`text-2xl md:text-6xl font-black mb-2 md:mb-4 drop-shadow-lg break-words ${
-              isLight ? "text-[#48333D]" : "text-white"
-            }`}
+            className={`text-2xl md:text-6xl font-black mb-2 md:mb-4 drop-shadow-lg break-words ${isLight ? "text-[#48333D]" : "text-white"
+              }`}
             style={{ fontFamily: "var(--font-williams), sans-serif" }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -379,9 +476,8 @@ export default function MindshareLeaderboard({
             {title === "SANG" ? `Who $${title}?` : title}
           </motion.h1>
           <motion.p
-            className={`text-sm md:text-xl max-w-4xl mx-auto drop-shadow-lg px-2 md:px-0 break-words ${
-              isLight ? "text-slate-700" : "text-white/90"
-            }`}
+            className={`text-sm md:text-xl max-w-4xl mx-auto drop-shadow-lg px-2 md:px-0 break-words ${isLight ? "text-slate-700" : "text-white/90"
+              }`}
             style={{ fontFamily: "Inter, sans-serif" }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -395,17 +491,15 @@ export default function MindshareLeaderboard({
         <div className="relative z-10 pb-8">
           <div className="max-w-7xl mx-auto">
             <div
-              className={`${
-                isLight
-                  ? "bg-black/5 border-black/10"
-                  : "bg-white/5 border-white/20"
-              } backdrop-blur-sm rounded-2xl border p-6`}
+              className={`${isLight
+                ? "bg-black/5 border-black/10"
+                : "bg-white/5 border-white/20"
+                } backdrop-blur-sm rounded-2xl border p-6`}
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                 <h2
-                  className={`text-xl sm:text-2xl font-bold ${
-                    isLight ? "text-[#48333D]" : "text-white"
-                  }`}
+                  className={`text-xl sm:text-2xl font-bold ${isLight ? "text-[#48333D]" : "text-white"
+                    }`}
                   style={{ fontFamily: "var(--font-williams), sans-serif" }}
                 >
                   Leaderboard
@@ -416,25 +510,23 @@ export default function MindshareLeaderboard({
                   </div>
                 )}
                 <div
-                  className={`flex rounded-lg p-1 border w-full sm:w-auto ${
-                    isLight
-                      ? "bg-black/5 border-black/10"
-                      : "bg-white/10 border-white/20"
-                  }`}
+                  className={`flex rounded-lg p-1 border w-full sm:w-auto ${isLight
+                    ? "bg-black/5 border-black/10"
+                    : "bg-white/10 border-white/20"
+                    }`}
                 >
                   {timeframes.map((timeframe) => (
                     <button
                       key={timeframe}
                       onClick={() => handleTimeframeChange(timeframe)}
-                      className={`flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 text-sm sm:text-base ${
-                        selectedTimeframe === timeframe
-                          ? isLight
-                            ? "bg-black/10 text-[#48333D] shadow-sm"
-                            : "bg-white/20 text-white shadow-sm"
-                          : isLight
+                      className={`flex-1 sm:flex-none px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 text-sm sm:text-base ${selectedTimeframe === timeframe
+                        ? isLight
+                          ? "bg-black/10 text-[#48333D] shadow-sm"
+                          : "bg-white/20 text-white shadow-sm"
+                        : isLight
                           ? "text-slate-700 hover:text-slate-900"
                           : "text-white/70 hover:text-white/90"
-                      }`}
+                        }`}
                       style={{ fontFamily: "Inter, sans-serif" }}
                     >
                       {timeframe}
@@ -443,24 +535,29 @@ export default function MindshareLeaderboard({
                 </div>
               </div>
 
-              {/* Treemap Canvas */}
+              {/* Mobile View */}
+              <div className="block md:hidden">
+                <MindshareLeaderboardMobile
+                  items={mindshareData}
+                  isLight={isLight}
+                />
+              </div>
+
+              {/* Desktop Treemap View */}
               <div
-                className={`relative w-full h-[600px] rounded-lg overflow-hidden ${
-                  isLight ? "bg-black/5" : "bg-white/5"
-                }`}
+                className={`hidden md:block relative w-full h-[600px] rounded-lg overflow-hidden ${isLight ? "bg-black/5" : "bg-white/5"
+                  }`}
               >
                 {treemapItems.map((item, index) => (
                   <motion.div
                     key={item.id}
-                    className={`absolute cursor-pointer transition-all duration-300 ${
-                      selectedItem === item.id
-                        ? "ring-4 ring-white ring-opacity-50"
-                        : ""
-                    } ${
-                      hoveredItem === item.id
+                    className={`absolute cursor-pointer transition-all duration-300 ${selectedItem === item.id
+                      ? "ring-4 ring-white ring-opacity-50"
+                      : ""
+                      } ${hoveredItem === item.id
                         ? "scale-105 z-10"
                         : "hover:scale-102"
-                    }`}
+                      }`}
                     style={{
                       left: `${(item.x / 1200) * 100}%`,
                       top: `${(item.y / 600) * 100}%`,
@@ -486,17 +583,15 @@ export default function MindshareLeaderboard({
                     <div className="absolute inset-0 p-3 flex flex-col justify-between">
                       <div>
                         <div
-                          className={`font-bold text-sm md:text-base truncate drop-shadow-lg ${
-                            isLight ? "text-slate-800" : "text-white"
-                          }`}
+                          className={`font-bold text-sm md:text-base truncate drop-shadow-lg ${isLight ? "text-slate-800" : "text-white"
+                            }`}
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.name}
                         </div>
                         <div
-                          className={`text-xs truncate drop-shadow-lg ${
-                            isLight ? "text-slate-700" : "text-white/90"
-                          }`}
+                          className={`text-xs truncate drop-shadow-lg ${isLight ? "text-slate-700" : "text-white/90"
+                            }`}
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.description}
@@ -505,17 +600,15 @@ export default function MindshareLeaderboard({
 
                       <div className="text-right">
                         <div
-                          className={`font-bold text-lg md:text-xl drop-shadow-lg ${
-                            isLight ? "text-slate-900" : "text-white"
-                          }`}
+                          className={`font-bold text-lg md:text-xl drop-shadow-lg ${isLight ? "text-slate-900" : "text-white"
+                            }`}
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.percentage}%
                         </div>
                         <div
-                          className={`text-xs drop-shadow-lg ${
-                            isLight ? "text-slate-700" : "text-white/80"
-                          }`}
+                          className={`text-xs drop-shadow-lg ${isLight ? "text-slate-700" : "text-white/80"
+                            }`}
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
                           {item.points.toLocaleString()} pts
@@ -526,9 +619,8 @@ export default function MindshareLeaderboard({
                     {/* Hover/Selected Overlay */}
                     {(hoveredItem === item.id || selectedItem === item.id) && (
                       <motion.div
-                        className={`absolute inset-0 backdrop-blur-sm flex items-center justify-center rounded ${
-                          isLight ? "bg-black/10" : "bg-white/20"
-                        }`}
+                        className={`absolute inset-0 backdrop-blur-sm flex items-center justify-center rounded ${isLight ? "bg-black/10" : "bg-white/20"
+                          }`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.2 }}
@@ -570,17 +662,15 @@ export default function MindshareLeaderboard({
                     exit={{ opacity: 0 }}
                   >
                     <div
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg shadow-md border ${
-                        isLight
-                          ? "bg-black/5 border-black/10"
-                          : "bg-white/10 border-white/20"
-                      }`}
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg shadow-md border ${isLight
+                        ? "bg-black/5 border-black/10"
+                        : "bg-white/10 border-white/20"
+                        }`}
                     >
                       <div className="h-4 w-4 rounded-full border-2 border-white/60 border-t-transparent animate-spin" />
                       <span
-                        className={`text-sm ${
-                          isLight ? "text-slate-800" : "text-white/90"
-                        }`}
+                        className={`text-sm ${isLight ? "text-slate-800" : "text-white/90"
+                          }`}
                         style={{ fontFamily: "Inter, sans-serif" }}
                       >
                         Updating {selectedTimeframe} Leaderboard…
@@ -596,16 +686,14 @@ export default function MindshareLeaderboard({
                     exit={{ opacity: 0 }}
                   >
                     <div
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg shadow-md border ${
-                        isLight
-                          ? "bg-black/5 border-black/10"
-                          : "bg-white/10 border-white/20"
-                      }`}
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg shadow-md border ${isLight
+                        ? "bg-black/5 border-black/10"
+                        : "bg-white/10 border-white/20"
+                        }`}
                     >
                       <span
-                        className={`text-sm ${
-                          isLight ? "text-slate-800" : "text-white/90"
-                        }`}
+                        className={`text-sm ${isLight ? "text-slate-800" : "text-white/90"
+                          }`}
                         style={{ fontFamily: "Inter, sans-serif" }}
                       >
                         Error fetching the Leaderboard for {selectedTimeframe}{" "}
@@ -624,17 +712,15 @@ export default function MindshareLeaderboard({
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-4">
               <h3
-                className={`text-lg font-semibold ${
-                  isLight ? "text-[#48333D]" : "text-white"
-                }`}
+                className={`text-lg font-semibold ${isLight ? "text-[#48333D]" : "text-white"
+                  }`}
                 style={{ fontFamily: "var(--font-williams), sans-serif" }}
               >
                 {selectedTimeframe} Overview
               </h3>
               <div
-                className={`text-sm ${
-                  isLight ? "text-slate-600" : "text-white/60"
-                }`}
+                className={`text-sm ${isLight ? "text-slate-600" : "text-white/60"
+                  }`}
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 Total:{" "}
@@ -646,24 +732,21 @@ export default function MindshareLeaderboard({
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div
-                className={`${
-                  isLight
-                    ? "bg-black/5 border-black/10"
-                    : "bg-white/10 border-white/20"
-                } backdrop-blur-lg rounded-xl p-4 border text-center`}
+                className={`${isLight
+                  ? "bg-black/5 border-black/10"
+                  : "bg-white/10 border-white/20"
+                  } backdrop-blur-lg rounded-xl p-4 border text-center`}
               >
                 <div
-                  className={`text-2xl font-bold ${
-                    isLight ? "text-slate-900" : "text-white"
-                  }`}
+                  className={`text-2xl font-bold ${isLight ? "text-slate-900" : "text-white"
+                    }`}
                   style={{ fontFamily: "var(--font-williams), sans-serif" }}
                 >
                   {leaderboardData?.length || "-"}
                 </div>
                 <div
-                  className={`${
-                    isLight ? "text-slate-700" : "text-white/70"
-                  } text-sm`}
+                  className={`${isLight ? "text-slate-700" : "text-white/70"
+                    } text-sm`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Contributors
@@ -671,16 +754,14 @@ export default function MindshareLeaderboard({
               </div>
 
               <div
-                className={`${
-                  isLight
-                    ? "bg-black/5 border-black/10"
-                    : "bg-white/10 border-white/20"
-                } backdrop-blur-lg rounded-xl p-4 border text-center`}
+                className={`${isLight
+                  ? "bg-black/5 border-black/10"
+                  : "bg-white/10 border-white/20"
+                  } backdrop-blur-lg rounded-xl p-4 border text-center`}
               >
                 <div
-                  className={`text-2xl font-bold ${
-                    isLight ? "text-slate-900" : "text-white"
-                  }`}
+                  className={`text-2xl font-bold ${isLight ? "text-slate-900" : "text-white"
+                    }`}
                   style={{ fontFamily: "var(--font-williams), sans-serif" }}
                 >
                   {mindshareData
@@ -688,9 +769,8 @@ export default function MindshareLeaderboard({
                     .toFixed(2)}
                 </div>
                 <div
-                  className={`${
-                    isLight ? "text-slate-700" : "text-white/70"
-                  } text-sm`}
+                  className={`${isLight ? "text-slate-700" : "text-white/70"
+                    } text-sm`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Sing Points
@@ -698,24 +778,21 @@ export default function MindshareLeaderboard({
               </div>
 
               <div
-                className={`${
-                  isLight
-                    ? "bg-black/5 border-black/10"
-                    : "bg-white/10 border-white/20"
-                } backdrop-blur-lg rounded-xl p-4 border text-center`}
+                className={`${isLight
+                  ? "bg-black/5 border-black/10"
+                  : "bg-white/10 border-white/20"
+                  } backdrop-blur-lg rounded-xl p-4 border text-center`}
               >
                 <div
-                  className={`text-2xl font-bold ${
-                    isLight ? "text-slate-900" : "text-white"
-                  }`}
+                  className={`text-2xl font-bold ${isLight ? "text-slate-900" : "text-white"
+                    }`}
                   style={{ fontFamily: "var(--font-williams), sans-serif" }}
                 >
                   {mindshareData[0]?.percentage || 0}%
                 </div>
                 <div
-                  className={`${
-                    isLight ? "text-slate-700" : "text-white/70"
-                  } text-sm`}
+                  className={`${isLight ? "text-slate-700" : "text-white/70"
+                    } text-sm`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Top Share
@@ -723,24 +800,21 @@ export default function MindshareLeaderboard({
               </div>
 
               <div
-                className={`${
-                  isLight
-                    ? "bg-black/5 border-black/10"
-                    : "bg-white/10 border-white/20"
-                } backdrop-blur-lg rounded-xl p-4 border text-center`}
+                className={`${isLight
+                  ? "bg-black/5 border-black/10"
+                  : "bg-white/10 border-white/20"
+                  } backdrop-blur-lg rounded-xl p-4 border text-center`}
               >
                 <div
-                  className={`text-2xl font-bold ${
-                    isLight ? "text-slate-900" : "text-white"
-                  }`}
+                  className={`text-2xl font-bold ${isLight ? "text-slate-900" : "text-white"
+                    }`}
                   style={{ fontFamily: "var(--font-williams), sans-serif" }}
                 >
                   {mindshareData[0]?.name || "N/A"}
                 </div>
                 <div
-                  className={`${
-                    isLight ? "text-slate-700" : "text-white/70"
-                  } text-sm`}
+                  className={`${isLight ? "text-slate-700" : "text-white/70"
+                    } text-sm`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Leader
@@ -847,11 +921,10 @@ export default function MindshareLeaderboard({
                     return (
                       <React.Fragment key={u.userId}>
                         <tr
-                          className={`${rowBgClass} border-t ${
-                            hasUndonePoints
-                              ? "border-white/10"
-                              : "border-red-500/30"
-                          }`}
+                          className={`${rowBgClass} border-t ${hasUndonePoints
+                            ? "border-white/10"
+                            : "border-red-500/30"
+                            }`}
                         >
                           <td className="px-2 md:px-6 py-2 md:py-3 align-middle">
                             <span
@@ -881,11 +954,10 @@ export default function MindshareLeaderboard({
                           </td>
                           <td className="px-2 md:px-6 py-2 md:py-3 text-center align-middle">
                             <span
-                              className={`inline-flex items-center px-2 md:px-3 py-0.5 md:py-1 rounded-full font-semibold text-xs md:text-sm shadow-sm ${
-                                u.stakingMultiplier && u.stakingMultiplier > 1
-                                  ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-white"
-                                  : "bg-gradient-to-r from-gray-500/20 to-gray-600/20 border border-gray-500/30 text-white/70"
-                              }`}
+                              className={`inline-flex items-center px-2 md:px-3 py-0.5 md:py-1 rounded-full font-semibold text-xs md:text-sm shadow-sm ${u.stakingMultiplier && u.stakingMultiplier > 1
+                                ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-white"
+                                : "bg-gradient-to-r from-gray-500/20 to-gray-600/20 border border-gray-500/30 text-white/70"
+                                }`}
                               style={{ fontFamily: "Inter, sans-serif" }}
                             >
                               {u.stakingMultiplier
@@ -940,17 +1012,16 @@ export default function MindshareLeaderboard({
                                   {u.undonePoints !== undefined
                                     ? u.undonePoints.toFixed(2)
                                     : u.activity
-                                    ? calculatePointsFromBreakdown(
+                                      ? calculatePointsFromBreakdown(
                                         u.activity
                                       ).toFixed(2)
-                                    : ""}
+                                      : ""}
                                 </span>
                                 <svg
-                                  className={`ml-1.5 w-3 h-3 transition-transform duration-200 ${
-                                    expandedUndoneRow === u.userId
-                                      ? "rotate-180"
-                                      : ""
-                                  }`}
+                                  className={`ml-1.5 w-3 h-3 transition-transform duration-200 ${expandedUndoneRow === u.userId
+                                    ? "rotate-180"
+                                    : ""
+                                    }`}
                                   fill="none"
                                   viewBox="0 0 24 24"
                                   stroke="currentColor"
