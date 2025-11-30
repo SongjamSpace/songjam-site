@@ -69,6 +69,8 @@ export default function Page() {
           timeframes={["24H", "7D", "ALL"]}
           backgroundImageUrl="/images/banners/adam.jpeg"
           showSpacePoints
+          showStakingMultiplier
+          minStakeStr="10,000"
         />
       </div>
 

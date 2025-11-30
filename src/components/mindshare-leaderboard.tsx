@@ -245,6 +245,8 @@ export default function MindshareLeaderboard({
   banner,
   backgroundImageUrl,
   showSpacePoints = false,
+  showStakingMultiplier = false,
+  minStakeStr = '10,000',
 }: {
   projectId: string;
   timeframes: Array<Timeframe>;
@@ -253,6 +255,8 @@ export default function MindshareLeaderboard({
   banner?: ReactNode;
   backgroundImageUrl?: string;
   showSpacePoints?: boolean;
+  showStakingMultiplier?: boolean;
+  minStakeStr?: string;
 }) {
   const isLight = projectId === "pharmachainai";
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
@@ -754,7 +758,7 @@ export default function MindshareLeaderboard({
               >
                 {selectedTimeframe === '4H' ? '4 Hours' : selectedTimeframe === '24H' ? '24 Hours' : selectedTimeframe === '7D' ? '7 Days' : selectedTimeframe === '30D' ? '30 Days' : 'All Time'}
               </h3>
-              {projectId === "adam_songjam" && (
+              {showStakingMultiplier && (
                 <Link href="https://leaderboard.songjam.space" target="_blank">
                   <motion.button
                     className="inline-flex items-center px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 hover:border-purple-400/50 text-white font-medium rounded-full text-xs md:text-sm shadow-sm transition-all duration-200 hover:shadow-md whitespace-nowrap"
@@ -787,7 +791,7 @@ export default function MindshareLeaderboard({
                     <th className="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap min-w-[120px] md:min-w-0">
                       Singer
                     </th>
-                    {projectId === "adam_songjam" && (
+                    {showStakingMultiplier && (
                       <th className="px-2 md:px-6 py-2 md:py-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-1 md:gap-1.5 group relative">
                           <span className="hidden md:inline">
@@ -806,7 +810,7 @@ export default function MindshareLeaderboard({
                                 1 + √(Stake Amount / Minimum Stake)
                               </div>
                               <div className="text-white/80 text-center">
-                                Minimum Stake: 10,000 $SANG
+                                Minimum Stake: {minStakeStr} $SANG
                               </div>
                               <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-[6px] border-transparent border-t-black/95"></div>
                             </div>
@@ -859,7 +863,7 @@ export default function MindshareLeaderboard({
                           </span>
                         </div>
                       </td>
-                      {projectId === "adam_songjam" && (
+                      {showStakingMultiplier && (
                         <td className="px-2 md:px-6 py-2 md:py-3 text-center align-middle">
                           <span
                             className={`inline-flex items-center px-2 md:px-3 py-0.5 md:py-1 rounded-full font-semibold text-xs md:text-sm shadow-sm ${u.stakingMultiplier && u.stakingMultiplier > 1
