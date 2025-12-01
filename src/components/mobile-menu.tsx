@@ -118,6 +118,16 @@ export function MobileMenu({
               Undone X Williams
             </Button>
           </Link>
+          <Link href="/zabal" target="_blank">
+            <Button
+              variant="ghost"
+              className={
+                inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
+              }
+            >
+              $ZABAL Empire
+            </Button>
+          </Link>
           <Link href="/genesis-leaderboard">
             <Button
               variant="ghost"

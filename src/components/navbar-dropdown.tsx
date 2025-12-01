@@ -33,9 +33,8 @@ export default function NavbarDropdown({ inverse }: NavbarDropdownProps) {
     <div className="relative" ref={dropdownRef}>
       <Button
         variant="ghost"
-        className={`flex items-center gap-1 ${
-          inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
-        }`}
+        className={`flex items-center gap-1 ${inverse ? "text-[#48333D] hover:text-[#48333D]/60" : ""
+          }`}
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
         onClick={() => setIsOpen(!isOpen)}
@@ -43,9 +42,8 @@ export default function NavbarDropdown({ inverse }: NavbarDropdownProps) {
         MINDSHARE
         <ChevronDown
           size={16}
-          className={`transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            }`}
         />
       </Button>
 
@@ -72,6 +70,15 @@ export default function NavbarDropdown({ inverse }: NavbarDropdownProps) {
                 onClick={() => setIsOpen(false)}
               >
                 Undone X Williams
+              </Button>
+            </Link>
+            <Link href="/zabal" target="_blank">
+              <Button
+                variant="ghost"
+                className="w-full justify-start px-4 py-2 text-left hover:bg-white/20"
+                onClick={() => setIsOpen(false)}
+              >
+                $ZABAL Empire
               </Button>
             </Link>
             <Link href="/genesis-leaderboard" target="_blank">
