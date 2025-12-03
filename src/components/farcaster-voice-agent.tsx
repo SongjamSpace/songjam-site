@@ -21,12 +21,14 @@ interface FarcasterVoiceAgentProps {
     onVolumeChange?: (inputVolume: number, outputVolume: number) => void;
     onStateChange?: (state: AgentState) => void;
     userProfile?: any;
+    feedData?: any[];
 }
 
 export default function FarcasterVoiceAgent({
     onVolumeChange,
     onStateChange,
     userProfile,
+    feedData = [],
 }: FarcasterVoiceAgentProps) {
     const [agentState, setAgentState] = useState<AgentState>("disconnected");
     const [currentSuggestion, setCurrentSuggestion] = useState<SuggestionData | null>(null);
@@ -93,6 +95,31 @@ export default function FarcasterVoiceAgent({
                     onAction: () => window.open(`https://dexscreener.com`, "_blank"),
                 });
                 return "Market analysis shown";
+            },
+            summarizeFeed: ({ summary, topTopics, castCount }: any) => {
+                console.log("Summarizing feed:", { summary, topTopics, castCount });
+
+                // Get today's casts
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayCasts = feedData.filter((cast: any) => {
+                    const castDate = new Date(cast.timestamp);
+                    return castDate >= today;
+                });
+
+                setCurrentSuggestion({
+                    id: `feed-summary-${Date.now()}`,
+                    type: "analysis",
+                    title: "Today's Feed Summary",
+                    description: summary || `Analyzed ${todayCasts.length} casts from your feed today. ${topTopics ? `Top topics: ${topTopics.join(", ")}` : ""}`,
+                    stats: [
+                        { label: "Total Casts", value: `${castCount || todayCasts.length}` },
+                        { label: "Period", value: "Today" },
+                    ],
+                    actionLabel: "View Feed",
+                    onAction: () => window.scrollTo({ top: 0, behavior: "smooth" }),
+                });
+                return `Feed summary displayed. Found ${todayCasts.length} casts from today.`;
             },
         },
     });

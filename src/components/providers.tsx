@@ -9,9 +9,9 @@ import "@farcaster/auth-kit/styles.css";
 import { AuthKitProvider } from "@farcaster/auth-kit";
 
 const config = {
-  rpcUrl: "https://mainnet.optimism.io",
-  domain: "songjam.space",
-  siweUri: "https://songjam.space/farcaster",
+  rpcUrl: "https://opt-mainnet.g.alchemy.com/v2/msW-VXqdG8DyOJaNmYNRF",
+  // domain: "songjam.space",
+  // siweUri: "https://songjam.space/farcaster",
 };
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -19,7 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthKitProvider config={config}>
-      <PrivyProvider
+      {/* <PrivyProvider
         appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID as string}
         clientId={process.env.NEXT_PUBLIC_CLIENT_ID as string}
         config={{
@@ -40,9 +40,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
             logo: "https://firebasestorage.googleapis.com/v0/b/lustrous-stack-453106-f6.firebasestorage.app/o/logo1.png?alt=media",
           },
         }}
-      >
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      </PrivyProvider>
+      > */}
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      {/* </PrivyProvider> */}
     </AuthKitProvider>
   );
 }
