@@ -2,6 +2,7 @@
 
 import { Avatar, hasAudio, ParticipantsAudio, useCallStateHooks } from '@stream-io/video-react-sdk';
 import { MyParticipant } from './MyParticipant';
+import { MyPermissionRequestsPanel } from './MyPermissionRequestsPanel';
 
 export const MyParticipantsPanel = () => {
     const { useParticipants } = useCallStateHooks();
@@ -12,6 +13,9 @@ export const MyParticipantsPanel = () => {
     return (
         <div className="px-6 py-6">
             <div className="max-w-4xl mx-auto space-y-8">
+                {/* Permission Requests */}
+                <MyPermissionRequestsPanel />
+
                 {/* Audio Component - Hidden but necessary for audio playback */}
                 <ParticipantsAudio participants={participants} />
 
