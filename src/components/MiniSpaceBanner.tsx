@@ -27,6 +27,10 @@ interface MiniSpaceBannerProps {
     onDenyRequest: (req: SpeakerRequest) => void;
     onMutePeer: (peerId: string) => void;
     onRemoveSpeaker: (peerId: string) => void;
+    playlist: { name: string; audioUrl: string }[];
+    currentTrack: string | null;
+    onPlayTrack: (url: string) => void;
+    onStopTrack: () => void;
 }
 
 export default function MiniSpaceBanner({
@@ -40,6 +44,8 @@ export default function MiniSpaceBanner({
     handRaised,
     isAudioEnabled,
     authenticated,
+    playlist,
+    currentTrack,
     onGoLive,
     onJoin,
     onLeave,
@@ -51,9 +57,12 @@ export default function MiniSpaceBanner({
     onDenyRequest,
     onMutePeer,
     onRemoveSpeaker,
+    onPlayTrack,
+    onStopTrack,
 }: MiniSpaceBannerProps) {
     const [showRequests, setShowRequests] = React.useState(false);
     const [showSpeakers, setShowSpeakers] = React.useState(false);
+    const [showPlaylist, setShowPlaylist] = React.useState(false);
 
     // Animation variants
     const containerVariants = {
@@ -209,14 +218,91 @@ export default function MiniSpaceBanner({
                                 </button>
                             )}
 
+                            {/* Host: DJ Console */}
+                            {isHost && (
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowPlaylist(!showPlaylist)}
+                                        className={`p-2 rounded-full transition-all ${showPlaylist || currentTrack
+                                            ? 'bg-purple-500/20 text-purple-400 border border-purple-500/50'
+                                            : 'bg-white/10 hover:bg-white/20 text-white/60'
+                                            }`}
+                                        title="DJ Console"
+                                    >
+                                        <span className="text-sm">🎵</span>
+                                        {currentTrack && (
+                                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]" />
+                                        )}
+                                    </button>
+
+                                    {/* Playlist Dropdown */}
+                                    <AnimatePresence>
+                                        {showPlaylist && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute bottom-full right-0 mb-3 w-72 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                                            >
+                                                <div className="px-3 py-2 bg-white/5 border-b border-white/5 flex justify-between items-center">
+                                                    <h3 className="text-xs font-bold text-white/80">DJ Playlist</h3>
+                                                    {currentTrack && (
+                                                        <span className="text-[10px] text-green-400 font-mono animate-pulse">NOW PLAYING</span>
+                                                    )}
+                                                </div>
+                                                <div className="max-h-60 overflow-y-auto p-1">
+                                                    {playlist.length === 0 ? (
+                                                        <div className="p-4 text-center text-xs text-white/40 italic">
+                                                            No tracks found. Upload music to start DJing! 🎧
+                                                        </div>
+                                                    ) : (
+                                                        playlist.map((track, idx) => {
+                                                            const isPlaying = currentTrack === track.audioUrl;
+                                                            return (
+                                                                <div key={idx} className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isPlaying ? 'bg-purple-500/10 border border-purple-500/20' : 'hover:bg-white/5'}`}>
+                                                                    <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                                                        <div className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold ${isPlaying ? 'bg-purple-500 text-white' : 'bg-white/10 text-white/40'}`}>
+                                                                            {isPlaying ? (
+                                                                                <div className="flex items-end gap-[1px] h-3 pb-1">
+                                                                                    <motion.div animate={{ height: [4, 8, 4] }} transition={{ duration: 0.5, repeat: Infinity }} className="w-[2px] bg-white" />
+                                                                                    <motion.div animate={{ height: [6, 10, 5] }} transition={{ duration: 0.4, repeat: Infinity, delay: 0.1 }} className="w-[2px] bg-white" />
+                                                                                    <motion.div animate={{ height: [3, 7, 3] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }} className="w-[2px] bg-white" />
+                                                                                </div>
+                                                                            ) : (
+                                                                                idx + 1
+                                                                            )}
+                                                                        </div>
+                                                                        <span className={`text-xs truncate ${isPlaying ? 'text-purple-300 font-medium' : 'text-white/80'}`}>{track.name}</span>
+                                                                    </div>
+                                                                    <button
+                                                                        onClick={() => isPlaying ? onStopTrack() : onPlayTrack(track.audioUrl)}
+                                                                        className={`p-1.5 rounded transition-colors ${isPlaying ? 'bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white' : 'bg-white/10 hover:bg-white/20 text-white/60 hover:text-white'}`}
+                                                                    >
+                                                                        {isPlaying ? (
+                                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+                                                                        ) : (
+                                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                                                        )}
+                                                                    </button>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+
                             {/* Host: Active Speakers Management */}
                             {isHost && activeSpeakers.length > 0 && (
                                 <div className="relative">
                                     <button
                                         onClick={() => setShowSpeakers(!showSpeakers)}
                                         className={`p-2 rounded-full transition-all ${showSpeakers
-                                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
-                                                : 'bg-white/10 hover:bg-white/20 text-white/60'
+                                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                                            : 'bg-white/10 hover:bg-white/20 text-white/60'
                                             }`}
                                         title="Manage Speakers"
                                     >

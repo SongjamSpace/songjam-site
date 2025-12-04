@@ -25,6 +25,7 @@ import {
     MSRoom,
     SpeakerRequest,
 } from '@/services/db/msRooms.db';
+import { getMusicUploadsByUserId } from '@/services/storage/dj.storage';
 import MiniSpaceBanner from './MiniSpaceBanner';
 
 const LiveAudioRoomInner = () => {
@@ -39,6 +40,11 @@ const LiveAudioRoomInner = () => {
     const [speakerRequests, setSpeakerRequests] = useState<SpeakerRequest[]>([]);
     const [myRequestId, setMyRequestId] = useState<string | null>(null);
     const [firestoreRoomId, setFirestoreRoomId] = useState<string | null>(null);
+
+    // DJ Playlist State
+    const [playlist, setPlaylist] = useState<{ name: string; audioUrl: string }[]>([]);
+    const [currentTrack, setCurrentTrack] = useState<string | null>(null);
+    const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
 
     // Check if current user is the host of the active room
     // This handles the refresh case where user is logged in but not connected to 100ms yet
@@ -96,6 +102,31 @@ const LiveAudioRoomInner = () => {
 
         syncPeerId();
     }, [isConnected, activeRoom, localPeer?.id, user, twitterObj]);
+
+    // Fetch Playlist for Host
+    useEffect(() => {
+        const fetchPlaylist = async () => {
+            if (isHost && (twitterObj?.twitterId || user?.uid)) {
+                try {
+                    const tracks = await getMusicUploadsByUserId(twitterObj?.twitterId || user?.uid || '');
+                    setPlaylist(tracks);
+                } catch (error) {
+                    console.error('Failed to fetch playlist', error);
+                }
+            }
+        };
+        fetchPlaylist();
+    }, [isHost, twitterObj?.twitterId, user?.uid]);
+
+    // Cleanup audio on unmount or leave
+    useEffect(() => {
+        return () => {
+            if (audioElement) {
+                audioElement.pause();
+                audioElement.src = '';
+            }
+        };
+    }, [audioElement]);
 
     const handleGoLive = async () => {
         if (!authenticated) {
@@ -256,6 +287,61 @@ const LiveAudioRoomInner = () => {
         }
     };
 
+    // DJ Handlers
+    const handlePlayTrack = async (url: string) => {
+        try {
+            // Stop current track if any
+            if (audioElement) {
+                audioElement.pause();
+                audioElement.src = '';
+            }
+
+            const audio = new Audio(url);
+            audio.crossOrigin = "anonymous";
+            setAudioElement(audio);
+            setCurrentTrack(url);
+
+            // Use Web Audio API for more robust stream capture
+            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+            const audioContext = new AudioContext();
+            const source = audioContext.createMediaElementSource(audio);
+            const destination = audioContext.createMediaStreamDestination();
+
+            // Connect source to destination (for streaming) AND to speakers (so host can hear)
+            source.connect(destination);
+            source.connect(audioContext.destination);
+
+            await audio.play();
+
+            const stream = destination.stream;
+            const audioTrack = stream.getAudioTracks()[0];
+
+            if (audioTrack) {
+                console.log('Adding auxiliary audio track to room...');
+                // Use 'auxiliary' source to indicate this is background music/extra audio
+                await hmsActions.addTrack(audioTrack, 'auxiliary');
+            }
+
+            // Handle track end
+            audio.onended = () => {
+                setCurrentTrack(null);
+                // Cleanup
+                audioContext.close();
+            };
+
+        } catch (error) {
+            console.error('Failed to play track', error);
+        }
+    };
+
+    const handleStopTrack = async () => {
+        if (audioElement) {
+            audioElement.pause();
+            setCurrentTrack(null);
+            // Ideally remove track from HMS too, but for now pausing stops the audio stream
+        }
+    };
+
     const isSpeaker = localPeer?.roleName?.toLowerCase() === 'speaker';
 
     // Get all active speakers (excluding host if needed, but usually we want to see them)
@@ -295,6 +381,8 @@ const LiveAudioRoomInner = () => {
             handRaised={!!myRequestId}
             isAudioEnabled={isAudioEnabled}
             authenticated={authenticated}
+            playlist={playlist}
+            currentTrack={currentTrack}
             onGoLive={handleGoLive}
             onJoin={handleJoin}
             onLeave={handleLeave}
@@ -306,6 +394,8 @@ const LiveAudioRoomInner = () => {
             onDenyRequest={handleDenyRequest}
             onMutePeer={handleMutePeer}
             onRemoveSpeaker={handleRemoveSpeaker}
+            onPlayTrack={handlePlayTrack}
+            onStopTrack={handleStopTrack}
         />
     );
 };
