@@ -239,10 +239,10 @@ export default function MiniSpaceBanner({
                                     <AnimatePresence>
                                         {showPlaylist && (
                                             <motion.div
-                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                className="absolute bottom-full right-0 mb-3 w-72 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                className="absolute top-full right-0 mt-3 w-72 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
                                             >
                                                 <div className="px-3 py-2 bg-white/5 border-b border-white/5 flex justify-between items-center">
                                                     <h3 className="text-xs font-bold text-white/80">DJ Playlist</h3>
@@ -250,7 +250,7 @@ export default function MiniSpaceBanner({
                                                         <span className="text-[10px] text-green-400 font-mono animate-pulse">NOW PLAYING</span>
                                                     )}
                                                 </div>
-                                                <div className="max-h-60 overflow-y-auto p-1">
+                                                <div className="max-h-80 overflow-y-auto p-1">
                                                     {playlist.length === 0 ? (
                                                         <div className="p-4 text-center text-xs text-white/40 italic">
                                                             No tracks found. Upload music to start DJing! 🎧
@@ -316,10 +316,10 @@ export default function MiniSpaceBanner({
                                     <AnimatePresence>
                                         {showSpeakers && (
                                             <motion.div
-                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                className="absolute bottom-full right-0 mb-3 w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                className="absolute top-full right-0 mt-3 w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
                                             >
                                                 <div className="px-3 py-2 bg-white/5 border-b border-white/5">
                                                     <h3 className="text-xs font-bold text-white/80">Active Speakers</h3>
@@ -380,10 +380,10 @@ export default function MiniSpaceBanner({
                                     <AnimatePresence>
                                         {showRequests && speakerRequests.length > 0 && (
                                             <motion.div
-                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                className="absolute bottom-full right-0 mb-3 w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                className="absolute top-full right-0 mt-3 w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
                                             >
                                                 <div className="px-3 py-2 bg-white/5 border-b border-white/5">
                                                     <h3 className="text-xs font-bold text-white/80">Speaker Requests</h3>

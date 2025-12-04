@@ -387,20 +387,19 @@ export default function MindshareLeaderboard({
         />
 
         {/* Header */}
-        <div className="relative z-10 text-center py-4 md:py-8 px-3 md:px-4">
-          <div className="flex items-center justify-center gap-4 mb-2 md:mb-4">
-            <motion.h1
-              className={`text-2xl md:text-6xl font-black drop-shadow-lg break-words ${isLight ? "text-[#48333D]" : "text-white"
-                }`}
-              style={{ fontFamily: "Orbitron, sans-serif" }}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              {title === "SANG" ? `Who $${title}?` : title}
-            </motion.h1>
-            <LiveAudioRoom />
-          </div>
+        <div className="relative z-30 text-center py-4 md:py-8 px-3 md:px-4">
+          {/* <div className="flex items-center justify-center gap-4 mb-2 md:mb-4"> */}
+          <motion.h1
+            className={`text-2xl md:text-6xl font-black drop-shadow-lg break-words ${isLight ? "text-[#48333D]" : "text-white"
+              }`}
+            style={{ fontFamily: "Orbitron, sans-serif" }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            {title === "SANG" ? `Who $${title}?` : title}
+          </motion.h1>
+          {/* </div> */}
           <motion.p
             className={`text-sm md:text-xl max-w-4xl mx-auto drop-shadow-lg px-2 md:px-0 break-words ${isLight ? "text-slate-700" : "text-white/90"
               }`}
@@ -411,6 +410,9 @@ export default function MindshareLeaderboard({
           >
             {moto}
           </motion.p>
+          <div className="flex items-center justify-center gap-4 mt-2 md:mt-4">
+            <LiveAudioRoom />
+          </div>
         </div>
 
         {/* Treemap Container */}
