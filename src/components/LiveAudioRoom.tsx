@@ -34,91 +34,156 @@ import MiniSpaceBanner from './MiniSpaceBanner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ParticipantBubble = ({ participant, isHost, isSpeaker }: { participant: RoomParticipant; isHost: boolean; isSpeaker: boolean }) => {
-    // Random initial position for listeners
-    const randomX = useRef(Math.random() * 80 + 10); // 10% to 90%
-    const randomY = useRef(Math.random() * 60 + 20); // 20% to 80%
+    // Random initial position for listeners to create a "field" effect
+    const randomX = useRef(Math.random() * 90 + 5); // 5% to 95%
+    const randomY = useRef(Math.random() * 90 + 5); // 5% to 95%
+    const randomDuration = useRef(20 + Math.random() * 20);
+    const randomDelay = useRef(Math.random() * 5);
 
-    // Host is central/prominent
+    // Host: The Core Energy Source
     if (isHost) {
         return (
             <motion.div
-                className="absolute z-10 flex flex-col items-center justify-center"
-                style={{ left: '50%', top: '20%', x: '-50%' }}
-                animate={{ y: [0, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                className="absolute z-30 flex flex-col items-center justify-center pointer-events-auto cursor-pointer"
+                style={{ left: '50%', top: '35%', x: '-50%', y: '-50%' }}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
             >
-                <div className="relative w-24 h-24 rounded-full border-4 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)] overflow-hidden bg-black">
-                    {participant.avatarUrl ? (
-                        <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600 text-white text-2xl font-bold">
-                            {participant.userName.charAt(0).toUpperCase()}
-                        </div>
-                    )}
+                {/* Pulsing Aura */}
+                <motion.div
+                    className="absolute inset-0 rounded-full bg-purple-500/20 blur-xl"
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.6, 0.3] }}
+                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                />
+
+                {/* Rotating Rings */}
+                <motion.div
+                    className="absolute -inset-4 rounded-full border border-purple-500/30 border-dashed"
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+                />
+                <motion.div
+                    className="absolute -inset-2 rounded-full border border-cyan-500/30 border-dotted"
+                    animate={{ rotate: -360 }}
+                    transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
+                />
+
+                {/* Main Avatar Container */}
+                <div className="relative w-32 h-32 rounded-full p-1 bg-gradient-to-br from-purple-500 via-fuchsia-500 to-cyan-500 shadow-[0_0_50px_rgba(168,85,247,0.6)]">
+                    <div className="w-full h-full rounded-full overflow-hidden border-4 border-black bg-black relative z-10">
+                        {participant.avatarUrl ? (
+                            <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black text-white text-4xl font-bold">
+                                {participant.userName.charAt(0).toUpperCase()}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* "Live" Indicator */}
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-red-600 to-orange-600 rounded-full text-white text-[10px] font-bold tracking-widest uppercase shadow-lg border border-white/20 z-20">
+                        HOST
+                    </div>
                 </div>
-                <div className="mt-2 px-3 py-1 bg-black/50 backdrop-blur-sm rounded-full border border-white/10 text-white text-sm font-medium">
-                    {participant.userName} 👑
+
+                <div className="mt-4 px-4 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-white text-sm font-semibold tracking-wide shadow-xl">
+                    {participant.userName}
                 </div>
             </motion.div>
         );
     }
 
-    // Speakers float around the host area
+    // Speakers: Orbiting Satellites
     if (isSpeaker) {
+        // Calculate a pseudo-random orbit position based on ID or name hash would be better, 
+        // but for now random is okay as long as it's stable per mount.
+        // Actually, let's make them float in a specific "Speaker Zone" around the host.
+
         return (
             <motion.div
-                className="absolute z-10 flex flex-col items-center justify-center"
-                initial={{ x: 0, y: 0 }}
+                className="absolute z-20 flex flex-col items-center justify-center pointer-events-auto cursor-pointer"
+                initial={{ scale: 0, opacity: 0, x: 0, y: 0 }}
                 animate={{
-                    x: [0, 20, -20, 0],
-                    y: [0, -15, 15, 0],
+                    scale: 1,
+                    opacity: 1,
+                    y: [0, -10, 10, 0],
                 }}
-                transition={{ repeat: Infinity, duration: 6 + Math.random() * 2, ease: "easeInOut" }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{
+                    y: { repeat: Infinity, duration: 4 + Math.random() * 2, ease: "easeInOut" }
+                }}
                 style={{
-                    left: `${30 + Math.random() * 40}%`, // Roughly center area
-                    top: `${30 + Math.random() * 20}%`
+                    left: `${20 + Math.random() * 60}%`,
+                    top: `${20 + Math.random() * 40}%`
                 }}
+                drag
+                dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                dragElastic={0.2}
             >
-                <div className="relative w-16 h-16 rounded-full border-2 border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.4)] overflow-hidden bg-black">
-                    {participant.avatarUrl ? (
-                        <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-lg font-bold">
-                            {participant.userName.charAt(0).toUpperCase()}
+                <div className="relative group">
+                    {/* Speaker Glow */}
+                    <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full opacity-75 blur group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+
+                    <div className="relative w-20 h-20 rounded-full p-0.5 bg-black">
+                        <div className="w-full h-full rounded-full overflow-hidden border-2 border-cyan-400/50 bg-gray-900">
+                            {participant.avatarUrl ? (
+                                <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-900 to-blue-900 text-white text-xl font-bold">
+                                    {participant.userName.charAt(0).toUpperCase()}
+                                </div>
+                            )}
                         </div>
-                    )}
-                    {/* Audio visualizer ring could go here */}
+                    </div>
+
+                    {/* Mic Icon / Status */}
+                    <div className="absolute -right-1 -bottom-1 w-8 h-8 bg-black rounded-full flex items-center justify-center border border-gray-700 shadow-lg">
+                        <span className="text-lg">🎤</span>
+                    </div>
                 </div>
-                <div className="mt-1 px-2 py-0.5 bg-black/50 backdrop-blur-sm rounded-full border border-white/10 text-white text-xs">
-                    {participant.userName} 🎤
+
+                <div className="mt-2 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-full border border-cyan-500/20 text-cyan-100 text-xs font-medium">
+                    {participant.userName}
                 </div>
             </motion.div>
         );
     }
 
-    // Listeners float randomly
+    // Listeners: Stardust / Floating Particles
     return (
         <motion.div
-            className="absolute z-0 flex flex-col items-center justify-center"
-            initial={{ x: 0, y: 0 }}
+            className="absolute z-10 flex flex-col items-center justify-center pointer-events-auto"
+            initial={{ opacity: 0, scale: 0 }}
             animate={{
-                x: [0, 30, -30, 0],
-                y: [0, -30, 30, 0],
+                opacity: [0.4, 0.8, 0.4],
+                scale: [0.9, 1.1, 0.9],
+                x: [0, 20, -20, 0],
+                y: [0, -20, 20, 0],
             }}
-            transition={{ repeat: Infinity, duration: 15 + Math.random() * 10, ease: "linear" }}
+            exit={{ opacity: 0, scale: 0 }}
+            transition={{
+                opacity: { repeat: Infinity, duration: randomDuration.current, ease: "easeInOut", delay: randomDelay.current },
+                scale: { repeat: Infinity, duration: randomDuration.current * 0.8, ease: "easeInOut", delay: randomDelay.current },
+                x: { repeat: Infinity, duration: randomDuration.current * 1.5, ease: "easeInOut" },
+                y: { repeat: Infinity, duration: randomDuration.current * 1.2, ease: "easeInOut" },
+            }}
             style={{
                 left: `${randomX.current}%`,
                 top: `${randomY.current}%`
             }}
         >
-            <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden bg-black/80">
-                {participant.avatarUrl ? (
-                    <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-800 text-white text-xs">
-                        {participant.userName.charAt(0).toUpperCase()}
-                    </div>
-                )}
+            <div className="relative w-12 h-12 rounded-full p-[1px] bg-gradient-to-tr from-white/10 to-white/5 hover:from-purple-500/50 hover:to-cyan-500/50 transition-colors duration-500">
+                <div className="w-full h-full rounded-full overflow-hidden bg-black/80 backdrop-blur-sm">
+                    {participant.avatarUrl ? (
+                        <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white/50 text-[10px]">
+                            {participant.userName.charAt(0).toUpperCase()}
+                        </div>
+                    )}
+                </div>
             </div>
         </motion.div>
     );
@@ -138,6 +203,13 @@ const LiveAudioRoomInner = () => {
     const [firestoreRoomId, setFirestoreRoomId] = useState<string | null>(null);
     const [participants, setParticipants] = useState<RoomParticipant[]>([]);
 
+    // Notification State
+    const [notifications, setNotifications] = useState<{ id: string; userName: string; avatarUrl?: string }[]>([]);
+    const prevParticipantsRef = useRef<RoomParticipant[]>([]);
+    const prevSpeakerRequestsLengthRef = useRef<number>(0);
+
+
+
     // DJ Playlist State
     const [playlist, setPlaylist] = useState<{ name: string; audioUrl: string }[]>([]);
     const [currentTrack, setCurrentTrack] = useState<string | null>(null);
@@ -152,6 +224,53 @@ const LiveAudioRoomInner = () => {
 
     // Effective host check: either connected as host OR is the host user (for re-join UI)
     const isHost = isConnectedHost || isHostUser;
+
+    // Sound Effect for Speaker Requests
+    useEffect(() => {
+        if (isHost && speakerRequests.length > prevSpeakerRequestsLengthRef.current) {
+            // Play sound
+            const audio = new Audio('/sound.wav'); // Custom sound
+            audio.volume = 0.5;
+            audio.play().catch(e => console.error("Error playing notification sound:", e));
+        }
+        prevSpeakerRequestsLengthRef.current = speakerRequests.length;
+    }, [speakerRequests.length, isHost]);
+
+    // Join Notifications Logic
+    useEffect(() => {
+        // Find new participants
+        const newParticipants = participants.filter(p =>
+            !prevParticipantsRef.current.some(prev => prev.id === p.id)
+        );
+
+        // Only show notifications if we are already connected and it's not the initial load
+        // (Initial load usually brings in a batch, we might want to skip those or show them all? 
+        // Let's skip initial batch to avoid spam on refresh)
+        if (prevParticipantsRef.current.length > 0 && newParticipants.length > 0) {
+            newParticipants.forEach(p => {
+                // Don't notify for self
+                if (p.userId === (twitterObj?.twitterId || user?.uid)) return;
+
+                const notificationId = Math.random().toString(36).substring(7);
+                const notification = {
+                    id: notificationId,
+                    userName: p.userName,
+                    avatarUrl: p.avatarUrl
+                };
+
+                setNotifications(prev => {
+                    const updated = [...prev, notification];
+                    // Keep only the last 5 notifications to prevent screen clutter
+                    if (updated.length > 10) {
+                        return updated.slice(updated.length - 5);
+                    }
+                    return updated;
+                });
+            });
+        }
+
+        prevParticipantsRef.current = participants;
+    }, [participants, twitterObj?.twitterId, user?.uid]);
 
     // Subscribe to active room from Firestore
     useEffect(() => {
@@ -517,34 +636,72 @@ const LiveAudioRoomInner = () => {
             </div>
 
             {/* Main UI Layer */}
-            <div className="relative z-10 pointer-events-auto">
-                <MiniSpaceBanner
-                    isHost={isHost}
-                    isSpeaker={isSpeaker}
-                    isConnected={!!isConnected}
-                    participantCount={participants.length} // Use participants from DB
-                    activeRoom={activeRoom}
-                    speakerRequests={speakerRequests}
-                    activeSpeakers={activeSpeakers}
-                    handRaised={!!myRequestId}
-                    isAudioEnabled={isAudioEnabled}
-                    authenticated={authenticated}
-                    playlist={playlist}
-                    currentTrack={currentTrack}
-                    onGoLive={handleGoLive}
-                    onJoin={handleJoin}
-                    onLeave={handleLeave}
-                    onEndRoom={handleEndRoom}
-                    onToggleMic={handleToggleMic}
-                    onRaiseHand={handleRaiseHand}
-                    onLogin={login}
-                    onApproveRequest={handleApproveRequest}
-                    onDenyRequest={handleDenyRequest}
-                    onMutePeer={handleMutePeer}
-                    onRemoveSpeaker={handleRemoveSpeaker}
-                    onPlayTrack={handlePlayTrack}
-                    onStopTrack={handleStopTrack}
-                />
+            <div className="relative z-10 pointer-events-auto flex justify-center p-4">
+                <div className="relative group rounded-2xl">
+                    {/* Animated Gradient Border / Glow */}
+                    <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-cyan-500 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-gradient-x"></div>
+
+                    {/* Content Container */}
+                    <div className="relative bg-black rounded-2xl ring-1 ring-white/10">
+                        <MiniSpaceBanner
+                            isHost={isHost}
+                            isSpeaker={isSpeaker}
+                            isConnected={!!isConnected}
+                            participantCount={participants.length} // Use participants from DB
+                            activeRoom={activeRoom}
+                            speakerRequests={speakerRequests}
+                            activeSpeakers={activeSpeakers}
+                            handRaised={!!myRequestId}
+                            isAudioEnabled={isAudioEnabled}
+                            authenticated={authenticated}
+                            playlist={playlist}
+                            currentTrack={currentTrack}
+                            onGoLive={handleGoLive}
+                            onJoin={handleJoin}
+                            onLeave={handleLeave}
+                            onEndRoom={handleEndRoom}
+                            onToggleMic={handleToggleMic}
+                            onRaiseHand={handleRaiseHand}
+                            onLogin={login}
+                            onApproveRequest={handleApproveRequest}
+                            onDenyRequest={handleDenyRequest}
+                            onMutePeer={handleMutePeer}
+                            onRemoveSpeaker={handleRemoveSpeaker}
+                            onPlayTrack={handlePlayTrack}
+                            onStopTrack={handleStopTrack}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Join Notifications Snackbar */}
+            <div className="fixed bottom-4 right-4 z-50 flex flex-col justify-end gap-2 pointer-events-none">
+                <AnimatePresence>
+                    {notifications.map((notification) => (
+                        <motion.div
+                            key={notification.id}
+                            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, x: 20, scale: 0.9 }}
+                            transition={{ duration: 0.3 }}
+                            className="bg-black/80 backdrop-blur-md border border-white/10 rounded-lg p-3 shadow-xl flex items-center gap-3 w-64 pointer-events-auto"
+                        >
+                            <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 flex-shrink-0">
+                                {notification.avatarUrl ? (
+                                    <img src={notification.avatarUrl} alt={notification.userName} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 text-white text-xs font-bold">
+                                        {notification.userName.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-white text-sm font-medium truncate">{notification.userName}</span>
+                                <span className="text-white/50 text-xs">joined the space</span>
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
             </div>
         </>
     );

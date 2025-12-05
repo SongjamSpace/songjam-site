@@ -103,7 +103,7 @@ export default function MiniSpaceBanner({
                         className="group relative px-8 py-3 bg-black rounded-full overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-300 hover:scale-105"
                     >
                         {/* Animated Gradient Background */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500 animate-gradient-x opacity-80 group-hover:opacity-100 transition-opacity" />
+                        {/* <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-500 animate-gradient-x opacity-80 group-hover:opacity-100 transition-opacity" /> */}
 
                         {/* Shine Effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine" />
