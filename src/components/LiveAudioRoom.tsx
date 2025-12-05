@@ -99,7 +99,7 @@ const ParticipantBubble = ({ participant, isHost, isSpeaker }: { participant: Ro
     // Listeners float randomly
     return (
         <motion.div
-            className="absolute z-0 flex flex-col items-center justify-center opacity-70 hover:opacity-100 transition-opacity"
+            className="absolute z-0 flex flex-col items-center justify-center"
             initial={{ x: 0, y: 0 }}
             animate={{
                 x: [0, 30, -30, 0],
