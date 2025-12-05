@@ -17,6 +17,7 @@ interface AuthContextType {
     twitterId: string | undefined;
     name: string | null | undefined;
     username: any;
+    avatarUrl: string | null | undefined;
   } | null;
 }
 
@@ -72,7 +73,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     const twitterId = twitterInfo?.uid;
     const name = twitterInfo?.displayName;
     const username = (user as any)?.reloadUserInfo.screenName || "";
-    return { twitterId, name, username };
+    return { twitterId, name, username, avatarUrl: twitterInfo?.photoURL };
   };
 
   const value: AuthContextType = {

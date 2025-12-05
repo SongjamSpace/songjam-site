@@ -6,6 +6,7 @@ import HybridTarget from "@/components/hybrid-target";
 import AudioReactiveBackground from "@/components/audio-reactive-background";
 import AgentConversation from "@/components/agent-conversation";
 import axios from "axios";
+import { subscribeToActiveRoom, MSRoom } from "@/services/db/msRooms.db";
 
 const projectId = "adam_songjam";
 
@@ -21,6 +22,7 @@ export default function Page() {
   const [inputVolume, setInputVolume] = useState(0);
   const [outputVolume, setOutputVolume] = useState(0);
   const [agentState, setAgentState] = useState<AgentState>("disconnected");
+  const [activeRoom, setActiveRoom] = useState<MSRoom | null>(null);
 
   const fetchTotalUsersCount = async () => {
     const res = await axios.get(
@@ -42,6 +44,14 @@ export default function Page() {
 
   useEffect(() => {
     fetchTotalUsersCount();
+  }, []);
+
+  // Subscribe to active room
+  useEffect(() => {
+    const unsubscribe = subscribeToActiveRoom((room) => {
+      setActiveRoom(room);
+    });
+    return unsubscribe;
   }, []);
 
   // Client Tools:
@@ -74,14 +84,16 @@ export default function Page() {
         />
       </div>
 
-      {/* Agent conversation UI */}
-      <AgentConversation
-        onVolumeChange={handleVolumeChange}
-        onStateChange={handleStateChange}
-        metaDetails={{
-          totalUsersCount,
-        }}
-      />
+      {/* Agent conversation UI - Only show if no active room */}
+      {!activeRoom && (
+        <AgentConversation
+          onVolumeChange={handleVolumeChange}
+          onStateChange={handleStateChange}
+          metaDetails={{
+            totalUsersCount,
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     HMSRoomProvider,
     useHMSActions,
@@ -22,11 +22,107 @@ import {
     updateSpeakerRequestStatus,
     deleteSpeakerRequest,
     updateSpeakerRequestPeerId,
+    joinRoom,
+    leaveRoom,
+    subscribeToRoomParticipants,
     MSRoom,
     SpeakerRequest,
+    RoomParticipant,
 } from '@/services/db/msRooms.db';
 import { getMusicUploadsByUserId } from '@/services/storage/dj.storage';
 import MiniSpaceBanner from './MiniSpaceBanner';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const ParticipantBubble = ({ participant, isHost, isSpeaker }: { participant: RoomParticipant; isHost: boolean; isSpeaker: boolean }) => {
+    // Random initial position for listeners
+    const randomX = useRef(Math.random() * 80 + 10); // 10% to 90%
+    const randomY = useRef(Math.random() * 60 + 20); // 20% to 80%
+
+    // Host is central/prominent
+    if (isHost) {
+        return (
+            <motion.div
+                className="absolute z-10 flex flex-col items-center justify-center"
+                style={{ left: '50%', top: '20%', x: '-50%' }}
+                animate={{ y: [0, -10, 0] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+            >
+                <div className="relative w-24 h-24 rounded-full border-4 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)] overflow-hidden bg-black">
+                    {participant.avatarUrl ? (
+                        <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600 text-white text-2xl font-bold">
+                            {participant.userName.charAt(0).toUpperCase()}
+                        </div>
+                    )}
+                </div>
+                <div className="mt-2 px-3 py-1 bg-black/50 backdrop-blur-sm rounded-full border border-white/10 text-white text-sm font-medium">
+                    {participant.userName} 👑
+                </div>
+            </motion.div>
+        );
+    }
+
+    // Speakers float around the host area
+    if (isSpeaker) {
+        return (
+            <motion.div
+                className="absolute z-10 flex flex-col items-center justify-center"
+                initial={{ x: 0, y: 0 }}
+                animate={{
+                    x: [0, 20, -20, 0],
+                    y: [0, -15, 15, 0],
+                }}
+                transition={{ repeat: Infinity, duration: 6 + Math.random() * 2, ease: "easeInOut" }}
+                style={{
+                    left: `${30 + Math.random() * 40}%`, // Roughly center area
+                    top: `${30 + Math.random() * 20}%`
+                }}
+            >
+                <div className="relative w-16 h-16 rounded-full border-2 border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.4)] overflow-hidden bg-black">
+                    {participant.avatarUrl ? (
+                        <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-lg font-bold">
+                            {participant.userName.charAt(0).toUpperCase()}
+                        </div>
+                    )}
+                    {/* Audio visualizer ring could go here */}
+                </div>
+                <div className="mt-1 px-2 py-0.5 bg-black/50 backdrop-blur-sm rounded-full border border-white/10 text-white text-xs">
+                    {participant.userName} 🎤
+                </div>
+            </motion.div>
+        );
+    }
+
+    // Listeners float randomly
+    return (
+        <motion.div
+            className="absolute z-0 flex flex-col items-center justify-center opacity-70 hover:opacity-100 transition-opacity"
+            initial={{ x: 0, y: 0 }}
+            animate={{
+                x: [0, 30, -30, 0],
+                y: [0, -30, 30, 0],
+            }}
+            transition={{ repeat: Infinity, duration: 15 + Math.random() * 10, ease: "linear" }}
+            style={{
+                left: `${randomX.current}%`,
+                top: `${randomY.current}%`
+            }}
+        >
+            <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden bg-black/80">
+                {participant.avatarUrl ? (
+                    <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-800 text-white text-xs">
+                        {participant.userName.charAt(0).toUpperCase()}
+                    </div>
+                )}
+            </div>
+        </motion.div>
+    );
+};
 
 const LiveAudioRoomInner = () => {
     const hmsActions = useHMSActions();
@@ -40,6 +136,7 @@ const LiveAudioRoomInner = () => {
     const [speakerRequests, setSpeakerRequests] = useState<SpeakerRequest[]>([]);
     const [myRequestId, setMyRequestId] = useState<string | null>(null);
     const [firestoreRoomId, setFirestoreRoomId] = useState<string | null>(null);
+    const [participants, setParticipants] = useState<RoomParticipant[]>([]);
 
     // DJ Playlist State
     const [playlist, setPlaylist] = useState<{ name: string; audioUrl: string }[]>([]);
@@ -81,6 +178,43 @@ const LiveAudioRoomInner = () => {
         return unsubscribe;
     }, [firestoreRoomId, isHost]);
 
+    // Subscribe to participants
+    useEffect(() => {
+        if (!firestoreRoomId) {
+            setParticipants([]);
+            return;
+        }
+
+        const unsubscribe = subscribeToRoomParticipants(firestoreRoomId, (parts) => {
+            setParticipants(parts);
+        });
+
+        return unsubscribe;
+    }, [firestoreRoomId]);
+
+    // Join/Leave room participant logic
+    useEffect(() => {
+        if (!firestoreRoomId || !authenticated || !twitterObj) return;
+
+        const userId = twitterObj.twitterId || user?.uid;
+        const userName = twitterObj.name || twitterObj.username || 'User';
+        const avatarUrl = twitterObj.avatarUrl || undefined;
+
+        if (!userId) return;
+
+        // Determine role based on localPeer or isHostUser
+        let role: 'host' | 'speaker' | 'listener' = 'listener';
+        if (isHostUser) role = 'host';
+        else if (localPeer?.roleName?.toLowerCase() === 'speaker') role = 'speaker';
+
+        // Join room
+        joinRoom(firestoreRoomId, userId, userName, role, avatarUrl);
+
+        return () => {
+            leaveRoom(firestoreRoomId, userId);
+        };
+    }, [firestoreRoomId, authenticated, twitterObj, user?.uid, isHostUser, localPeer?.roleName]);
+
     // Sync peer ID if I have a pending request and just joined/rejoined
     useEffect(() => {
         const syncPeerId = async () => {
@@ -92,11 +226,6 @@ const LiveAudioRoomInner = () => {
                     twitterObj?.twitterId || user.uid || 'anonymous',
                     localPeer.id
                 );
-
-                // Also check if we have a request to set local state
-                // This is a bit tricky since we don't subscribe to ALL requests as listener
-                // But we can infer it if we want, or just rely on the button state which might be reset on refresh
-                // For now, let's just ensure the backend is in sync.
             }
         };
 
@@ -212,7 +341,7 @@ const LiveAudioRoomInner = () => {
         if (myRequestId) {
             // If already requested, cancel the request
             try {
-                await deleteSpeakerRequest(myRequestId);
+                await deleteSpeakerRequest(activeRoom.id, myRequestId);
                 setMyRequestId(null);
             } catch (error) {
                 console.error('Failed to cancel request', error);
@@ -258,6 +387,7 @@ const LiveAudioRoomInner = () => {
     };
 
     const handleApproveRequest = async (request: SpeakerRequest) => {
+        if (!firestoreRoomId) return;
         try {
             console.log('Approving request for peer:', request.peerId);
             // Promote peer to speaker role in 100ms
@@ -265,23 +395,24 @@ const LiveAudioRoomInner = () => {
             await hmsActions.changeRole(request.peerId, 'speaker', true);
 
             // Update request status in Firestore
-            await updateSpeakerRequestStatus(request.id, 'approved');
+            await updateSpeakerRequestStatus(firestoreRoomId, request.id, 'approved');
 
             // Delete the request
-            await deleteSpeakerRequest(request.id);
+            await deleteSpeakerRequest(firestoreRoomId, request.id);
         } catch (error) {
             console.error('Failed to approve request:', error);
             // If error is "Peer not present", it means peerId is stale or user left
             // We should probably delete the request anyway or mark as failed
             if (error instanceof Error && error.message.includes('Peer not present')) {
-                await deleteSpeakerRequest(request.id);
+                await deleteSpeakerRequest(firestoreRoomId, request.id);
             }
         }
     };
 
     const handleDenyRequest = async (request: SpeakerRequest) => {
+        if (!firestoreRoomId) return;
         try {
-            await deleteSpeakerRequest(request.id);
+            await deleteSpeakerRequest(firestoreRoomId, request.id);
         } catch (error) {
             console.error('Failed to deny request', error);
         }
@@ -370,33 +501,52 @@ const LiveAudioRoomInner = () => {
     };
 
     return (
-        <MiniSpaceBanner
-            isHost={isHost}
-            isSpeaker={isSpeaker}
-            isConnected={!!isConnected}
-            participantCount={peers.length}
-            activeRoom={activeRoom}
-            speakerRequests={speakerRequests}
-            activeSpeakers={activeSpeakers}
-            handRaised={!!myRequestId}
-            isAudioEnabled={isAudioEnabled}
-            authenticated={authenticated}
-            playlist={playlist}
-            currentTrack={currentTrack}
-            onGoLive={handleGoLive}
-            onJoin={handleJoin}
-            onLeave={handleLeave}
-            onEndRoom={handleEndRoom}
-            onToggleMic={handleToggleMic}
-            onRaiseHand={handleRaiseHand}
-            onLogin={login}
-            onApproveRequest={handleApproveRequest}
-            onDenyRequest={handleDenyRequest}
-            onMutePeer={handleMutePeer}
-            onRemoveSpeaker={handleRemoveSpeaker}
-            onPlayTrack={handlePlayTrack}
-            onStopTrack={handleStopTrack}
-        />
+        <>
+            {/* Floating Bubbles Layer */}
+            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+                <AnimatePresence>
+                    {participants.map((participant) => (
+                        <ParticipantBubble
+                            key={participant.id}
+                            participant={participant}
+                            isHost={participant.role === 'host'}
+                            isSpeaker={participant.role === 'speaker'}
+                        />
+                    ))}
+                </AnimatePresence>
+            </div>
+
+            {/* Main UI Layer */}
+            <div className="relative z-10 pointer-events-auto">
+                <MiniSpaceBanner
+                    isHost={isHost}
+                    isSpeaker={isSpeaker}
+                    isConnected={!!isConnected}
+                    participantCount={participants.length} // Use participants from DB
+                    activeRoom={activeRoom}
+                    speakerRequests={speakerRequests}
+                    activeSpeakers={activeSpeakers}
+                    handRaised={!!myRequestId}
+                    isAudioEnabled={isAudioEnabled}
+                    authenticated={authenticated}
+                    playlist={playlist}
+                    currentTrack={currentTrack}
+                    onGoLive={handleGoLive}
+                    onJoin={handleJoin}
+                    onLeave={handleLeave}
+                    onEndRoom={handleEndRoom}
+                    onToggleMic={handleToggleMic}
+                    onRaiseHand={handleRaiseHand}
+                    onLogin={login}
+                    onApproveRequest={handleApproveRequest}
+                    onDenyRequest={handleDenyRequest}
+                    onMutePeer={handleMutePeer}
+                    onRemoveSpeaker={handleRemoveSpeaker}
+                    onPlayTrack={handlePlayTrack}
+                    onStopTrack={handleStopTrack}
+                />
+            </div>
+        </>
     );
 };
 

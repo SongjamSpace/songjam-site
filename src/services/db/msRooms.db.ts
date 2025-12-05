@@ -12,6 +12,7 @@ import {
     onSnapshot,
     deleteDoc,
     Timestamp,
+    setDoc,
 } from 'firebase/firestore';
 
 export interface MSRoom {
@@ -34,8 +35,18 @@ export interface SpeakerRequest {
     createdAt: number;
 }
 
-const MS_ROOMS_COLLECTION = 'msRooms';
-const SPEAKER_REQUESTS_COLLECTION = 'speakerRequests';
+export interface RoomParticipant {
+    id: string; // userId
+    roomId: string;
+    userId: string;
+    userName: string;
+    avatarUrl?: string;
+    role: 'host' | 'speaker' | 'listener';
+    joinedAt: number;
+}
+
+const MS_ROOMS_COLLECTION = 'ms-rooms';
+const PARTICIPANTS_COLLECTION = 'ms-room-participants';
 
 /**
  * Create a new active room
@@ -107,9 +118,8 @@ export async function endMSRoom(roomId: string): Promise<void> {
         });
 
         // Also delete all pending speaker requests for this room
-        const requestsRef = collection(db, SPEAKER_REQUESTS_COLLECTION);
-        const q = query(requestsRef, where('roomId', '==', roomId));
-        const querySnapshot = await getDocs(q);
+        const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests');
+        const querySnapshot = await getDocs(requestsRef);
 
         const deletePromises = querySnapshot.docs.map((doc) =>
             deleteDoc(doc.ref)
@@ -167,10 +177,9 @@ export async function addSpeakerRequest(
 ): Promise<SpeakerRequest> {
     try {
         // Check if request already exists
-        const requestsRef = collection(db, SPEAKER_REQUESTS_COLLECTION);
+        const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests');
         const q = query(
             requestsRef,
-            where('roomId', '==', roomId),
             where('userId', '==', userId),
             where('status', '==', 'pending')
         );
@@ -200,10 +209,7 @@ export async function addSpeakerRequest(
             createdAt: Date.now(),
         };
 
-        const docRef = await addDoc(
-            collection(db, SPEAKER_REQUESTS_COLLECTION),
-            requestDoc
-        );
+        const docRef = await addDoc(requestsRef, requestDoc);
 
         return {
             id: docRef.id,
@@ -219,11 +225,12 @@ export async function addSpeakerRequest(
  * Update speaker request status
  */
 export async function updateSpeakerRequestStatus(
+    roomId: string,
     requestId: string,
     status: 'approved' | 'denied'
 ): Promise<void> {
     try {
-        const docRef = doc(db, SPEAKER_REQUESTS_COLLECTION, requestId);
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests', requestId);
         await updateDoc(docRef, { status });
     } catch (error) {
         console.error('Error updating speaker request:', error);
@@ -240,10 +247,9 @@ export async function updateSpeakerRequestPeerId(
     peerId: string
 ): Promise<void> {
     try {
-        const requestsRef = collection(db, SPEAKER_REQUESTS_COLLECTION);
+        const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests');
         const q = query(
             requestsRef,
-            where('roomId', '==', roomId),
             where('userId', '==', userId),
             where('status', '==', 'pending')
         );
@@ -262,9 +268,9 @@ export async function updateSpeakerRequestPeerId(
 /**
  * Delete a speaker request
  */
-export async function deleteSpeakerRequest(requestId: string): Promise<void> {
+export async function deleteSpeakerRequest(roomId: string, requestId: string): Promise<void> {
     try {
-        const docRef = doc(db, SPEAKER_REQUESTS_COLLECTION, requestId);
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests', requestId);
         await deleteDoc(docRef);
     } catch (error) {
         console.error('Error deleting speaker request:', error);
@@ -279,10 +285,9 @@ export function subscribeToSpeakerRequests(
     roomId: string,
     callback: (requests: SpeakerRequest[]) => void
 ): () => void {
-    const requestsRef = collection(db, SPEAKER_REQUESTS_COLLECTION);
+    const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests');
     const q = query(
         requestsRef,
-        where('roomId', '==', roomId),
         where('status', '==', 'pending'),
         orderBy('createdAt', 'asc')
     );
@@ -301,6 +306,109 @@ export function subscribeToSpeakerRequests(
         },
         (error) => {
             console.error('Error in speaker requests subscription:', error);
+        }
+    );
+
+    return unsubscribe;
+}
+
+// --- Participant Management ---
+
+/**
+ * Join a room as a participant
+ */
+export async function joinRoom(
+    roomId: string,
+    userId: string,
+    userName: string,
+    role: 'host' | 'speaker' | 'listener',
+    avatarUrl?: string
+): Promise<void> {
+    try {
+        // Use a composite ID or just auto-id?
+        // Let's use userId as document ID to prevent duplicates easily
+        // But wait, user might be in multiple rooms? No, one at a time usually.
+        // But to be safe, let's just query or use a subcollection if we wanted strictness.
+        // The requirement says "create a collection called ms-room-participants".
+        // It doesn't explicitly say it should be a subcollection of ms-rooms, but it "should all the users that join rooms".
+        // A top-level collection is fine, but we need to link it to the room.
+
+        const participantDoc: RoomParticipant = {
+            id: userId,
+            roomId,
+            userId,
+            userName,
+            role,
+            avatarUrl,
+            joinedAt: Date.now(),
+        };
+
+        // We can use a composite key of roomId_userId to allow same user in different rooms (history)
+        // or just add to the collection.
+        // Let's use addDoc for now to keep it simple, or setDoc with a custom ID if we want to enforce uniqueness per room.
+        // Let's use a custom ID: `${roomId}_${userId}`
+        const docId = `${roomId}_${userId}`;
+        await setDoc(doc(db, PARTICIPANTS_COLLECTION, docId), participantDoc);
+
+    } catch (error) {
+        console.error('Error joining room:', error);
+        throw new Error('Failed to join room');
+    }
+}
+
+/**
+ * Leave a room
+ */
+export async function leaveRoom(roomId: string, userId: string): Promise<void> {
+    try {
+        const docId = `${roomId}_${userId}`;
+        await deleteDoc(doc(db, PARTICIPANTS_COLLECTION, docId));
+    } catch (error) {
+        console.error('Error leaving room:', error);
+        // Don't throw, just log
+    }
+}
+
+/**
+ * Update participant role
+ */
+export async function updateParticipantRole(
+    roomId: string,
+    userId: string,
+    role: 'host' | 'speaker' | 'listener'
+): Promise<void> {
+    try {
+        const docId = `${roomId}_${userId}`;
+        await updateDoc(doc(db, PARTICIPANTS_COLLECTION, docId), { role });
+    } catch (error) {
+        console.error('Error updating participant role:', error);
+    }
+}
+
+/**
+ * Subscribe to room participants
+ */
+export function subscribeToRoomParticipants(
+    roomId: string,
+    callback: (participants: RoomParticipant[]) => void
+): () => void {
+    const participantsRef = collection(db, PARTICIPANTS_COLLECTION);
+    const q = query(
+        participantsRef,
+        where('roomId', '==', roomId)
+    );
+
+    const unsubscribe = onSnapshot(
+        q,
+        (querySnapshot) => {
+            const participants: RoomParticipant[] = [];
+            querySnapshot.forEach((doc) => {
+                participants.push(doc.data() as RoomParticipant);
+            });
+            callback(participants);
+        },
+        (error) => {
+            console.error('Error in participants subscription:', error);
         }
     );
 
