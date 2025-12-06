@@ -11,6 +11,7 @@ interface LeaderboardRow {
   userId: string;
   stakingMultiplier?: number;
   spacePoints?: number;
+  pointsWithoutMultiplier?: number;
 }
 
 // Mindshare data will be generated dynamically from leaderboard data
@@ -824,6 +825,12 @@ export default function MindshareLeaderboard({
                         <span className="md:hidden">Space</span>
                       </th>
                     )}
+                    {showSpacePoints && (
+                      <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
+                        <span className="hidden md:inline">Timeline Points</span>
+                        <span className="md:hidden">Timeline</span>
+                      </th>
+                    )}
                     <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
                       <span className="hidden md:inline">Total Points</span>
                       <span className="md:hidden">Points</span>
@@ -885,6 +892,16 @@ export default function MindshareLeaderboard({
                             style={{ fontFamily: "Inter, sans-serif" }}
                           >
                             {u.spacePoints?.toFixed(2) || "-"}
+                          </span>
+                        </td>
+                      )}
+                      {showSpacePoints && (
+                        <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
+                          <span
+                            className="text-white/70 font-medium text-xs md:text-sm"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            {((u.pointsWithoutMultiplier || 0) - (u.spacePoints || 0))?.toFixed(2) || "0"}
                           </span>
                         </td>
                       )}
