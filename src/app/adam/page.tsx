@@ -81,7 +81,6 @@ export default function Page() {
           showSpacePoints
           showStakingMultiplier
           minStakeStr="10,000"
-          audioRoomEnabled
         />
       </div>
 
