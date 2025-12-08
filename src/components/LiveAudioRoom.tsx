@@ -25,6 +25,7 @@ import {
     joinRoom,
     leaveRoom,
     subscribeToRoomParticipants,
+    updateParticipantRole,
     MSRoom,
     SpeakerRequest,
     RoomParticipant,
@@ -544,6 +545,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             // force=true to change role immediately without asking user
             await hmsActions.changeRole(request.peerId, 'speaker', true);
 
+            // Update participant role in Firestore
+            await updateParticipantRole(firestoreRoomId, request.userId, 'speaker');
+
             // Update request status in Firestore
             await updateSpeakerRequestStatus(firestoreRoomId, request.id, 'approved');
 
@@ -643,8 +647,21 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     };
 
     const handleRemoveSpeaker = async (peerId: string) => {
+        if (!firestoreRoomId) return;
         try {
+            // Find the peer to get their userId
+            const peer = peers.find(p => p.id === peerId);
+            if (!peer) {
+                console.error('Peer not found');
+                return;
+            }
+
+            // Demote speaker to listener in 100ms
             await hmsActions.changeRole(peerId, 'listener', true);
+
+            // Update participant role in Firestore
+            const userId = peer.customerUserId || peer.id;
+            await updateParticipantRole(firestoreRoomId, userId, 'listener');
         } catch (error) {
             console.error('Failed to remove speaker', error);
         }
