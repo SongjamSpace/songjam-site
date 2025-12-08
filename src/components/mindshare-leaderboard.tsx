@@ -249,6 +249,7 @@ export default function MindshareLeaderboard({
   showSpacePoints = false,
   showStakingMultiplier = false,
   minStakeStr = '10,000',
+  audioRoomEnabled = false,
 }: {
   projectId: string;
   timeframes: Array<Timeframe>;
@@ -259,6 +260,7 @@ export default function MindshareLeaderboard({
   showSpacePoints?: boolean;
   showStakingMultiplier?: boolean;
   minStakeStr?: string;
+  audioRoomEnabled?: boolean;
 }) {
   const isLight = projectId === "pharmachainai";
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
@@ -391,7 +393,7 @@ export default function MindshareLeaderboard({
         <div className="relative z-30 text-center py-4 md:py-8 px-3 md:px-4">
           {/* <div className="flex items-center justify-center gap-4 mb-2 md:mb-4"> */}
           <motion.h1
-            className={`text-2xl md:text-6xl font-black drop-shadow-lg break-words ${isLight ? "text-[#48333D]" : "text-white"
+            className={`text-2xl mb-4 md:text-6xl font-black drop-shadow-lg break-words ${isLight ? "text-[#48333D]" : "text-white"
               }`}
             style={{ fontFamily: "Orbitron, sans-serif" }}
             initial={{ opacity: 0, y: -20 }}
@@ -411,9 +413,9 @@ export default function MindshareLeaderboard({
           >
             {moto}
           </motion.p>
-          <div className="flex items-center justify-center gap-4 mt-2 md:mt-4">
-            <LiveAudioRoom />
-          </div>
+          {audioRoomEnabled && <div className="flex items-center justify-center gap-4 mt-2 md:mt-4">
+            <LiveAudioRoom projectId={projectId} />
+          </div>}
         </div>
 
         {/* Treemap Container */}

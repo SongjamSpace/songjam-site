@@ -189,7 +189,7 @@ const ParticipantBubble = ({ participant, isHost, isSpeaker }: { participant: Ro
     );
 };
 
-const LiveAudioRoomInner = () => {
+const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const hmsActions = useHMSActions();
     const isConnected = useHMSStore(selectIsConnectedToRoom);
     const peers = useHMSStore(selectPeers);
@@ -381,10 +381,22 @@ const LiveAudioRoomInner = () => {
             login();
             return;
         }
-
+        const userId = twitterObj?.twitterId;
+        const userName = twitterObj?.username;
+        if (!userId) {
+            alert('No user ID found');
+            return;
+        }
+        if (!userName) {
+            alert('No user name found');
+            return;
+        }
+        if (projectId !== userName.toLowerCase()) {
+            alert(`Mindshare space can only be hosted by the creator: @${projectId}`);
+            return;
+        }
         try {
             // 1. Get token for host role
-            const userId = twitterObj?.twitterId || `host-${Math.random().toString(36).substring(2, 15)}`;
 
             const response = await fetch('/api/100ms/token', {
                 method: 'POST',
@@ -398,7 +410,7 @@ const LiveAudioRoomInner = () => {
 
             // 2. Join 100ms room
             await hmsActions.join({
-                userName: twitterObj?.name || twitterObj?.username || 'Host',
+                userName: userName,
                 authToken: token,
             });
 
@@ -407,7 +419,7 @@ const LiveAudioRoomInner = () => {
             if (!activeRoom) {
                 const msRoom = await createMSRoom(
                     userId,
-                    twitterObj?.name || twitterObj?.username || 'Host',
+                    userName,
                     'genesis-room'
                 );
                 setFirestoreRoomId(msRoom.id);
@@ -647,7 +659,7 @@ const LiveAudioRoomInner = () => {
                             isHost={isHost}
                             isSpeaker={isSpeaker}
                             isConnected={!!isConnected}
-                            participantCount={participants.length} // Use participants from DB
+                            participantCount={participants.length - 1} // Use participants from DB
                             activeRoom={activeRoom}
                             speakerRequests={speakerRequests}
                             activeSpeakers={activeSpeakers}
@@ -707,10 +719,10 @@ const LiveAudioRoomInner = () => {
     );
 };
 
-export default function LiveAudioRoom() {
+export default function LiveAudioRoom({ projectId }: { projectId: string }) {
     return (
         <HMSRoomProvider>
-            <LiveAudioRoomInner />
+            <LiveAudioRoomInner projectId={projectId} />
         </HMSRoomProvider>
     );
 }

@@ -63,6 +63,7 @@ export default function Page() {
           backgroundImageUrl="/images/banners/zaal.png"
           showStakingMultiplier
           minStakeStr="100,000"
+          audioRoomEnabled
         />
       </div>
     </div>

@@ -45,8 +45,8 @@ export interface RoomParticipant {
     joinedAt: number;
 }
 
-const MS_ROOMS_COLLECTION = 'ms-rooms';
-const PARTICIPANTS_COLLECTION = 'ms-room-participants';
+const MS_ROOMS_COLLECTION = 'ms_rooms';
+const PARTICIPANTS_COLLECTION = 'ms_room_participants';
 
 /**
  * Create a new active room
