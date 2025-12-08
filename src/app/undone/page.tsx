@@ -83,7 +83,7 @@ export default function Page() {
         title="Undone x Williams Racing"
         moto="More than a mindshare campaign. Precision watchmaking meets motorsport engineering. Developed by UNDONE's Japan-based design team. Shipping Worldwide."
         projectId="undonewatches"
-        timeframes={["24H", "7D", "ALL"]}
+        timeframes={["ALL"]}
         backgroundImageUrl="/images/banners/undone.png"
       />
 
@@ -496,8 +496,8 @@ export default function Page() {
                           currentImageIndex === index
                             ? 0
                             : currentImageIndex > index
-                            ? -100
-                            : 100,
+                              ? -100
+                              : 100,
                         pointerEvents:
                           currentImageIndex === index ? "auto" : "none",
                       }}
@@ -517,11 +517,10 @@ export default function Page() {
                       <button
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          currentImageIndex === index
+                        className={`h-2 rounded-full transition-all duration-300 ${currentImageIndex === index
                             ? "w-8 bg-white"
                             : "w-2 bg-white/50 hover:bg-white/75"
-                        }`}
+                          }`}
                         aria-label={`Go to image ${index + 1}`}
                       />
                     ))}
