@@ -46,8 +46,13 @@ export interface RoomParticipant {
     joinedAt: number;
 }
 
+export interface RoomParticipantHistory extends RoomParticipant {
+    leftAt: number;
+}
+
 const MS_ROOMS_COLLECTION = 'ms_rooms';
 const PARTICIPANTS_COLLECTION = 'ms_room_participants';
+const PARTICIPANTS_HISTORY_COLLECTION = 'ms_room_participants_history';
 const SPEAKER_REQUESTS_SUBCOLLECTION = 'speaker_requests';
 
 /**
@@ -369,7 +374,26 @@ export async function joinRoom(
 export async function leaveRoom(roomId: string, userId: string): Promise<void> {
     try {
         const docId = `${roomId}_${userId}`;
-        await deleteDoc(doc(db, PARTICIPANTS_COLLECTION, docId));
+        const participantRef = doc(db, PARTICIPANTS_COLLECTION, docId);
+
+        // Get current participant data before deleting
+        const participantSnap = await getDoc(participantRef);
+
+        if (participantSnap.exists()) {
+            const participantData = participantSnap.data() as RoomParticipant;
+
+            // Archive to history collection with leftAt timestamp
+            const historyDocId = `${docId}_${Date.now()}`;
+            const historyData: RoomParticipantHistory = {
+                ...participantData,
+                leftAt: Date.now()
+            };
+
+            await setDoc(doc(db, PARTICIPANTS_HISTORY_COLLECTION, historyDocId), historyData);
+        }
+
+        // Delete from active participants
+        await deleteDoc(participantRef);
     } catch (error) {
         console.error('Error leaving room:', error);
         // Don't throw, just log
