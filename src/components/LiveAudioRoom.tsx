@@ -202,6 +202,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const [myRequestId, setMyRequestId] = useState<string | null>(null);
     const [firestoreRoomId, setFirestoreRoomId] = useState<string | null>(null);
     const [participants, setParticipants] = useState<RoomParticipant[]>([]);
+    const [anonymousUserId, setAnonymousUserId] = useState<string | null>(null);
 
     // Notification State
     const [notifications, setNotifications] = useState<{ id: string; userName: string; avatarUrl?: string }[]>([]);
@@ -255,7 +256,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                 const notification = {
                     id: notificationId,
                     userName: p.userName,
-                    avatarUrl: p.avatarUrl
+                    avatarUrl: p.avatarUrl || ''
                 };
 
                 setNotifications(prev => {
@@ -274,7 +275,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
     // Subscribe to active room from Firestore
     useEffect(() => {
-        const unsubscribe = subscribeToActiveRoom((room) => {
+        const unsubscribe = subscribeToActiveRoom(projectId, (room) => {
             setActiveRoom(room);
             if (room) {
                 setFirestoreRoomId(room.id);
@@ -284,7 +285,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         });
 
         return unsubscribe;
-    }, []);
+    }, [projectId]);
 
     // Subscribe to speaker requests if host
     useEffect(() => {
@@ -313,11 +314,23 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
     // Join/Leave room participant logic
     useEffect(() => {
-        if (!firestoreRoomId || !authenticated || !twitterObj) return;
+        if (!firestoreRoomId) return;
 
-        const userId = twitterObj.twitterId || user?.uid;
-        const userName = twitterObj.name || twitterObj.username || 'User';
-        const avatarUrl = twitterObj.avatarUrl || undefined;
+        // Determine userId, userName, and avatarUrl based on authentication status
+        let userId: string | undefined;
+        let userName: string = ''; // Default value
+        let avatarUrl: string = 'https://unavatar.io/x/songjamspace';
+
+        if (authenticated && twitterObj) {
+            // Authenticated user
+            userId = twitterObj.twitterId || user?.uid;
+            userName = twitterObj.name || twitterObj.username || 'User';
+            avatarUrl = `https://unavatar.io/x/${twitterObj.username}`;
+        } else if (anonymousUserId) {
+            // Anonymous user (already joined via handleJoin)
+            userId = anonymousUserId;
+            userName = 'Listener';
+        }
 
         if (!userId) return;
 
@@ -332,7 +345,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         return () => {
             leaveRoom(firestoreRoomId, userId);
         };
-    }, [firestoreRoomId, authenticated, twitterObj, user?.uid, isHostUser, localPeer?.roleName]);
+    }, [firestoreRoomId, authenticated, twitterObj, user?.uid, isHostUser, localPeer?.roleName, anonymousUserId]);
 
     // Sync peer ID if I have a pending request and just joined/rejoined
     useEffect(() => {
@@ -391,10 +404,10 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             alert('No user name found');
             return;
         }
-        if (projectId !== userName.toLowerCase()) {
-            alert(`Mindshare space can only be hosted by the creator: @${projectId}`);
-            return;
-        }
+        // if (projectId !== userName.toLowerCase()) {
+        //     alert(`Mindshare space can only be hosted by the creator: @${projectId}`);
+        //     return;
+        // }
         try {
             // 1. Get token for host role
 
@@ -418,6 +431,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             // If we are re-joining, the room already exists in Firestore
             if (!activeRoom) {
                 const msRoom = await createMSRoom(
+                    projectId,
                     userId,
                     userName,
                     'genesis-room'
@@ -440,6 +454,11 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
         try {
             const userId = twitterObj?.twitterId || `listener-${Math.random().toString(36).substring(2, 15)}`;
+
+            // Store anonymous userId in state for participant tracking
+            if (!twitterObj?.twitterId) {
+                setAnonymousUserId(userId);
+            }
 
             const response = await fetch('/api/100ms/token', {
                 method: 'POST',
@@ -659,7 +678,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             isHost={isHost}
                             isSpeaker={isSpeaker}
                             isConnected={!!isConnected}
-                            participantCount={participants.length - 1} // Use participants from DB
+                            participantCount={(participants.length || 1) - 1} // Use participants from DB
                             activeRoom={activeRoom}
                             speakerRequests={speakerRequests}
                             activeSpeakers={activeSpeakers}
@@ -687,7 +706,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             </div>
 
             {/* Join Notifications Snackbar */}
-            <div className="fixed bottom-4 right-4 z-50 flex flex-col justify-end gap-2 pointer-events-none">
+            {isHost && <div className="fixed bottom-4 right-4 z-50 flex flex-col justify-end gap-2 pointer-events-none">
                 <AnimatePresence>
                     {notifications.map((notification) => (
                         <motion.div
@@ -714,7 +733,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                         </motion.div>
                     ))}
                 </AnimatePresence>
-            </div>
+            </div>}
         </>
     );
 };

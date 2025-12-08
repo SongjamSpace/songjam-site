@@ -48,7 +48,7 @@ export default function Page() {
 
   // Subscribe to active room
   useEffect(() => {
-    const unsubscribe = subscribeToActiveRoom((room) => {
+    const unsubscribe = subscribeToActiveRoom(projectId, (room) => {
       setActiveRoom(room);
     });
     return unsubscribe;

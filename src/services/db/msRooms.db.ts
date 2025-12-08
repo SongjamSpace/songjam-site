@@ -17,6 +17,7 @@ import {
 
 export interface MSRoom {
     id: string;
+    projectId: string;
     hostId: string;
     hostName: string;
     roomId: string; // 100ms room ID
@@ -47,17 +48,20 @@ export interface RoomParticipant {
 
 const MS_ROOMS_COLLECTION = 'ms_rooms';
 const PARTICIPANTS_COLLECTION = 'ms_room_participants';
+const SPEAKER_REQUESTS_SUBCOLLECTION = 'speaker_requests';
 
 /**
  * Create a new active room
  */
 export async function createMSRoom(
+    projectId: string,
     hostId: string,
     hostName: string,
     roomId: string
 ): Promise<MSRoom> {
     try {
         const roomDoc = {
+            projectId,
             hostId,
             hostName,
             roomId,
@@ -78,13 +82,14 @@ export async function createMSRoom(
 }
 
 /**
- * Get the currently active room (there should only be one)
+ * Get the currently active room for a specific project
  */
-export async function getActiveRoom(): Promise<MSRoom | null> {
+export async function getActiveRoom(projectId: string): Promise<MSRoom | null> {
     try {
         const roomsRef = collection(db, MS_ROOMS_COLLECTION);
         const q = query(
             roomsRef,
+            where('projectId', '==', projectId),
             where('state', '==', 'active'),
             orderBy('createdAt', 'desc')
         );
@@ -118,7 +123,7 @@ export async function endMSRoom(roomId: string): Promise<void> {
         });
 
         // Also delete all pending speaker requests for this room
-        const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests');
+        const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, SPEAKER_REQUESTS_SUBCOLLECTION);
         const querySnapshot = await getDocs(requestsRef);
 
         const deletePromises = querySnapshot.docs.map((doc) =>
@@ -132,14 +137,16 @@ export async function endMSRoom(roomId: string): Promise<void> {
 }
 
 /**
- * Subscribe to active room changes
+ * Subscribe to active room changes for a specific project
  */
 export function subscribeToActiveRoom(
+    projectId: string,
     callback: (room: MSRoom | null) => void
 ): () => void {
     const roomsRef = collection(db, MS_ROOMS_COLLECTION);
     const q = query(
         roomsRef,
+        where('projectId', '==', projectId),
         where('state', '==', 'active'),
         orderBy('createdAt', 'desc')
     );
@@ -177,7 +184,7 @@ export async function addSpeakerRequest(
 ): Promise<SpeakerRequest> {
     try {
         // Check if request already exists
-        const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests');
+        const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, SPEAKER_REQUESTS_SUBCOLLECTION);
         const q = query(
             requestsRef,
             where('userId', '==', userId),
@@ -230,7 +237,7 @@ export async function updateSpeakerRequestStatus(
     status: 'approved' | 'denied'
 ): Promise<void> {
     try {
-        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests', requestId);
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId, SPEAKER_REQUESTS_SUBCOLLECTION, requestId);
         await updateDoc(docRef, { status });
     } catch (error) {
         console.error('Error updating speaker request:', error);
@@ -247,7 +254,7 @@ export async function updateSpeakerRequestPeerId(
     peerId: string
 ): Promise<void> {
     try {
-        const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests');
+        const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, SPEAKER_REQUESTS_SUBCOLLECTION);
         const q = query(
             requestsRef,
             where('userId', '==', userId),
@@ -270,7 +277,7 @@ export async function updateSpeakerRequestPeerId(
  */
 export async function deleteSpeakerRequest(roomId: string, requestId: string): Promise<void> {
     try {
-        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests', requestId);
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId, SPEAKER_REQUESTS_SUBCOLLECTION, requestId);
         await deleteDoc(docRef);
     } catch (error) {
         console.error('Error deleting speaker request:', error);
@@ -285,7 +292,7 @@ export function subscribeToSpeakerRequests(
     roomId: string,
     callback: (requests: SpeakerRequest[]) => void
 ): () => void {
-    const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, 'speaker-requests');
+    const requestsRef = collection(db, MS_ROOMS_COLLECTION, roomId, SPEAKER_REQUESTS_SUBCOLLECTION);
     const q = query(
         requestsRef,
         where('status', '==', 'pending'),
