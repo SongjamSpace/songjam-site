@@ -32,6 +32,7 @@ interface LeaderboardRow {
   username: string;
   name: string;
   totalPoints: number;
+  finalScore: number;
   userId: string;
   stakingMultiplier?: number;
   spacePoints?: number;
@@ -204,8 +205,8 @@ function MindshareLeaderboardMobile({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
             className={`relative overflow-hidden rounded-xl border p-3 flex flex-col justify-between ${gridClass} ${isLight
-                ? "bg-white/40 border-black/5"
-                : "bg-white/5 border-white/10"
+              ? "bg-white/40 border-black/5"
+              : "bg-white/5 border-white/10"
               }`}
           >
             {/* Rank Badge */}
@@ -301,7 +302,7 @@ export default function MindshareLeaderboard({
     } else if (timeframe === "30D") {
       return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}_monthly`;
     }
-    return `https://songjamspace-leaderboard.logesh-063.workers.dev/${projectId}`;
+    return `https://songjamspace-leaderboard.logesh-063.workers.dev/podium_${projectId}`;
   };
 
   // Fetch leaderboard data by timeframe
@@ -835,7 +836,7 @@ export default function MindshareLeaderboard({
                 style={{ fontFamily: "var(--font-williams), sans-serif" }}
               >
                 {selectedTimeframe}{" "}
-                <span className="hidden md:inline">Users</span>
+                <span className="hidden md:inline">Time</span>
               </h3>
               <Link href="https://leaderboard.songjam.space" target="_blank">
                 <motion.button
@@ -852,7 +853,7 @@ export default function MindshareLeaderboard({
                 className="text-xs md:text-sm text-white/60 whitespace-nowrap"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                {sortedAllUsers.length.toLocaleString()} users
+                {sortedAllUsers.length.toLocaleString()} singers
               </div>
             </div>
             <div className="overflow-x-auto max-h-[40rem] overflow-y-auto">
@@ -866,7 +867,7 @@ export default function MindshareLeaderboard({
                       Rank
                     </th>
                     <th className="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap min-w-[120px] md:min-w-0">
-                      Yapper
+                      Singer
                     </th>
                     <th className="px-2 md:px-6 py-2 md:py-3 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-1 md:gap-1.5 group relative">
@@ -907,13 +908,24 @@ export default function MindshareLeaderboard({
                       <span className="hidden md:inline">Sing Points</span>
                       <span className="md:hidden">Points</span>
                     </th>
+                    <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
+                      <span className="hidden md:inline">Final Score</span>
+                      <span className="md:hidden">Score</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedAllUsers.map((u, idx) => {
                     const hasUndonePoints = Boolean(u.undonePoints);
-                    const baseRowBg =
+                    let baseRowBg =
                       idx % 2 === 0 ? "bg-white/0" : "bg-white/[0.03]";
+
+                    // Podium styling
+                    if (idx < 3) {
+                      baseRowBg = "bg-amber-400/10 hover:bg-amber-400/20"; // Gold/Amber for top 3
+                    } else if (idx < 5) {
+                      baseRowBg = "bg-blue-400/10 hover:bg-blue-400/20"; // Blueish for next 2
+                    }
                     const rowBgClass = hasUndonePoints
                       ? baseRowBg
                       : "bg-red-500/10";
@@ -931,25 +943,50 @@ export default function MindshareLeaderboard({
                               className="text-white font-medium text-xs md:text-sm"
                               style={{ fontFamily: "Inter, sans-serif" }}
                             >
-                              {idx + 1}
+                              P{idx + 1}
                             </span>
                           </td>
                           <td className="px-2 md:px-6 py-2 md:py-3 align-middle min-w-[120px] md:min-w-0">
-                            <div className="flex flex-col">
-                              <span
-                                className="text-white font-medium text-xs md:text-sm truncate max-w-[100px] md:max-w-none"
-                                style={{ fontFamily: "Inter, sans-serif" }}
-                                title={u.name || u.username}
-                              >
-                                {u.name || u.username}
-                              </span>
-                              <span
-                                className="text-white/60 text-xs truncate max-w-[100px] md:max-w-none"
-                                style={{ fontFamily: "Inter, sans-serif" }}
-                                title={`@${u.username}`}
-                              >
-                                @{u.username}
-                              </span>
+                            <div className="flex items-center gap-2">
+                              {idx < 3 && (
+                                <img
+                                  src="/images/undone/fw47.webp"
+                                  className="w-8 h-12 object-contain hidden md:block" // Hidden on small mobile to save space? Or keep it? The user wants it shown.
+                                  alt="Prize"
+                                />
+                              )}
+                              {idx >= 3 && idx < 5 && (
+                                <img
+                                  src="/images/undone/carbono.webp"
+                                  className="w-8 h-12 object-contain hidden md:block"
+                                  alt="Prize"
+                                />
+                              )}
+                              {/* Mobile view for images - smaller or different layout if needed, but flex-row works */}
+                              {(idx < 5) && (
+                                <img
+                                  src={idx < 3 ? "/images/undone/fw47.webp" : "/images/undone/carbono.webp"}
+                                  className="w-6 h-10 object-contain md:hidden"
+                                  alt="Prize"
+                                />
+                              )}
+
+                              <div className="flex flex-col">
+                                <span
+                                  className="text-white font-medium text-xs md:text-sm truncate max-w-[100px] md:max-w-none"
+                                  style={{ fontFamily: "Inter, sans-serif" }}
+                                  title={u.name || u.username}
+                                >
+                                  {u.name || u.username}
+                                </span>
+                                <span
+                                  className="text-white/60 text-xs truncate max-w-[100px] md:max-w-none"
+                                  style={{ fontFamily: "Inter, sans-serif" }}
+                                  title={`@${u.username}`}
+                                >
+                                  @{u.username}
+                                </span>
+                              </div>
                             </div>
                           </td>
                           <td className="px-2 md:px-6 py-2 md:py-3 text-center align-middle">
@@ -1042,6 +1079,14 @@ export default function MindshareLeaderboard({
                               style={{ fontFamily: "Inter, sans-serif" }}
                             >
                               {u.totalPoints.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
+                            <span
+                              className="text-white font-medium text-xs md:text-sm"
+                              style={{ fontFamily: "Inter, sans-serif" }}
+                            >
+                              {(u.finalScore * 100).toFixed(2)}
                             </span>
                           </td>
                         </tr>

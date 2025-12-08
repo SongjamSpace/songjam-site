@@ -18,9 +18,9 @@ export default function Stats() {
     avgScore:
       leaderboard && leaderboard.length > 0
         ? Math.round(
-            leaderboard.reduce((sum, entry) => sum + entry.totalPoints, 0) /
-              leaderboard.length
-          )
+          leaderboard.reduce((sum, entry) => sum + entry.totalPoints, 0) /
+          leaderboard.length
+        )
         : 0,
   };
 
@@ -42,7 +42,7 @@ export default function Stats() {
       <div className="flex flex-col gap-8 lg:gap-16 text-[#48333D] w-full lg:w-1/3">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-bold">--</h1>
-          <p>Total Yappers</p>
+          <p>Total Singers</p>
         </div>
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-bold">--</h1>
@@ -60,7 +60,7 @@ export default function Stats() {
     <div className="flex flex-col gap-6 lg:gap-12 text-[#48333D] w-full lg:w-1/3">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">{stats.totalYappers}</h1>
-        <p>Total Yappers</p>
+        <p>Total Singers</p>
       </div>
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">{formatNumber(stats.topScore)}</h1>

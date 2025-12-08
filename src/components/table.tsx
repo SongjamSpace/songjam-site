@@ -11,7 +11,7 @@ import {
 import { LeaderboardEntry, useLeaderboard } from "@/lib/hooks/useLeaderboard";
 import { formatNumber } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import SeasonTwoBanner from "./season-two-banner";
+// import SeasonTwoBanner from "./season-two-banner";
 
 export default function TableDemo() {
   const { data, isLoading, isError, error } = useLeaderboard();
@@ -38,14 +38,14 @@ export default function TableDemo() {
     return (
       <div className="w-full overflow-x-auto">
         {/* Season Two Banner */}
-        <SeasonTwoBanner />
+        {/* <SeasonTwoBanner /> */}
 
         {/* Add the Connect Wallet for Airdrop */}
         <Table className="w-full p-4 rounded-lg border border-white bg-white/10 text-[#48333D] min-w-[400px]">
           <TableHeader>
             <TableRow className="text-[#48333D] font-bold">
               <TableHead className="w-[100px] text-[#48333D]">Rank</TableHead>
-              <TableHead className="text-[#48333D]">Yapper</TableHead>
+              <TableHead className="text-[#48333D]">Singer</TableHead>
               <TableHead className="w-40" />
               <TableHead className="text-[#48333D]">Total Points</TableHead>
             </TableRow>
@@ -80,7 +80,7 @@ export default function TableDemo() {
   return (
     <div className="w-full overflow-x-auto">
       {/* Season Two Banner */}
-      <SeasonTwoBanner />
+      {/* <SeasonTwoBanner /> */}
 
       {/* Add the Connect Wallet for Airdrop */}
       <div className="mb-4 flex justify-center">
@@ -122,17 +122,16 @@ export default function TableDemo() {
         <TableHeader>
           <TableRow className="text-[#48333D] font-bold">
             <TableHead className="w-[100px] text-[#48333D]">Rank</TableHead>
-            <TableHead className="text-[#48333D]">Yapper</TableHead>
+            <TableHead className="text-[#48333D]">Singer</TableHead>
             <TableHead className="w-20 text-[#48333D]">
               <div className="flex items-center justify-center relative">
                 <div className="relative group cursor-pointer">
                   <svg
                     onClick={() => setShowFlaggedYappers(!showFlaggedYappers)}
-                    className={`w-4 h-4 transition-colors duration-200 ${
-                      showFlaggedYappers
+                    className={`w-4 h-4 transition-colors duration-200 ${showFlaggedYappers
                         ? "text-red-500 opacity-100"
                         : "text-[#48333D] opacity-60 hover:opacity-100"
-                    }`}
+                      }`}
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
