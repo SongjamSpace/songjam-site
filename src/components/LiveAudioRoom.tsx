@@ -158,14 +158,13 @@ const ParticipantBubble = ({ participant, isHost, isSpeaker }: { participant: Ro
             className="absolute z-10 flex flex-col items-center justify-center pointer-events-auto"
             initial={{ opacity: 0, scale: 0 }}
             animate={{
-                opacity: [0.4, 0.8, 0.4],
+                opacity: 1,
                 scale: [0.9, 1.1, 0.9],
                 x: [0, 20, -20, 0],
                 y: [0, -20, 20, 0],
             }}
             exit={{ opacity: 0, scale: 0 }}
             transition={{
-                opacity: { repeat: Infinity, duration: randomDuration.current, ease: "easeInOut", delay: randomDelay.current },
                 scale: { repeat: Infinity, duration: randomDuration.current * 0.8, ease: "easeInOut", delay: randomDelay.current },
                 x: { repeat: Infinity, duration: randomDuration.current * 1.5, ease: "easeInOut" },
                 y: { repeat: Infinity, duration: randomDuration.current * 1.2, ease: "easeInOut" },
@@ -175,12 +174,12 @@ const ParticipantBubble = ({ participant, isHost, isSpeaker }: { participant: Ro
                 top: `${randomY.current}%`
             }}
         >
-            <div className="relative w-12 h-12 rounded-full p-[1px] bg-gradient-to-tr from-white/10 to-white/5 hover:from-purple-500/50 hover:to-cyan-500/50 transition-colors duration-500">
+            <div className="relative w-12 h-12 rounded-full p-[1px] bg-gradient-to-tr from-white/60 to-white/40 hover:from-purple-500/50 hover:to-cyan-500/50 transition-colors duration-500">
                 <div className="w-full h-full rounded-full overflow-hidden bg-black/80 backdrop-blur-sm">
                     {participant.avatarUrl ? (
-                        <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                        <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover transition-opacity" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white/50 text-[10px]">
+                        <div className="w-full h-full flex items-center justify-center text-white text-[10px]">
                             {participant.userName.charAt(0).toUpperCase()}
                         </div>
                     )}
@@ -203,7 +202,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const [myRequestId, setMyRequestId] = useState<string | null>(null);
     const [firestoreRoomId, setFirestoreRoomId] = useState<string | null>(null);
     const [participants, setParticipants] = useState<RoomParticipant[]>([]);
-    const [anonymousUserId, setAnonymousUserId] = useState<string | null>(null);
+
 
     // Notification State
     const [notifications, setNotifications] = useState<{ id: string; userName: string; avatarUrl?: string }[]>([]);
@@ -262,9 +261,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
                 setNotifications(prev => {
                     const updated = [...prev, notification];
-                    // Keep only the last 5 notifications to prevent screen clutter
+                    // Keep only the last 10 notifications to prevent screen clutter
                     if (updated.length > 10) {
-                        return updated.slice(updated.length - 5);
+                        return updated.slice(10);
                     }
                     return updated;
                 });
@@ -317,21 +316,18 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     useEffect(() => {
         if (!firestoreRoomId) return;
 
-        // Determine userId, userName, and avatarUrl based on authentication status
-        let userId: string | undefined;
-        let userName: string = ''; // Default value
-        let avatarUrl: string = 'https://unavatar.io/x/songjamspace';
+        // Only add to Firestore if we are actually connected to the HMS room
+        // This prevents auto-joining on page load/reload
+        if (!isConnected) return;
 
-        if (authenticated && twitterObj) {
-            // Authenticated user
-            userId = twitterObj.twitterId || user?.uid;
-            userName = twitterObj.name || twitterObj.username || 'User';
-            avatarUrl = `https://unavatar.io/x/${twitterObj.username}`;
-        } else if (anonymousUserId) {
-            // Anonymous user (already joined via handleJoin)
-            userId = anonymousUserId;
-            userName = 'Listener';
-        }
+        // Determine userId, userName, and avatarUrl based on authentication status
+        if (!authenticated || (!twitterObj && !user)) return;
+
+        const userId = twitterObj?.twitterId || user?.uid;
+        const userName = twitterObj?.name || twitterObj?.username || user?.displayName || 'User';
+        const avatarUrl = twitterObj?.username
+            ? `https://unavatar.io/x/${twitterObj.username}`
+            : (user?.photoURL || 'https://unavatar.io/x/songjamspace');
 
         if (!userId) return;
 
@@ -346,7 +342,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         return () => {
             leaveRoom(firestoreRoomId, userId);
         };
-    }, [firestoreRoomId, authenticated, twitterObj, user?.uid, isHostUser, localPeer?.roleName, anonymousUserId]);
+    }, [firestoreRoomId, authenticated, twitterObj, user?.uid, isHostUser, localPeer?.roleName, isConnected]);
 
     // Sync peer ID if I have a pending request and just joined/rejoined
     useEffect(() => {
@@ -356,7 +352,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                 // but we can blindly try to update it. It's cheap.
                 await updateSpeakerRequestPeerId(
                     activeRoom.id,
-                    twitterObj?.twitterId || user.uid || 'anonymous',
+                    twitterObj?.twitterId || user.uid,
                     localPeer.id
                 );
             }
@@ -447,6 +443,11 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const handleJoin = async () => {
         if (!activeRoom) return;
 
+        if (!authenticated) {
+            login();
+            return;
+        }
+
         // If I am the host user re-joining, join as host
         if (isHostUser) {
             await handleGoLive();
@@ -454,11 +455,11 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         }
 
         try {
-            const userId = twitterObj?.twitterId || `listener-${Math.random().toString(36).substring(2, 15)}`;
+            const userId = twitterObj?.twitterId || user?.uid;
 
-            // Store anonymous userId in state for participant tracking
-            if (!twitterObj?.twitterId) {
-                setAnonymousUserId(userId);
+            if (!userId) {
+                console.error("No user ID found for fetching token");
+                return;
             }
 
             const response = await fetch('/api/100ms/token', {
@@ -471,7 +472,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
             if (token) {
                 await hmsActions.join({
-                    userName: twitterObj?.name || twitterObj?.username || 'Listener',
+                    userName: twitterObj?.name || twitterObj?.username || user?.displayName || 'Listener',
                     authToken: token,
                 });
             }
@@ -500,9 +501,14 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         } else {
             // Otherwise, add a new request
             try {
+                const userId = twitterObj?.twitterId || localPeer.customerUserId;
+                if (!userId) {
+                    console.error("No user ID found for speaker request");
+                    return;
+                }
                 const request = await addSpeakerRequest(
                     activeRoom.id,
-                    twitterObj?.twitterId || localPeer.customerUserId || 'anonymous',
+                    userId,
                     twitterObj?.name || twitterObj?.username || localPeer.name,
                     localPeer.id
                 );
