@@ -24,6 +24,8 @@ export interface MSRoom {
     state: 'active' | 'ended';
     createdAt: number;
     endedAt?: number;
+    pinnedLink?: string | null;
+    pinnedLinks?: string[];
 }
 
 export interface SpeakerRequest {
@@ -445,3 +447,51 @@ export function subscribeToRoomParticipants(
 
     return unsubscribe;
 }
+
+
+
+/**
+ * Add a pinned link to a room
+ */
+export async function addPinnedLink(
+    roomId: string,
+    link: string
+): Promise<void> {
+    try {
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+        const roomSnap = await getDoc(docRef);
+        if (roomSnap.exists()) {
+            const currentLinks = roomSnap.data().pinnedLinks || [];
+            // distinct add
+            if (!currentLinks.includes(link)) {
+                await updateDoc(docRef, {
+                    pinnedLinks: [...currentLinks, link]
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error adding pinned link:', error);
+    }
+}
+
+/**
+ * Remove a pinned link from a room
+ */
+export async function removePinnedLink(
+    roomId: string,
+    link: string
+): Promise<void> {
+    try {
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+        const roomSnap = await getDoc(docRef);
+        if (roomSnap.exists()) {
+            const currentLinks = roomSnap.data().pinnedLinks || [];
+            await updateDoc(docRef, {
+                pinnedLinks: currentLinks.filter((l: string) => l !== link)
+            });
+        }
+    } catch (error) {
+        console.error('Error removing pinned link:', error);
+    }
+}
+

@@ -29,9 +29,12 @@ import {
     MSRoom,
     SpeakerRequest,
     RoomParticipant,
+    addPinnedLink,
+    removePinnedLink,
 } from '@/services/db/msRooms.db';
 import { getMusicUploadsByUserId } from '@/services/storage/dj.storage';
 import MiniSpaceBanner from './MiniSpaceBanner';
+import { Jumbotron } from './Jumbotron';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ParticipantBubble = ({ participant, isHost, isSpeaker }: { participant: RoomParticipant; isHost: boolean; isSpeaker: boolean }) => {
@@ -267,6 +270,11 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                     }
                     return updated;
                 });
+
+                // Auto-dismiss after 2 seconds
+                setTimeout(() => {
+                    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+                }, 2000);
             });
         }
 
@@ -633,6 +641,25 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         }
     };
 
+    const handlePinTweet = async (url: string) => {
+        if (!firestoreRoomId || !isHost) return;
+        try {
+            await addPinnedLink(firestoreRoomId, url);
+        } catch (error) {
+            console.error('Failed to pin tweet', error);
+        }
+    };
+
+    const handleUnpinTweet = async (url: string) => {
+        if (!firestoreRoomId || !isHost) return;
+        try {
+            await removePinnedLink(firestoreRoomId, url);
+        } catch (error) {
+            console.error('Failed to unpin tweet', error);
+        }
+    };
+
+
     const isSpeaker = localPeer?.roleName?.toLowerCase() === 'speaker';
 
     // Get all active speakers (excluding host if needed, but usually we want to see them)
@@ -675,6 +702,12 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
     return (
         <>
+            <Jumbotron
+                pinnedLinks={activeRoom?.pinnedLinks || []}
+                isHost={isHost}
+                onUnpin={handleUnpinTweet}
+            />
+
             {/* Floating Bubbles Layer */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 <AnimatePresence>
@@ -723,6 +756,8 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             onRemoveSpeaker={handleRemoveSpeaker}
                             onPlayTrack={handlePlayTrack}
                             onStopTrack={handleStopTrack}
+                            onPinTweet={handlePinTweet}
+                            pinnedLink={activeRoom?.pinnedLink}
                         />
                     </div>
                 </div>
