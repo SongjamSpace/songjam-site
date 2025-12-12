@@ -12,6 +12,8 @@
     "@100mslive/hms-video-store": "^0.12.39",
     "@100mslive/react-sdk": "^0.10.39",
     "@elevenlabs/react": "^0.11.0",
+    "@neynar/react": "^1.2.22",
+    "@pigment-css/react": "^0.0.30",
     "@privy-io/react-auth": "^3.3.0",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
     "@radix-ui/react-dialog": "^1.1.14",

@@ -1,6 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NeynarContextProvider, Theme } from "@neynar/react";
 import { createContext, useContext, useEffect, useState } from "react";
 
 import { auth } from "@/services/firebase.service";
@@ -89,10 +90,25 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
-
+  console.log(process.env.NEXT_PUBLIC_NEYNAR_CLIENT_ID)
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </AuthProvider>
+    <NeynarContextProvider
+      settings={{
+        clientId: process.env.NEXT_PUBLIC_NEYNAR_CLIENT_ID || "",
+        defaultTheme: Theme.Dark,
+        eventsCallbacks: {
+          onAuthSuccess: (params) => {
+            console.log("Neynar auth success", params);
+          },
+          onSignout: () => {
+            console.log("Neynar signout");
+          },
+        },
+      }}
+    >
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </AuthProvider>
+    </NeynarContextProvider>
   );
 }
