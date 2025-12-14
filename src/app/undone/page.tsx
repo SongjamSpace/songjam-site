@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import localFont from "next/font/local";
 import MindshareLeaderboard from "./mindshare-leaderboard";
+import Navbar from "@/components/navbar";
 
 const williamsFont = localFont({
   src: "../../../public/fonts/Williams-SemiBold.ttf",
@@ -79,6 +80,18 @@ export default function Page() {
 
   return (
     <div className={williamsFont.variable}>
+      <div className="p-4">
+        <Navbar />
+      </div>
+
+      <div className="px-4 mb-4">
+        <div className="max-w-7xl mx-auto bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 text-center backdrop-blur-md">
+          <h3 className="text-xl md:text-2xl font-bold text-yellow-400 uppercase tracking-wider" style={{ fontFamily: "var(--font-williams), sans-serif" }}>
+            🏁 This Campaign has ended 🏁
+          </h3>
+        </div>
+      </div>
+
       <MindshareLeaderboard
         title="Undone x Williams Racing"
         moto="More than a mindshare campaign. Precision watchmaking meets motorsport engineering. Developed by UNDONE's Japan-based design team. Shipping Worldwide."
@@ -518,8 +531,8 @@ export default function Page() {
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
                         className={`h-2 rounded-full transition-all duration-300 ${currentImageIndex === index
-                            ? "w-8 bg-white"
-                            : "w-2 bg-white/50 hover:bg-white/75"
+                          ? "w-8 bg-white"
+                          : "w-2 bg-white/50 hover:bg-white/75"
                           }`}
                         aria-label={`Go to image ${index + 1}`}
                       />

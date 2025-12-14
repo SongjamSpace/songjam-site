@@ -3,28 +3,23 @@ import React, { useEffect, useState } from "react";
 import MindshareLeaderboard from "@/components/mindshare-leaderboard";
 import Navbar from "@/components/navbar";
 import MindshareOverview from "@/components/mindshare-overview";
-import axios from "axios";
+import { getAudiofiLatestCountAndTimestamp, getLatestCountAndTimestamp } from "@/services/db/leaderboardProjects";
+import { number } from "framer-motion";
 
 const PROJECT_ID = 'bettercallzaal';
 
 export default function Page() {
   const [totalUsersCount, setTotalUsersCount] = useState(0);
   const [totalDiscussions, setTotalDiscussions] = useState(0);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<number>();
 
   const fetchTotalUsersCount = async () => {
     try {
-      const audiofiRes = await axios.get(
-        `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/audiofi/discussion-count/${PROJECT_ID}`
-      );
-      if (audiofiRes.data.count) {
-        setTotalDiscussions(audiofiRes.data.count);
-      }
-      const infofiRes = await axios.get(
-        `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/leaderboard/latest-lb-users-count/${PROJECT_ID}`
-      );
-      if (infofiRes.data.usersCount) {
-        setTotalUsersCount(infofiRes.data.usersCount);
-      }
+      const audiofiRes = await getAudiofiLatestCountAndTimestamp(PROJECT_ID);
+      setTotalDiscussions(audiofiRes.count);
+      const infofiRes = await getLatestCountAndTimestamp(PROJECT_ID);
+      setTotalUsersCount(infofiRes.count);
+      setLastUpdatedAt(infofiRes.timestamp);
     } catch (error) {
       console.error("Error fetching total users count:", error);
     }
@@ -64,6 +59,7 @@ export default function Page() {
           showStakingMultiplier
           minStakeStr="100,000"
           audioRoomEnabled
+          lastUpdatedAt={lastUpdatedAt}
         />
       </div>
     </div>

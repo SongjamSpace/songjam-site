@@ -7,8 +7,9 @@ import AudioReactiveBackground from "@/components/audio-reactive-background";
 import AgentConversation from "@/components/agent-conversation";
 import axios from "axios";
 import { subscribeToActiveRoom, MSRoom } from "@/services/db/msRooms.db";
+import { getAudiofiLatestCountAndTimestamp, getLatestCountAndTimestamp } from "@/services/db/leaderboardProjects";
 
-const projectId = "adam_songjam";
+const PROJECT_ID = "adam_songjam";
 
 type AgentState =
   | "disconnected"
@@ -18,20 +19,29 @@ type AgentState =
   | null;
 
 export default function Page() {
+  const [totalDiscussions, setTotalDiscussions] = useState(0);
   const [totalUsersCount, setTotalUsersCount] = useState(0);
   const [inputVolume, setInputVolume] = useState(0);
   const [outputVolume, setOutputVolume] = useState(0);
   const [agentState, setAgentState] = useState<AgentState>("disconnected");
   const [activeRoom, setActiveRoom] = useState<MSRoom | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<number>();
 
   const fetchTotalUsersCount = async () => {
-    const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/audiofi/discussion-count/${projectId}`
-    );
-    if (res.data.count) {
-      setTotalUsersCount(res.data.count);
+    try {
+      const audiofiRes = await getAudiofiLatestCountAndTimestamp(PROJECT_ID);
+      setTotalDiscussions(audiofiRes.count);
+      const infofiRes = await getLatestCountAndTimestamp(PROJECT_ID);
+      setTotalUsersCount(infofiRes.count);
+      setLastUpdatedAt(infofiRes.timestamp);
+    } catch (error) {
+      console.error("Error fetching total users count:", error);
     }
   };
+
+  useEffect(() => {
+    fetchTotalUsersCount();
+  }, []);
 
   const handleVolumeChange = useCallback((input: number, output: number) => {
     setInputVolume(input);
@@ -42,13 +52,9 @@ export default function Page() {
     setAgentState(state);
   }, []);
 
-  useEffect(() => {
-    fetchTotalUsersCount();
-  }, []);
-
   // Subscribe to active room
   useEffect(() => {
-    const unsubscribe = subscribeToActiveRoom(projectId, (room) => {
+    const unsubscribe = subscribeToActiveRoom(PROJECT_ID, (room) => {
       setActiveRoom(room);
     });
     return unsubscribe;
@@ -71,16 +77,17 @@ export default function Page() {
       {/* Content with proper z-index */}
       <div className="relative z-10">
         <Navbar />
-        <HybridTarget currentYappers={totalUsersCount} />
+        <HybridTarget currentYappers={totalDiscussions} />
         <MindshareLeaderboard
           title="Why $ADAM?"
           moto="1st Creator Coin in Songjam Ecosystem - Seeded in SOL for a Cross-Chain Future"
-          projectId={projectId}
+          projectId={PROJECT_ID}
           timeframes={["24H", "7D", "ALL"]}
           backgroundImageUrl="/images/banners/adam.jpeg"
           showSpacePoints
           showStakingMultiplier
           minStakeStr="10,000"
+          lastUpdatedAt={lastUpdatedAt}
         />
       </div>
 
@@ -91,6 +98,7 @@ export default function Page() {
           onStateChange={handleStateChange}
           metaDetails={{
             totalUsersCount,
+            // totalDiscussions
           }}
         />
       )}
