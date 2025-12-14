@@ -31,6 +31,8 @@ interface MiniSpaceBannerProps {
     currentTrack: string | null;
     onPlayTrack: (url: string) => void;
     onStopTrack: () => void;
+    onPinTweet: (url: string) => void;
+    pinnedLink?: string | null;
 }
 
 export default function MiniSpaceBanner({
@@ -59,10 +61,14 @@ export default function MiniSpaceBanner({
     onRemoveSpeaker,
     onPlayTrack,
     onStopTrack,
+    onPinTweet,
+    pinnedLink,
 }: MiniSpaceBannerProps) {
     const [showRequests, setShowRequests] = React.useState(false);
     const [showSpeakers, setShowSpeakers] = React.useState(false);
     const [showPlaylist, setShowPlaylist] = React.useState(false);
+    const [showPinInput, setShowPinInput] = React.useState(false);
+    const [tweetUrl, setTweetUrl] = React.useState('');
 
     // Animation variants
     const containerVariants = {
@@ -352,6 +358,68 @@ export default function MiniSpaceBanner({
                                                         </div>
                                                     ))}
                                                 </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+
+                            {/* Host: Pin Tweet */}
+                            {isHost && (
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowPinInput(!showPinInput)}
+                                        className={`p-2 rounded-full transition-all ${showPinInput || pinnedLink
+                                            ? 'bg-blue-400/20 text-blue-400 border border-blue-400/50'
+                                            : 'bg-white/10 hover:bg-white/20 text-white/60'
+                                            }`}
+                                        title="Pin Tweet"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                        </svg>
+                                    </button>
+
+                                    {/* Pin Input Dropdown */}
+                                    <AnimatePresence>
+                                        {showPinInput && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                className="absolute top-full right-0 mt-3 w-80 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden p-3"
+                                            >
+                                                <h3 className="text-xs font-bold text-white/80 mb-2">Pin a Tweet</h3>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        value={tweetUrl}
+                                                        onChange={(e) => setTweetUrl(e.target.value)}
+                                                        placeholder="Paste tweet URL..."
+                                                        className="flex-1 bg-black/50 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-blue-500"
+                                                    />
+                                                    <button
+                                                        onClick={() => {
+                                                            onPinTweet(tweetUrl);
+                                                            setShowPinInput(false);
+                                                            setTweetUrl('');
+                                                        }}
+                                                        className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded transition-colors"
+                                                    >
+                                                        Pin
+                                                    </button>
+                                                </div>
+                                                {pinnedLink && (
+                                                    <button
+                                                        onClick={() => {
+                                                            onPinTweet(''); // Unpin
+                                                            setShowPinInput(false);
+                                                        }}
+                                                        className="mt-2 w-full py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs rounded transition-colors"
+                                                    >
+                                                        Unpin Current Tweet
+                                                    </button>
+                                                )}
                                             </motion.div>
                                         )}
                                     </AnimatePresence>

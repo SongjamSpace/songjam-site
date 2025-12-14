@@ -13,6 +13,8 @@ import {
     deleteDoc,
     Timestamp,
     setDoc,
+    increment,
+    arrayUnion,
 } from 'firebase/firestore';
 
 export interface MSRoom {
@@ -24,7 +26,11 @@ export interface MSRoom {
     state: 'active' | 'ended';
     createdAt: number;
     endedAt?: number;
+    pinnedLink?: string | null;
+    pinnedLinks?: PinnedItem[];
 }
+
+export type PinnedItem = string | { url: string; message?: string };
 
 export interface SpeakerRequest {
     id: string;
@@ -444,4 +450,97 @@ export function subscribeToRoomParticipants(
     );
 
     return unsubscribe;
+}
+
+
+
+/**
+ * Add a pinned link to a room
+ */
+export async function addPinnedLink(
+    roomId: string,
+    item: PinnedItem
+): Promise<void> {
+    try {
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+        const roomSnap = await getDoc(docRef);
+        if (roomSnap.exists()) {
+            const currentLinks: PinnedItem[] = roomSnap.data().pinnedLinks || [];
+
+            const newItemUrl = typeof item === 'string' ? item : item.url;
+
+            // Check for duplicate URL
+            const exists = currentLinks.some(link => {
+                const linkUrl = typeof link === 'string' ? link : link.url;
+                return linkUrl === newItemUrl;
+            });
+
+            if (!exists) {
+                await updateDoc(docRef, {
+                    pinnedLinks: [...currentLinks, item]
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error adding pinned link:', error);
+    }
+}
+
+/**
+ * Remove a pinned link from a room
+ */
+export async function removePinnedLink(
+    roomId: string,
+    linkUrlToRemove: string
+): Promise<void> {
+    try {
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+        const roomSnap = await getDoc(docRef);
+        if (roomSnap.exists()) {
+            const currentLinks: PinnedItem[] = roomSnap.data().pinnedLinks || [];
+            await updateDoc(docRef, {
+                pinnedLinks: currentLinks.filter((link) => {
+                    const url = typeof link === 'string' ? link : link.url;
+                    return url !== linkUrlToRemove;
+                })
+            });
+        }
+    } catch (error) {
+        console.error('Error removing pinned link:', error);
+    }
+}
+
+/**
+ * Increment user bonus points
+ */
+export async function incrementUserBonusPoints(
+    twitterId: string,
+    points: number,
+    data: {
+        twitterHandle: string;
+        projectId: string;
+        fid?: string;
+        farcasterHandle?: string;
+        tweetId?: string;
+    }
+): Promise<void> {
+    try {
+        const USER_BONUS_POINTS_COLLECTION = 'user_bonus_points';
+        const docRef = doc(db, USER_BONUS_POINTS_COLLECTION, twitterId);
+
+        await setDoc(docRef, {
+            bonusPoints: increment(points),
+            twitterId: twitterId,
+            twitterHandle: data.twitterHandle,
+            projectId: data.projectId,
+            fid: data.fid || '',
+            farcasterHandle: data.farcasterHandle || '',
+            lastUpdated: Date.now(),
+            tweetIds: arrayUnion(data.tweetId || ''),
+        }, { merge: true });
+
+    } catch (error) {
+        console.error('Error incrementing user bonus points:', error);
+        throw error;
+    }
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {
     HMSRoomProvider,
     useHMSActions,
@@ -10,9 +11,11 @@ import {
     selectIsPeerAudioEnabled,
     selectLocalPeer,
     selectRoomState,
+    selectDominantSpeaker,
     HMSRoomState,
 } from '@100mslive/react-sdk';
 import { useAuth } from '@/components/providers';
+// import { useNeynarContext } from "@neynar/react";
 import {
     subscribeToActiveRoom,
     createMSRoom,
@@ -29,163 +32,257 @@ import {
     MSRoom,
     SpeakerRequest,
     RoomParticipant,
+    addPinnedLink,
+    removePinnedLink,
+    PinnedItem,
 } from '@/services/db/msRooms.db';
 import { getMusicUploadsByUserId } from '@/services/storage/dj.storage';
 import MiniSpaceBanner from './MiniSpaceBanner';
+import { Jumbotron } from './Jumbotron';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ParticipantBubble = ({ participant, isHost, isSpeaker }: { participant: RoomParticipant; isHost: boolean; isSpeaker: boolean }) => {
-    // Random initial position for listeners to create a "field" effect
-    const randomX = useRef(Math.random() * 90 + 5); // 5% to 95%
-    const randomY = useRef(Math.random() * 90 + 5); // 5% to 95%
-    const randomDuration = useRef(20 + Math.random() * 20);
-    const randomDelay = useRef(Math.random() * 5);
+const getStableSpeakerPosition = (userId: string) => {
+    let hash = 0;
+    for (let i = 0; i < userId.length; i++) {
+        hash = userId.charCodeAt(i) + ((hash << 5) - hash);
+    }
 
-    // Host: The Core Energy Source
+    // Distribute speakers on the sides or top, avoiding the center card area
+    // Center card is roughly 30% - 70% width, 20% - 80% height depending on screen
+    // We will place speakers in:
+    // Zone 1 (Left): X = 5-25%
+    // Zone 2 (Right): X = 75-95%
+    // Zone 3 (Top): X = 25-75%, Y = 5-20%
+
+    const zone = Math.abs(hash) % 3;
+    let x, y;
+
+    if (zone === 0) {
+        // Left
+        x = 5 + (Math.abs(hash >> 2) % 20); // 5% - 25%
+        y = 15 + (Math.abs(hash >> 4) % 60); // 15% - 75%
+    } else if (zone === 1) {
+        // Right
+        x = 75 + (Math.abs(hash >> 2) % 20); // 75% - 95%
+        y = 15 + (Math.abs(hash >> 4) % 60); // 15% - 75%
+    } else {
+        // Top
+        x = 25 + (Math.abs(hash >> 2) % 50); // 25% - 75%
+        y = 5 + (Math.abs(hash >> 4) % 15); // 5% - 20%
+    }
+
+    return { x, y };
+};
+
+const ParticipantBubble = ({
+    participant,
+    isHost,
+    isSpeaker,
+    isActiveSpeaker,
+    targetPosition
+}: {
+    participant: RoomParticipant;
+    isHost: boolean;
+    isSpeaker: boolean;
+    isActiveSpeaker: boolean;
+    targetPosition?: { x: number; y: number };
+}) => {
+    // Memoize random values with a "safe zone" logic for listeners
+    const randomValues = useMemo(() => {
+        // Generate a random angle and distance for "orbiting"
+        const angle = Math.random() * Math.PI * 2;
+        // Minimum distance of 15% from center, max 40%
+        const distance = 15 + Math.random() * 25;
+
+        // Calculate offset in %
+        const xOffset = Math.cos(angle) * distance * 1.5; // Stretch X for landscape aspect ratio
+        const yOffset = Math.sin(angle) * distance;
+
+        return {
+            duration: 8 + Math.random() * 10, // Faster: 8-18s (was 15-30s)
+            delay: Math.random() * 2,
+            initialOffset: { x: xOffset, y: yOffset },
+            // Jitter for the "roaming" effect - Increased range
+            roamX: (Math.random() - 0.5) * 200, // Increased from 50 to 200
+            roamY: (Math.random() - 0.5) * 200  // Increased from 50 to 200
+        };
+    }, []);
+
+    // Determine target coordinates based on role
+    let finalX = '50%';
+    let finalY = '35%';
+    let animateProps = {};
+    let transitionProps = {};
+
     if (isHost) {
-        return (
-            <motion.div
-                className="absolute z-30 flex flex-col items-center justify-center pointer-events-auto cursor-pointer"
-                style={{ left: '50%', top: '35%', x: '-50%', y: '-50%' }}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            >
-                {/* Pulsing Aura */}
-                <motion.div
-                    className="absolute inset-0 rounded-full bg-purple-500/20 blur-xl"
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.6, 0.3] }}
-                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                />
+        finalX = '50%';
+        finalY = '35%';
+        animateProps = {
+            scale: isActiveSpeaker ? 1.2 : 1,
+            zIndex: 30, // Host is behind HUD but above listeners? Adjust if needed.
+            x: 0,
+            y: 0
+        };
+        transitionProps = {
+            scale: { duration: 0.5 }
+        };
+    } else if (isSpeaker) {
+        const pos = getStableSpeakerPosition(participant.userId);
+        finalX = `${pos.x}%`;
+        finalY = `${pos.y}%`;
+        animateProps = {
+            scale: isActiveSpeaker ? 1.15 : 1,
+            zIndex: 50, // High z-index to ensure visibility above other elements
+            x: 0, // Reset any roaming x
+            y: isActiveSpeaker ? -10 : 0, // Simple lift
+        };
+        transitionProps = {
+            y: { duration: 0.5, ease: "easeInOut" },
+            x: { duration: 0.5 }
+        };
 
-                {/* Rotating Rings */}
-                <motion.div
-                    className="absolute -inset-4 rounded-full border border-purple-500/30 border-dashed"
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
-                />
-                <motion.div
-                    className="absolute -inset-2 rounded-full border border-cyan-500/30 border-dotted"
-                    animate={{ rotate: -360 }}
-                    transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
-                />
+        // Optional: Add a gentle hover for speakers if needed, but keeping it simple first to fix visibility
+        if (isActiveSpeaker) {
+            // If we really want the bounce, we can add it back later, but let's stabilize first.
+            // Actually, a simple y-repeat works better in transition than array in animate for this specific bug.
+            animateProps = { ...animateProps, y: -10 };
+            transitionProps = { ...transitionProps, y: { repeat: Infinity, repeatType: 'reverse', duration: 0.8 } };
+        }
 
-                {/* Main Avatar Container */}
-                <div className="relative w-32 h-32 rounded-full p-1 bg-gradient-to-br from-purple-500 via-fuchsia-500 to-cyan-500 shadow-[0_0_50px_rgba(168,85,247,0.6)]">
-                    <div className="w-full h-full rounded-full overflow-hidden border-4 border-black bg-black relative z-10">
-                        {participant.avatarUrl ? (
-                            <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black text-white text-4xl font-bold">
-                                {participant.userName.charAt(0).toUpperCase()}
-                            </div>
-                        )}
-                    </div>
+    } else {
+        // Listener
+        // Target position (active speaker) + Orbit offset
+        const tx = targetPosition ? targetPosition.x : 50;
+        const ty = targetPosition ? targetPosition.y : 35;
 
-                    {/* "Live" Indicator */}
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-red-600 to-orange-600 rounded-full text-white text-[10px] font-bold tracking-widest uppercase shadow-lg border border-white/20 z-20">
-                        HOST
-                    </div>
-                </div>
+        finalX = `${Math.max(5, Math.min(95, tx + randomValues.initialOffset.x))}%`;
+        finalY = `${Math.max(5, Math.min(95, ty + randomValues.initialOffset.y))}%`;
 
-                <div className="mt-4 px-4 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-white text-sm font-semibold tracking-wide shadow-xl">
-                    {participant.userName}
-                </div>
-            </motion.div>
-        );
+        animateProps = {
+            scale: [0.8, 1, 0.8], // Gentle pulse
+            zIndex: 10,
+            // Continuous roaming
+            x: [0, randomValues.roamX, 0],
+            y: [0, randomValues.roamY, 0],
+        };
+        transitionProps = {
+            scale: { repeat: Infinity, duration: 4, ease: "easeInOut" },
+            x: { repeat: Infinity, duration: randomValues.duration, ease: "easeInOut", repeatType: "mirror" },
+            y: { repeat: Infinity, duration: randomValues.duration, ease: "easeInOut", repeatType: "mirror" },
+        };
     }
 
-    // Speakers: Orbiting Satellites
-    if (isSpeaker) {
-        // Calculate a pseudo-random orbit position based on ID or name hash would be better, 
-        // but for now random is okay as long as it's stable per mount.
-        // Actually, let's make them float in a specific "Speaker Zone" around the host.
-
-        return (
-            <motion.div
-                className="absolute z-20 flex flex-col items-center justify-center pointer-events-auto cursor-pointer"
-                initial={{ scale: 0, opacity: 0, x: 0, y: 0 }}
-                animate={{
-                    scale: 1,
-                    opacity: 1,
-                    y: [0, -10, 10, 0],
-                }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{
-                    y: { repeat: Infinity, duration: 4 + Math.random() * 2, ease: "easeInOut" }
-                }}
-                style={{
-                    left: `${20 + Math.random() * 60}%`,
-                    top: `${20 + Math.random() * 40}%`
-                }}
-                drag
-                dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-                dragElastic={0.2}
-            >
-                <div className="relative group">
-                    {/* Speaker Glow */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full opacity-75 blur group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-
-                    <div className="relative w-20 h-20 rounded-full p-0.5 bg-black">
-                        <div className="w-full h-full rounded-full overflow-hidden border-2 border-cyan-400/50 bg-gray-900">
-                            {participant.avatarUrl ? (
-                                <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-900 to-blue-900 text-white text-xl font-bold">
-                                    {participant.userName.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Mic Icon / Status */}
-                    <div className="absolute -right-1 -bottom-1 w-8 h-8 bg-black rounded-full flex items-center justify-center border border-gray-700 shadow-lg">
-                        <span className="text-lg">🎤</span>
-                    </div>
-                </div>
-
-                <div className="mt-2 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-full border border-cyan-500/20 text-cyan-100 text-xs font-medium">
-                    {participant.userName}
-                </div>
-            </motion.div>
-        );
-    }
-
-    // Listeners: Stardust / Floating Particles
     return (
         <motion.div
-            className="absolute z-10 flex flex-col items-center justify-center pointer-events-auto"
+            className="absolute flex flex-col items-center justify-center pointer-events-auto cursor-pointer"
             initial={{ opacity: 0, scale: 0 }}
             animate={{
-                opacity: [0.4, 0.8, 0.4],
-                scale: [0.9, 1.1, 0.9],
-                x: [0, 20, -20, 0],
-                y: [0, -20, 20, 0],
+                opacity: 1, // Always enforce opacity 1
+                left: finalX,
+                top: finalY,
+                ...animateProps
             }}
-            exit={{ opacity: 0, scale: 0 }}
+            // Removed exit animation to prevent accidental disappearances during role switches
+            // exit={{ opacity: 0, scale: 0 }} 
             transition={{
-                opacity: { repeat: Infinity, duration: randomDuration.current, ease: "easeInOut", delay: randomDelay.current },
-                scale: { repeat: Infinity, duration: randomDuration.current * 0.8, ease: "easeInOut", delay: randomDelay.current },
-                x: { repeat: Infinity, duration: randomDuration.current * 1.5, ease: "easeInOut" },
-                y: { repeat: Infinity, duration: randomDuration.current * 1.2, ease: "easeInOut" },
+                left: { duration: 2, ease: "easeInOut" },
+                top: { duration: 2, ease: "easeInOut" },
+                default: { duration: 0.5 },
+                ...transitionProps
             }}
-            style={{
-                left: `${randomX.current}%`,
-                top: `${randomY.current}%`
-            }}
+            style={{ x: '-50%', y: '-50%' }} // Center the element on its coordinate
         >
-            <div className="relative w-12 h-12 rounded-full p-[1px] bg-gradient-to-tr from-white/10 to-white/5 hover:from-purple-500/50 hover:to-cyan-500/50 transition-colors duration-500">
-                <div className="w-full h-full rounded-full overflow-hidden bg-black/80 backdrop-blur-sm">
+            {/* Inner Content - changes based on role but keeps structure roughly similar */}
+
+            {/* Host Aura */}
+            {isHost && (
+                <>
+                    <motion.div
+                        className={`absolute inset-0 rounded-full ${isActiveSpeaker ? 'bg-cyan-500/40' : 'bg-purple-500/20'} blur-xl`}
+                        animate={{
+                            scale: isActiveSpeaker ? [1, 1.8, 1] : [1, 1.5, 1],
+                            opacity: isActiveSpeaker ? [0.4, 0.8, 0.4] : [0.3, 0.6, 0.3]
+                        }}
+                        transition={{ repeat: Infinity, duration: isActiveSpeaker ? 2 : 4, ease: "easeInOut" }}
+                    />
+                    <motion.div
+                        className="absolute -inset-4 rounded-full border border-purple-500/30 border-dashed"
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+                    />
+                    <motion.div
+                        className="absolute -inset-2 rounded-full border border-cyan-500/30 border-dotted"
+                        animate={{ rotate: -360 }}
+                        transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
+                    />
+                </>
+            )}
+
+            {/* Speaker Glow */}
+            {!isHost && isSpeaker && (
+                <motion.div
+                    className={`absolute -inset-1 bg-gradient-to-r ${isActiveSpeaker ? 'from-green-400 to-emerald-500' : 'from-cyan-400 to-blue-500'} rounded-full opacity-75 blur`}
+                    animate={{
+                        opacity: isActiveSpeaker ? [0.6, 1, 0.6] : 0.75,
+                        scale: isActiveSpeaker ? 1.2 : 1
+                    }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                ></motion.div>
+            )}
+
+            {/* Listener Glow (faint) */}
+            {!isHost && !isSpeaker && (
+                <div className="absolute inset-0 bg-white/5 blur-md rounded-full"></div>
+            )}
+
+            {/* Avatar Container */}
+            <div className={`relative rounded-full 
+                ${isHost ? 'w-32 h-32 p-1' : isSpeaker ? 'w-20 h-20 p-0.5' : 'w-12 h-12 p-[1px]'}
+                ${isHost ? `bg-gradient-to-br ${isActiveSpeaker ? 'from-cyan-400 via-blue-500 to-indigo-500' : 'from-purple-500 via-fuchsia-500 to-cyan-500'} shadow-[0_0_50px_rgba(168,85,247,0.6)]` : ''}
+                ${!isHost && isSpeaker ? 'bg-black' : ''}
+                ${!isHost && !isSpeaker ? 'bg-gradient-to-tr from-white/60 to-white/40 hover:from-purple-500/50 hover:to-cyan-500/50' : ''}
+                transition-all duration-500
+            `}>
+                <div className={`w-full h-full rounded-full overflow-hidden 
+                    ${isHost ? 'border-4 border-black bg-black' : ''}
+                    ${!isHost && isSpeaker ? `border-2 ${isActiveSpeaker ? 'border-green-400' : 'border-cyan-400/50'} bg-gray-900` : ''}
+                    ${!isHost && !isSpeaker ? 'bg-black/80 backdrop-blur-sm' : ''}
+                    transition-all duration-500
+                `}>
                     {participant.avatarUrl ? (
-                        <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                        <img src={participant.avatarUrl} alt={participant.userName} className="w-full h-full object-cover" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white/50 text-[10px]">
+                        <div className={`w-full h-full flex items-center justify-center 
+                            ${isHost ? 'bg-gradient-to-br from-gray-900 to-black text-white text-4xl font-bold' : ''}
+                            ${!isHost && isSpeaker ? 'bg-gradient-to-br from-cyan-900 to-blue-900 text-white text-xl font-bold' : ''}
+                            ${!isHost && !isSpeaker ? 'text-white text-[10px]' : ''}
+                         `}>
                             {participant.userName.charAt(0).toUpperCase()}
                         </div>
                     )}
                 </div>
+
+                {/* Status Badges */}
+                {isHost && (
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-red-600 to-orange-600 rounded-full text-white text-[10px] font-bold tracking-widest uppercase shadow-lg border border-white/20 z-20">
+                        HOST
+                    </div>
+                )}
+                {!isHost && isSpeaker && (
+                    <div className="absolute -right-1 -bottom-1 w-8 h-8 bg-black rounded-full flex items-center justify-center border border-gray-700 shadow-lg">
+                        <span className="text-lg">🎤</span>
+                    </div>
+                )}
             </div>
+
+            {/* Name Label */}
+            {!isHost && !isSpeaker ? null : (
+                <div className={`mt-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-white font-semibold tracking-wide shadow-xl 
+                    ${isHost ? 'mt-4 text-sm' : 'text-xs'}
+                 `}>
+                    {participant.userName}
+                </div>
+            )}
         </motion.div>
     );
 };
@@ -196,14 +293,37 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const peers = useHMSStore(selectPeers);
     const localPeer = useHMSStore(selectLocalPeer);
     const isAudioEnabled = useHMSStore(selectIsPeerAudioEnabled(localPeer?.id || ''));
+    const dominantSpeaker = useHMSStore(selectDominantSpeaker);
     const { user, authenticated, login, twitterObj } = useAuth();
+    // const { user: neynarUser, isAuthenticated } = useNeynarContext();
+    // const authenticated = isAuthenticated;
+
+    // // Map Neynar user to app user structure
+    // const user = neynarUser ? {
+    //     uid: neynarUser.fid.toString(),
+    //     displayName: neynarUser.display_name,
+    //     photoURL: neynarUser.pfp_url,
+    // } : null;
+
+    // const twitterObj = neynarUser ? {
+    //     twitterId: neynarUser.fid.toString(),
+    //     username: neynarUser.username,
+    //     name: neynarUser.display_name,
+    //     avatarUrl: neynarUser.pfp_url
+    // } : null;
+
+    // const login = () => {
+    //     // Neynar auth is handled via the button, this is a no-op or we could prompt user
+    //     console.log("Please use the Neynar login button");
+    //     alert("Please use the Sign in with Neynar button");
+    // };
 
     const [activeRoom, setActiveRoom] = useState<MSRoom | null>(null);
     const [speakerRequests, setSpeakerRequests] = useState<SpeakerRequest[]>([]);
     const [myRequestId, setMyRequestId] = useState<string | null>(null);
     const [firestoreRoomId, setFirestoreRoomId] = useState<string | null>(null);
     const [participants, setParticipants] = useState<RoomParticipant[]>([]);
-    const [anonymousUserId, setAnonymousUserId] = useState<string | null>(null);
+
 
     // Notification State
     const [notifications, setNotifications] = useState<{ id: string; userName: string; avatarUrl?: string }[]>([]);
@@ -262,12 +382,17 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
                 setNotifications(prev => {
                     const updated = [...prev, notification];
-                    // Keep only the last 5 notifications to prevent screen clutter
+                    // Keep only the last 10 notifications to prevent screen clutter
                     if (updated.length > 10) {
-                        return updated.slice(updated.length - 5);
+                        return updated.slice(10);
                     }
                     return updated;
                 });
+
+                // Auto-dismiss after 2 seconds
+                setTimeout(() => {
+                    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+                }, 2000);
             });
         }
 
@@ -317,36 +442,51 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     useEffect(() => {
         if (!firestoreRoomId) return;
 
-        // Determine userId, userName, and avatarUrl based on authentication status
-        let userId: string | undefined;
-        let userName: string = ''; // Default value
-        let avatarUrl: string = 'https://unavatar.io/x/songjamspace';
+        // Only add to Firestore if we are actually connected to the HMS room
+        // This prevents auto-joining on page load/reload
+        if (!isConnected) return;
 
-        if (authenticated && twitterObj) {
-            // Authenticated user
-            userId = twitterObj.twitterId || user?.uid;
-            userName = twitterObj.name || twitterObj.username || 'User';
-            avatarUrl = `https://unavatar.io/x/${twitterObj.username}`;
-        } else if (anonymousUserId) {
-            // Anonymous user (already joined via handleJoin)
-            userId = anonymousUserId;
-            userName = 'Listener';
-        }
+        // Determine userId, userName, and avatarUrl based on authentication status
+        if (!authenticated || (!twitterObj && !user)) return;
+
+        const userId = twitterObj?.twitterId || user?.uid;
+        const userName = twitterObj?.name || twitterObj?.username || user?.displayName || 'User';
+        const avatarUrl = twitterObj?.username
+            ? `https://unavatar.io/x/${twitterObj.username}`
+            : (user?.photoURL || 'https://unavatar.io/x/songjamspace');
 
         if (!userId) return;
 
-        // Determine role based on localPeer or isHostUser
-        let role: 'host' | 'speaker' | 'listener' = 'listener';
-        if (isHostUser) role = 'host';
-        else if (localPeer?.roleName?.toLowerCase() === 'speaker') role = 'speaker';
+        // Determine initial role based on isHostUser
+        let initialRole: 'host' | 'speaker' | 'listener' = 'listener';
+        if (isHostUser) initialRole = 'host';
+        // We do NOT use localPeer.roleName here to prevent re-triggering this effect on role change
+        // We will rely on the role update effect below to sync the correct role if it differs
 
         // Join room
-        joinRoom(firestoreRoomId, userId, userName, role, avatarUrl);
+        joinRoom(firestoreRoomId, userId, userName, initialRole, avatarUrl);
 
         return () => {
             leaveRoom(firestoreRoomId, userId);
         };
-    }, [firestoreRoomId, authenticated, twitterObj, user?.uid, isHostUser, localPeer?.roleName, anonymousUserId]);
+        // Removed localPeer?.roleName from dependency array to prevent leave/join on role switch
+    }, [firestoreRoomId, authenticated, twitterObj, user?.uid, isHostUser, isConnected]);
+
+    // Role Update Sync Logic
+    useEffect(() => {
+        if (!firestoreRoomId || !isConnected || !localPeer?.roleName) return;
+
+        const userId = twitterObj?.twitterId || user?.uid;
+        if (!userId) return;
+
+        let role: 'host' | 'speaker' | 'listener' = 'listener';
+        if (isHostUser) role = 'host';
+        else if (localPeer.roleName.toLowerCase() === 'speaker') role = 'speaker';
+
+        // Update role in Firestore without leaving the room
+        updateParticipantRole(firestoreRoomId, userId, role);
+
+    }, [localPeer?.roleName, firestoreRoomId, isConnected, twitterObj, user?.uid, isHostUser]);
 
     // Sync peer ID if I have a pending request and just joined/rejoined
     useEffect(() => {
@@ -356,7 +496,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                 // but we can blindly try to update it. It's cheap.
                 await updateSpeakerRequestPeerId(
                     activeRoom.id,
-                    twitterObj?.twitterId || user.uid || 'anonymous',
+                    twitterObj?.twitterId || user.uid,
                     localPeer.id
                 );
             }
@@ -447,6 +587,11 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const handleJoin = async () => {
         if (!activeRoom) return;
 
+        if (!authenticated) {
+            login();
+            return;
+        }
+
         // If I am the host user re-joining, join as host
         if (isHostUser) {
             await handleGoLive();
@@ -454,11 +599,11 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         }
 
         try {
-            const userId = twitterObj?.twitterId || `listener-${Math.random().toString(36).substring(2, 15)}`;
+            const userId = twitterObj?.twitterId || user?.uid;
 
-            // Store anonymous userId in state for participant tracking
-            if (!twitterObj?.twitterId) {
-                setAnonymousUserId(userId);
+            if (!userId) {
+                console.error("No user ID found for fetching token");
+                return;
             }
 
             const response = await fetch('/api/100ms/token', {
@@ -471,7 +616,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
             if (token) {
                 await hmsActions.join({
-                    userName: twitterObj?.name || twitterObj?.username || 'Listener',
+                    userName: twitterObj?.name || twitterObj?.username || user?.displayName || 'Listener',
                     authToken: token,
                 });
             }
@@ -500,9 +645,14 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         } else {
             // Otherwise, add a new request
             try {
+                const userId = twitterObj?.twitterId || localPeer.customerUserId;
+                if (!userId) {
+                    console.error("No user ID found for speaker request");
+                    return;
+                }
                 const request = await addSpeakerRequest(
                     activeRoom.id,
-                    twitterObj?.twitterId || localPeer.customerUserId || 'anonymous',
+                    userId,
                     twitterObj?.name || twitterObj?.username || localPeer.name,
                     localPeer.id
                 );
@@ -627,6 +777,25 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         }
     };
 
+    const handlePinTweet = async (item: PinnedItem) => {
+        if (!firestoreRoomId || !isHost) return;
+        try {
+            await addPinnedLink(firestoreRoomId, item);
+        } catch (error) {
+            console.error('Failed to pin tweet', error);
+        }
+    };
+
+    const handleUnpinTweet = async (url: string) => {
+        if (!firestoreRoomId || !isHost) return;
+        try {
+            await removePinnedLink(firestoreRoomId, url);
+        } catch (error) {
+            console.error('Failed to unpin tweet', error);
+        }
+    };
+
+
     const isSpeaker = localPeer?.roleName?.toLowerCase() === 'speaker';
 
     // Get all active speakers (excluding host if needed, but usually we want to see them)
@@ -669,17 +838,52 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
     return (
         <>
+            {activeRoom?.pinnedLinks?.length && <Jumbotron
+                pinnedLinks={activeRoom?.pinnedLinks || []}
+                isHost={isHost}
+                onUnpin={handleUnpinTweet}
+                onPin={handlePinTweet}
+                projectId={projectId}
+                twitterId={twitterObj?.twitterId}
+                twitterHandle={twitterObj?.username}
+            />}
+
             {/* Floating Bubbles Layer */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 <AnimatePresence>
-                    {participants.map((participant) => (
-                        <ParticipantBubble
-                            key={participant.id}
-                            participant={participant}
-                            isHost={participant.role === 'host'}
-                            isSpeaker={participant.role === 'speaker'}
-                        />
-                    ))}
+                    {participants.map((participant) => {
+                        const isParticipantHost = participant.role === 'host';
+                        const isParticipantSpeaker = participant.role === 'speaker';
+
+                        // Determine active speaker user ID
+                        // If dominant speaker exists in HMS, use that ID
+                        // Otherwise default to host ID if activeRoom exists
+                        // Note: dominantSpeaker.customerUserId aligns with participant.userId
+                        const activeSpeakerUserId = dominantSpeaker?.customerUserId || activeRoom?.hostId;
+
+                        const isActiveSpeaker = participant.userId === activeSpeakerUserId;
+
+                        // Calculate target position for listeners
+                        let targetPosition = { x: 50, y: 35 }; // Default to Host position
+                        if (activeSpeakerUserId) {
+                            if (activeSpeakerUserId === activeRoom?.hostId) {
+                                targetPosition = { x: 50, y: 35 };
+                            } else {
+                                targetPosition = getStableSpeakerPosition(activeSpeakerUserId);
+                            }
+                        }
+
+                        return (
+                            <ParticipantBubble
+                                key={participant.id}
+                                participant={participant}
+                                isHost={isParticipantHost}
+                                isSpeaker={isParticipantSpeaker}
+                                isActiveSpeaker={isActiveSpeaker}
+                                targetPosition={targetPosition}
+                            />
+                        );
+                    })}
                 </AnimatePresence>
             </div>
 
@@ -717,6 +921,8 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             onRemoveSpeaker={handleRemoveSpeaker}
                             onPlayTrack={handlePlayTrack}
                             onStopTrack={handleStopTrack}
+                            onPinTweet={handlePinTweet}
+                            pinnedLink={activeRoom?.pinnedLink}
                         />
                     </div>
                 </div>

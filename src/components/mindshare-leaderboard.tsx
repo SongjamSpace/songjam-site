@@ -4,6 +4,7 @@ import { useState, useMemo, type ReactNode } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import Link from "next/link";
 import LiveAudioRoom from "./LiveAudioRoom";
+import moment from "moment";
 
 interface LeaderboardRow {
   username: string;
@@ -250,6 +251,7 @@ export default function MindshareLeaderboard({
   showStakingMultiplier = false,
   minStakeStr = '10,000',
   audioRoomEnabled = false,
+  lastUpdatedAt
 }: {
   projectId: string;
   timeframes: Array<Timeframe>;
@@ -261,6 +263,7 @@ export default function MindshareLeaderboard({
   showStakingMultiplier?: boolean;
   minStakeStr?: string;
   audioRoomEnabled?: boolean;
+  lastUpdatedAt?: number;
 }) {
   const isLight = projectId === "pharmachainai";
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
@@ -360,6 +363,18 @@ export default function MindshareLeaderboard({
     // Here you would typically fetch new data based on the selected timeframe
     // For now, we'll just update the state
   };
+
+  const formattedLastUpdated = useMemo(() => {
+    if (!lastUpdatedAt) return "";
+    const m = moment(lastUpdatedAt);
+    if (m.isSame(moment(), 'day')) {
+      return m.format('[Today] h:mm A');
+    }
+    if (m.isSame(moment().subtract(1, 'day'), 'day')) {
+      return m.format('[Yesterday] h:mm A');
+    }
+    return m.fromNow();
+  }, [lastUpdatedAt]);
 
   return (
     <>
@@ -649,17 +664,17 @@ export default function MindshareLeaderboard({
               >
                 {selectedTimeframe} Overview
               </h3>
-              {/* <div
-                className={`text-sm ${isLight ? "text-slate-600" : "text-white/60"
+              {lastUpdatedAt && <div
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm border ${isLight
+                  ? "bg-white/40 border-black/5 text-slate-700"
+                  : "bg-white/10 border-white/10 text-white/90"
                   }`}
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                Total:{" "}
-                {mindshareData
-                  .reduce((sum, item) => sum + item.points, 0)
-                  .toLocaleString()}{" "}
-                points
-              </div> */}
+                <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isLight ? "bg-green-500" : "bg-green-400"
+                  }`} />
+                <span>Updated: {formattedLastUpdated}</span>
+              </div>}
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div
