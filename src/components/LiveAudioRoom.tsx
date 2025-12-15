@@ -79,12 +79,14 @@ const ParticipantBubble = ({
     isHost,
     isSpeaker,
     isActiveSpeaker,
+    isSpeaking,
     targetPosition
 }: {
     participant: RoomParticipant;
     isHost: boolean;
     isSpeaker: boolean;
     isActiveSpeaker: boolean;
+    isSpeaking?: boolean;
     targetPosition?: { x: number; y: number };
 }) => {
     // Memoize random values with a "safe zone" logic for listeners
@@ -281,6 +283,13 @@ const ParticipantBubble = ({
                     ${isHost ? 'mt-4 text-sm' : 'text-xs'}
                  `}>
                     {participant.userName}
+                </div>
+            )}
+
+            {/* Speaking Indicator */}
+            {isSpeaking && (isHost || isSpeaker) && (
+                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 mt-1 px-2 py-0.5 bg-emerald-500/90 rounded-full text-white text-[10px] font-bold tracking-wider uppercase shadow-lg whitespace-nowrap z-50">
+                    Speaking...
                 </div>
             )}
         </motion.div>
@@ -861,7 +870,12 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                         // Note: dominantSpeaker.customerUserId aligns with participant.userId
                         const activeSpeakerUserId = dominantSpeaker?.customerUserId || activeRoom?.hostId;
 
+
+
                         const isActiveSpeaker = participant.userId === activeSpeakerUserId;
+
+                        // Check if actually speaking (audio level checks are internal to HMS but dominantSpeaker implies speaking)
+                        const isSpeaking = dominantSpeaker?.customerUserId === participant.userId;
 
                         // Calculate target position for listeners
                         let targetPosition = { x: 50, y: 35 }; // Default to Host position
@@ -880,6 +894,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                                 isHost={isParticipantHost}
                                 isSpeaker={isParticipantSpeaker}
                                 isActiveSpeaker={isActiveSpeaker}
+                                isSpeaking={isSpeaking}
                                 targetPosition={targetPosition}
                             />
                         );
