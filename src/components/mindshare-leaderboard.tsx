@@ -752,7 +752,7 @@ export default function MindshareLeaderboard({
                   } backdrop-blur-lg rounded-xl p-4 border text-center`}
               >
                 <div
-                  className={`text-2xl font-bold ${isLight ? "text-slate-900" : "text-white"
+                  className={`text-2xl font-bold truncate ${isLight ? "text-slate-900" : "text-white"
                     }`}
                   style={{ fontFamily: "Orbitron, sans-serif" }}
                 >

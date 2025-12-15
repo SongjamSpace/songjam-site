@@ -90,7 +90,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
-  console.log(process.env.NEXT_PUBLIC_NEYNAR_CLIENT_ID)
+
   return (
     <NeynarContextProvider
       settings={{

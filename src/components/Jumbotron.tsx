@@ -45,6 +45,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
     const [isProcessing, setIsProcessing] = React.useState(false);
     const [availableTweets, setAvailableTweets] = React.useState<any[]>([]);
     const [showTweetSelector, setShowTweetSelector] = React.useState(false);
+    const [isCollapsed, setIsCollapsed] = React.useState(false); // Collapse state
 
     const handleEarnPoints = async () => {
         if (!neynarUser?.signer_uuid) return;
@@ -169,12 +170,28 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
             */}
             <motion.div
                 initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
+                animate={{
+                    opacity: 1,
+                    x: isCollapsed ? "calc(100% - 40px)" : "0%" // On collapse keep a sliver visible or push mostly out
+                }}
                 exit={{ opacity: 0, x: 100 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="fixed top-0 right-0 h-full w-[400px] z-40 pointer-events-auto shadow-2xl"
+                className={`fixed top-0 right-0 h-full z-40 pointer-events-auto shadow-2xl transition-all duration-300 ${isCollapsed ? 'w-full sm:w-[400px]' : 'w-full sm:w-[400px]'}`}
             >
-                <div className="w-full h-full bg-black/80 backdrop-blur-xl border-l border-white/10 flex flex-col">
+                <div className="w-full h-full bg-black/80 backdrop-blur-xl border-l border-white/10 flex flex-col relative">
+
+                    {/* Collapse Toggle Button (Desktop: Hanging / Mobile: Only when collapsed) */}
+                    <button
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className={`absolute left-0 top-1/2 -translate-x-full bg-black/80 border border-white/10 border-r-0 rounded-l-lg p-3 text-white/60 hover:text-white transition-colors z-50 shadow-lg ${!isCollapsed ? 'hidden' : 'block'}`}
+                        title={isCollapsed ? "Expand Jumbotron" : "Collapse Jumbotron"}
+                    >
+                        {isCollapsed ? (
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                        ) : (
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        )}
+                    </button>
                     {/* Header */}
                     <div className="px-6 py-4 bg-gradient-to-r from-blue-500/10 to-transparent border-b border-white/5 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2">
@@ -182,6 +199,13 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_#3b82f6]" />
                                 Jumbotron
                             </span>
+                            {/* Mobile Internal Collapse Button */}
+                            <button
+                                onClick={() => setIsCollapsed(true)}
+                                className="text-xs text-white/60 hover:text-white underline decoration-white/30 hover:decoration-white transition-colors"
+                            >
+                                Collapse
+                            </button>
                             {showTweetSelector && (
                                 <button
                                     onClick={() => setShowTweetSelector(false)}
