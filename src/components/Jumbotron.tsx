@@ -346,9 +346,9 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
 
             // 2. Post to Neynar
             const response = await neynarClient.postCast(neynarUser.signer_uuid, text || '');
-            // Assuming response looks like { result: { cast: { hash: "0x...", author: {...} } } } or similar
+            // Assuming response looks like { success: true, cast: { hash: "0x...", author: {...} } } or similar
             // We need the hash to allow interactions. Use a fallback if response structure varies
-            const castHash = response?.cast?.hash || response?.result?.cast?.hash; // Adjust based on actual Neynar API response
+            const castHash = response?.cast?.hash;
 
             if (!castHash) {
                 throw new Error("Failed to retrieve cast hash");
@@ -427,7 +427,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
 
             // Post to Neynar
             const response = await neynarClient.postCast(neynarUser.signer_uuid, castText);
-            const castHash = response?.cast?.hash || response?.result?.cast?.hash;
+            const castHash = response?.cast?.hash;
 
             if (onPin && castHash) {
                 const pinnedItem: PinnedItem = {

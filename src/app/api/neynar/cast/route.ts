@@ -12,12 +12,12 @@ export async function POST(req: Request) {
             );
         }
 
-        const cast = await neynarService.publishCast({
+        const castRes = await neynarService.publishCast({
             signerUuid: signer_uuid,
             text: text,
         });
 
-        return NextResponse.json({ status: "success", cast });
+        return NextResponse.json(castRes);
     } catch (error: any) {
         console.error("Error posting cast to Neynar:", error);
         return NextResponse.json(
