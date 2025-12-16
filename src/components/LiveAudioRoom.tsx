@@ -13,6 +13,10 @@ import {
     selectRoomState,
     selectDominantSpeaker,
     HMSRoomState,
+    useTranscript,
+    selectIsTranscriptionEnabled,
+    HMSTranscriptionMode,
+    HMSTranscript
 } from '@100mslive/react-sdk';
 import { useAuth } from '@/components/providers';
 // import { useNeynarContext } from "@neynar/react";
@@ -40,6 +44,7 @@ import { getMusicUploadsByUserId } from '@/services/storage/dj.storage';
 import MiniSpaceBanner from './MiniSpaceBanner';
 import { Jumbotron } from './Jumbotron';
 import { motion, AnimatePresence } from 'framer-motion';
+import DevicePreviewModal from './DevicePreviewModal';
 
 const getStableSpeakerPosition = (userId: string) => {
     let hash = 0;
@@ -293,6 +298,65 @@ const ParticipantBubble = ({
     );
 };
 
+const CaptionOverlay = () => {
+    const [currentTranscript, setCurrentTranscript] = useState<any | null>(null);
+    const peers = useHMSStore(selectPeers);
+    const isConnected = useHMSStore(selectIsConnectedToRoom);
+
+    // Clear on disconnect
+    useEffect(() => {
+        if (!isConnected) {
+            setCurrentTranscript(null);
+        }
+    }, [isConnected]);
+
+    useTranscript({
+        onTranscript: (items: any[]) => {
+            if (items.length > 0) {
+                const latest = items[items.length - 1];
+                setCurrentTranscript((prev: any) => {
+                    if (prev?.transcript === latest.transcript && prev?.peer_id === latest.peer_id) {
+                        return prev;
+                    }
+                    return latest;
+                });
+            }
+        }
+    });
+
+    // Don't render anything if no transcript ever came, BUT
+    // to avoid layout jump if we want a permanent placeholder, we could render empty.
+    // However, user likely wants it to disappear if silence for a long time?
+    // Current requirement: "seamless".
+    // Let's keep it visible if we have data.
+    if (!currentTranscript) return null;
+
+    const peer = peers.find(p => p.id === currentTranscript.peer_id);
+    const name = peer?.name || 'Unknown Speaker';
+
+    return (
+        <div className="fixed bottom-24 left-8 max-w-md w-full px-4 z-50 pointer-events-none">
+            <div className="flex items-end justify-start min-h-[80px]">
+                <motion.div
+                    // Using peer_id as key ensures smooth updates for same speaker, 
+                    // but triggers animation when speaker changes
+                    key={currentTranscript.peer_id}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    // Removed exit animation to prevent popping
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="bg-black/60 backdrop-blur-md px-5 py-3 rounded-xl text-white text-base font-medium text-left shadow-2xl border border-white/10 border-l-4 border-l-yellow-400"
+                >
+                    <span className="text-yellow-400 font-bold block text-xs mb-1 uppercase tracking-wide opacity-80">{name}</span>
+                    <span className="leading-relaxed block">
+                        {currentTranscript.transcript}
+                    </span>
+                </motion.div>
+            </div>
+        </div>
+    );
+};
+
 const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const hmsActions = useHMSActions();
     const isConnected = useHMSStore(selectIsConnectedToRoom);
@@ -342,6 +406,14 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const [playlist, setPlaylist] = useState<{ name: string; audioUrl: string }[]>([]);
     const [currentTrack, setCurrentTrack] = useState<string | null>(null);
     const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+
+    // Device Preview State
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
+    const [previewMode, setPreviewMode] = useState<'speaker-request' | 'go-live' | null>(null);
+    const [pendingSpeakerSettings, setPendingSpeakerSettings] = useState<{ deviceId: string; isUnmuted: boolean } | null>(null);
+
+    // Caption State
+    const [showCaptions, setShowCaptions] = useState(false);
 
     // Check if current user is the host of the active room
     // This handles the refresh case where user is logged in but not connected to 100ms yet
@@ -478,7 +550,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         // Removed localPeer?.roleName from dependency array to prevent leave/join on role switch
     }, [firestoreRoomId, authenticated, twitterObj, user?.uid, isHostUser, isConnected]);
 
-    // Role Update Sync Logic
+    // Role Update Sync Logic & Applying Pending Settings
     useEffect(() => {
         if (!firestoreRoomId || !isConnected || !localPeer?.roleName) return;
 
@@ -491,6 +563,28 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
         // Update role in Firestore without leaving the room
         updateParticipantRole(firestoreRoomId, userId, role);
+
+        // Apply pending speaker settings if I just became a speaker or host
+        if ((role === 'speaker' || role === 'host') && pendingSpeakerSettings) {
+            const applySettings = async () => {
+                try {
+                    console.log("Applying pending speaker settings:", pendingSpeakerSettings);
+                    // Set device
+                    await hmsActions.setAudioSettings({ deviceId: pendingSpeakerSettings.deviceId });
+
+                    // Set Mute State (Unmute if requested)
+                    // Note: Browser auto-play policies might block this if no user interaction, 
+                    // but since they just clicked "Raise Hand" recently, it might work.
+                    // safely attempt
+                    await hmsActions.setLocalAudioEnabled(pendingSpeakerSettings.isUnmuted);
+                } catch (err) {
+                    console.error("Failed to apply speaker settings:", err);
+                } finally {
+                    setPendingSpeakerSettings(null); // Clear settings
+                }
+            };
+            applySettings();
+        }
 
     }, [localPeer?.roleName, firestoreRoomId, isConnected, twitterObj, user?.uid, isHostUser]);
 
@@ -541,6 +635,12 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             login();
             return;
         }
+        // Show preview before joining
+        setPreviewMode('go-live');
+        setShowPreviewModal(true);
+    };
+
+    const executeGoLive = async () => {
         const userId = twitterObj?.twitterId;
         const userName = twitterObj?.username;
         if (!userId) {
@@ -631,6 +731,43 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         }
     };
 
+    const confirmSpeakerRequest = async () => {
+        if (!activeRoom || !localPeer) return;
+
+        try {
+            const userId = twitterObj?.twitterId || localPeer.customerUserId;
+            if (!userId) {
+                console.error("No user ID found for speaker request");
+                return;
+            }
+            const request = await addSpeakerRequest(
+                activeRoom.id,
+                userId,
+                twitterObj?.name || twitterObj?.username || localPeer.name,
+                localPeer.id
+            );
+            setMyRequestId(request.id);
+        } catch (error) {
+            console.error('Failed to request speaker access', error);
+            // Clear pending settings on failure
+            setPendingSpeakerSettings(null);
+        }
+    };
+
+    // Updated name to handle both flows or delegate
+    const handleConfirmPreview = async (deviceId: string, isUnmuted: boolean) => {
+        setPendingSpeakerSettings({ deviceId, isUnmuted });
+        setShowPreviewModal(false);
+
+        if (previewMode === 'go-live') {
+            await executeGoLive();
+        } else {
+            // speaker-request
+            await confirmSpeakerRequest();
+        }
+
+    };
+
     const handleRaiseHand = async () => {
         // Enforce login for raising hand
         if (!authenticated) {
@@ -649,23 +786,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                 console.error('Failed to cancel request', error);
             }
         } else {
-            // Otherwise, add a new request
-            try {
-                const userId = twitterObj?.twitterId || localPeer.customerUserId;
-                if (!userId) {
-                    console.error("No user ID found for speaker request");
-                    return;
-                }
-                const request = await addSpeakerRequest(
-                    activeRoom.id,
-                    userId,
-                    twitterObj?.name || twitterObj?.username || localPeer.name,
-                    localPeer.id
-                );
-                setMyRequestId(request.id);
-            } catch (error) {
-                console.error('Failed to request speaker access', error);
-            }
+            // Show preview modal instead of requesting immediately
+            setPreviewMode('speaker-request');
+            setShowPreviewModal(true);
         }
     };
 
@@ -933,10 +1056,41 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             onRemoveSpeaker={handleRemoveSpeaker}
                             onPlayTrack={handlePlayTrack}
                             onStopTrack={handleStopTrack}
+                            showCaptions={showCaptions}
+                            onToggleCaptions={async () => {
+                                const nextState = !showCaptions;
+                                setShowCaptions(nextState);
+
+                                // Attempt to start transcription if Host enabling it
+                                if (isHost && nextState) {
+                                    try {
+                                        // Use HMSTranscriptionMode enum
+                                        await hmsActions.startTranscription({ mode: HMSTranscriptionMode.CAPTION });
+                                        console.log("Transcription started by host");
+                                    } catch (err) {
+                                        console.error("Failed to start transcription", err);
+                                        // Fallback if method differs in version
+                                        try {
+                                            // @ts-ignore
+                                            if (hmsActions.startRealTimeTranscription) {
+                                                // @ts-ignore
+                                                await hmsActions.startRealTimeTranscription();
+                                            }
+                                        } catch (e) {
+                                            console.error("Fallback transcription start failed", e);
+                                        }
+                                    }
+                                }
+                            }}
                         />
                     </div>
                 </div>
             </div>
+
+            {/* Captions Overlay */}
+            <AnimatePresence>
+                {showCaptions && <CaptionOverlay />}
+            </AnimatePresence>
 
             {/* Join Notifications Snackbar */}
             {isHost && <div className="fixed bottom-4 right-4 z-50 flex flex-col justify-end gap-2 pointer-events-none">
@@ -967,6 +1121,13 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                     ))}
                 </AnimatePresence>
             </div>}
+
+            {/* Device Preview Modal */}
+            <DevicePreviewModal
+                isOpen={showPreviewModal}
+                onClose={() => setShowPreviewModal(false)}
+                onConfirm={handleConfirmPreview}
+            />
         </>
     );
 };

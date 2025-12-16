@@ -31,6 +31,8 @@ interface MiniSpaceBannerProps {
     currentTrack: string | null;
     onPlayTrack: (url: string) => void;
     onStopTrack: () => void;
+    showCaptions: boolean;
+    onToggleCaptions: () => void;
 }
 
 export default function MiniSpaceBanner({
@@ -59,6 +61,8 @@ export default function MiniSpaceBanner({
     onRemoveSpeaker,
     onPlayTrack,
     onStopTrack,
+    showCaptions,
+    onToggleCaptions
 }: MiniSpaceBannerProps) {
     const [showRequests, setShowRequests] = React.useState(false);
     const [showSpeakers, setShowSpeakers] = React.useState(false);
@@ -226,6 +230,18 @@ export default function MiniSpaceBanner({
                                     <span className="text-sm">✋</span>
                                 </button>
                             )}
+
+                            {/* Caption Toggle */}
+                            <button
+                                onClick={onToggleCaptions}
+                                className={`p-2 rounded-full transition-all ${showCaptions
+                                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+                                    : 'bg-white/10 hover:bg-white/20 text-white'
+                                    }`}
+                                title={showCaptions ? "Hide Captions" : "Show Captions"}
+                            >
+                                <span className="text-sm font-bold">CC</span>
+                            </button>
 
                             {/* Host: DJ Console */}
                             {isHost && (
