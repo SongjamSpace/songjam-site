@@ -337,24 +337,29 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
         }
     };
 
-    const handleCast = async (tweet: any) => {
+    const handleCast = async (tweet: LeaderboardTweet) => {
         if (!neynarUser?.signer_uuid) return;
         setIsProcessing(true);
 
         try {
-            const { text, engagementPoints, id: tweetId, html } = tweet;
+            const { text, html } = tweet;
 
             // 2. Post to Neynar
-            const response = await neynarClient.postCast(neynarUser.signer_uuid, text);
+            const response = await neynarClient.postCast(neynarUser.signer_uuid, text || '');
             // Assuming response looks like { result: { cast: { hash: "0x...", author: {...} } } } or similar
             // We need the hash to allow interactions. Use a fallback if response structure varies
             const castHash = response?.cast?.hash || response?.result?.cast?.hash; // Adjust based on actual Neynar API response
 
-            // 4. Auto-pin 
+            if (!castHash) {
+                throw new Error("Failed to retrieve cast hash");
+            }
+
+            // 3. Auto-pin 
             if (onPin) {
                 const pinnedItem: PinnedItem = {
                     url: `https://warpcast.com/${neynarUser.username}/${castHash}`,
                     text: text,
+                    html: html,
                     hash: castHash,
                     author: {
                         username: neynarUser.username || 'unknown',
@@ -362,32 +367,24 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                         pfp: neynarUser.pfp_url || '',
                         fid: neynarUser.fid,
                     },
-                    // If tweet has media, we should probably pass it through too?
-                    // For now, let's keep basic text casting. 
                     engagement: {
                         likes: 0,
                         recasts: 0
                     }
                 };
 
-                const urlMatch = `https://twitter.com/username/status/${tweetId}`;
-                if (urlMatch) {
-                    // If we have tweet info, we could enhance it, but we are casting NEW content to Farcaster.
-                    // So the author is the Farcaster user, not the original tweeter?
-                    // User requirements: "publish this tweet as a cast to Neynar... if contains valid Twitter URL auto pin".
-                    // We are creating a NEW item.
-                    pinnedItem.url = urlMatch;
-                }
-
+                // We keep the Warpcast URL as the pinned URL because we are pinning the *Cast* we just made.
                 onPin(pinnedItem);
             }
 
             // Close selector
             setShowTweetSelector(false);
             setAvailableTweets([]);
+            alert(`Successfully casted!`);
 
         } catch (e) {
             console.error("Error casting:", e);
+            alert("Failed to cast. Please try again.");
         } finally {
             setIsProcessing(false);
         }
@@ -582,7 +579,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                     x: isCollapsed ? "calc(100% - 40px)" : "0%" // On collapse keep a sliver visible or push mostly out
                 }}
                 exit={{ opacity: 0, x: 100 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                transition={{ type: "tween", ease: "linear", duration: 0.3 }}
                 className={`fixed top-0 right-0 h-full z-40 pointer-events-auto shadow-2xl transition-all duration-300 ${isCollapsed ? 'w-full sm:w-[400px]' : 'w-full sm:w-[400px]'}`}
             >
                 <div className="w-full h-full bg-black/80 backdrop-blur-xl border-l border-white/10 flex flex-col relative">
@@ -590,13 +587,19 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                     {/* Collapse Toggle Button (Desktop: Hanging / Mobile: Only when collapsed) */}
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
-                        className={`absolute left-0 top-1/2 -translate-x-full bg-black/80 border border-white/10 border-r-0 rounded-l-lg p-3 text-white/60 hover:text-white transition-colors z-50 shadow-lg ${!isCollapsed ? 'hidden' : 'block'}`}
+                        className={`absolute left-0 top-1/2 sm:-translate-x-full max-sm:translate-x-0 bg-black/80 border border-white/10 sm:border-r-0 max-sm:border-l-0 rounded-l-lg max-sm:rounded-r-lg max-sm:rounded-l-none p-3 text-white/60 hover:text-white transition-colors z-50 shadow-lg flex items-center gap-2`}
                         title={isCollapsed ? "Expand Jumbotron" : "Collapse Jumbotron"}
                     >
                         {isCollapsed ? (
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                            <>
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                <span className="text-xs font-bold">Expand</span>
+                            </>
                         ) : (
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            <>
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                <span className="text-xs font-bold">Collapse</span>
+                            </>
                         )}
                     </button>
                     {/* Header */}
@@ -606,13 +609,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_#3b82f6]" />
                                 Jumbotron
                             </span>
-                            {/* Mobile Internal Collapse Button */}
-                            <button
-                                onClick={() => setIsCollapsed(true)}
-                                className="text-xs text-white/60 hover:text-white underline decoration-white/30 hover:decoration-white transition-colors"
-                            >
-                                Collapse
-                            </button>
+
                             {showTweetSelector && (
                                 <button
                                     onClick={() => setShowTweetSelector(false)}
