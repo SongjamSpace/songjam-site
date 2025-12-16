@@ -517,9 +517,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     // Fetch Playlist for Host
     useEffect(() => {
         const fetchPlaylist = async () => {
-            if (isHost && (twitterObj?.twitterId || user?.uid)) {
+            if (isHost && user?.uid) {
                 try {
-                    const tracks = await getMusicUploadsByUserId(twitterObj?.twitterId || user?.uid || '');
+                    const tracks = await getMusicUploadsByUserId(user.uid);
                     setPlaylist(tracks);
                 } catch (error) {
                     console.error('Failed to fetch playlist', error);
@@ -527,7 +527,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             }
         };
         fetchPlaylist();
-    }, [isHost, twitterObj?.twitterId, user?.uid]);
+    }, [isHost, user?.uid]);
 
     // Cleanup audio on unmount or leave
     useEffect(() => {
