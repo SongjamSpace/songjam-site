@@ -51,4 +51,17 @@ export const neynarClient = {
             throw error;
         }
     },
+
+    publishFollow: async (signerUuid: string, targetFid: number) => {
+        try {
+            const response = await axios.post("/api/neynar/follow", {
+                signer_uuid: signerUuid,
+                target_fid: targetFid,
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error("Error following user:", error);
+            throw error;
+        }
+    },
 };

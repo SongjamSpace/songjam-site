@@ -101,6 +101,7 @@ const CustomCastCard = ({ item }: { item: PinnedItem }) => {
     const { user: neynarUser } = useNeynarContext();
     const [liked, setLiked] = React.useState(false);
     const [recasted, setRecasted] = React.useState(false);
+    const [followed, setFollowed] = React.useState(false);
     const [isInteracting, setIsInteracting] = React.useState(false);
 
     // Helper to get safe values
@@ -139,11 +140,28 @@ const CustomCastCard = ({ item }: { item: PinnedItem }) => {
         }
     };
 
+    const handleFollow = async () => {
+        if (!neynarUser?.signer_uuid || !item.author?.fid || isInteracting || followed) return;
+
+        // Prevent self-follow
+        if (neynarUser.fid === item.author.fid) return;
+
+        setIsInteracting(true);
+        try {
+            await neynarClient.publishFollow(neynarUser.signer_uuid, item.author.fid);
+            setFollowed(true);
+        } catch (e) {
+            console.error("Follow failed", e);
+        } finally {
+            setIsInteracting(false);
+        }
+    };
+
     const isFarcaster = !!item.hash;
     return (
         <div className={`relative bg-[#151719] border rounded-xl overflow-hidden hover:border-white/20 transition-all p-4 flex flex-col gap-3 shadow-sm ${isFarcaster
-                ? 'border-purple-500/30 hover:border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.1)]'
-                : 'border-white/10'
+            ? 'border-purple-500/30 hover:border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.1)]'
+            : 'border-white/10'
             }`}>
             {isFarcaster && (
                 <div className="absolute top-2 right-2 px-2 py-0.5 bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[10px] font-bold uppercase tracking-wider rounded-full">
@@ -220,6 +238,20 @@ const CustomCastCard = ({ item }: { item: PinnedItem }) => {
                     </svg>
                     <span>{recastsCountLocal + (recasted ? 1 : 0)}</span>
                 </button>
+
+                {/* Follow Button */}
+                {isFarcaster && item.author?.fid && neynarUser && neynarUser.fid !== item.author.fid && (
+                    <button
+                        onClick={handleFollow}
+                        disabled={followed}
+                        className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${followed ? 'text-blue-500' : 'text-white/40 hover:text-blue-500'}`}
+                    >
+                        <svg className={`w-4 h-4 ${followed ? 'fill-current' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                        <span>{followed ? 'Following' : 'Follow'}</span>
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -328,6 +360,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                         username: neynarUser.username || 'unknown',
                         display_name: neynarUser.display_name || 'Anonymous',
                         pfp: neynarUser.pfp_url || '',
+                        fid: neynarUser.fid,
                     },
                     // If tweet has media, we should probably pass it through too?
                     // For now, let's keep basic text casting. 
@@ -409,6 +442,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                         username: neynarUser.username || 'unknown',
                         display_name: neynarUser.display_name || 'Anonymous',
                         pfp: neynarUser.pfp_url || '',
+                        fid: neynarUser.fid,
                     },
                     engagement: {
                         likes: 0,

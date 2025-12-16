@@ -40,6 +40,7 @@ export type PinnedItem = string | {
         username: string;
         pfp?: string;
         display_name?: string;
+        fid?: number;
     };
     media?: {
         type: 'photo' | 'video';
