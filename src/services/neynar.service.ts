@@ -51,4 +51,30 @@ export const neynarService = {
             throw error;
         }
     },
+
+    publishReaction: async ({ signerUuid, reaction, castHash }: { signerUuid: string; reaction: 'like' | 'recast'; castHash: string }) => {
+        try {
+            const response = await axios.post(
+                `${NEYNAR_API_URL}/farcaster/reaction`,
+                {
+                    signer_uuid: signerUuid,
+                    reaction_type: reaction,
+                    target: castHash,
+                },
+                {
+                    headers: {
+                        'x-api-key': process.env.NEYNAR_API_KEY,
+                        "content-type": "application/json",
+                    },
+                }
+            );
+            return response.data;
+        } catch (error: any) {
+            console.error(
+                "Neynar API Error (Reaction):",
+                error.response?.data || error.message
+            );
+            throw error;
+        }
+    },
 };

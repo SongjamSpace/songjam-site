@@ -72,7 +72,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     );
     const twitterId = twitterInfo?.uid;
     const name = twitterInfo?.displayName;
-    const username = (user as any)?.reloadUserInfo.screenName || "";
+    const username = (user as any)?.reloadUserInfo?.screenName || "";
     return { twitterId, name, username };
   };
 
