@@ -88,7 +88,7 @@ export default function Page() {
           showStakingMultiplier
           minStakeStr="10,000"
           lastUpdatedAt={lastUpdatedAt}
-          audioRoomEnabled
+        // audioRoomEnabled
         />
       </div>
 

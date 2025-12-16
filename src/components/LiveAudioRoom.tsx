@@ -551,10 +551,10 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             alert('No user name found');
             return;
         }
-        // if (projectId !== userName.toLowerCase()) {
-        //     alert(`Mindshare space can only be hosted by the creator: @${projectId}`);
-        //     return;
-        // }
+        if (projectId !== userName.toLowerCase()) {
+            alert(`Mindshare space can only be hosted by the creator: @${projectId}`);
+            return;
+        }
         try {
             // 1. Get token for host role
 
