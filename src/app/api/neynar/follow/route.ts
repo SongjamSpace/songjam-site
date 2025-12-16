@@ -3,26 +3,26 @@ import { neynarService } from "@/services/neynar.service";
 
 export async function POST(req: Request) {
     try {
-        const { signer_uuid, text } = await req.json();
+        const { signer_uuid, target_fid } = await req.json();
 
-        if (!signer_uuid || !text) {
+        if (!signer_uuid || !target_fid) {
             return NextResponse.json(
-                { error: "signer_uuid and text are required" },
+                { error: "signer_uuid and target_fid are required" },
                 { status: 400 }
             );
         }
 
-        const castRes = await neynarService.publishCast({
+        const result = await neynarService.followUser({
             signerUuid: signer_uuid,
-            text: text,
+            targetFid: target_fid,
         });
 
-        return NextResponse.json(castRes);
+        return NextResponse.json({ status: "success", result });
     } catch (error: any) {
-        console.error("Error posting cast to Neynar:", error);
+        console.error("Error following user:", error);
         return NextResponse.json(
             {
-                error: "Failed to post cast",
+                error: "Failed to follow user",
                 details: error.message || "Unknown error",
             },
             { status: 500 }

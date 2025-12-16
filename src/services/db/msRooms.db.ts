@@ -30,7 +30,29 @@ export interface MSRoom {
     pinnedLinks?: PinnedItem[];
 }
 
-export type PinnedItem = string | { url: string; message?: string };
+export type PinnedItem = string | {
+    url?: string;
+    // Custom cast properties
+    text?: string;
+    html?: string;
+    hash?: string;
+    author?: {
+        username: string;
+        pfp?: string;
+        display_name?: string;
+        fid?: number;
+    };
+    media?: {
+        type: 'photo' | 'video';
+        url: string;
+        previewUrl?: string;
+    }[];
+    timestamp?: number;
+    engagement?: {
+        likes: number;
+        recasts: number;
+    }
+};
 
 export interface SpeakerRequest {
     id: string;

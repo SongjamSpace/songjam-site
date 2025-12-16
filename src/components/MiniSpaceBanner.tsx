@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SpeakerRequest } from '@/services/db/msRooms.db';
+import { MSRoom, SpeakerRequest } from '@/services/db/msRooms.db';
 import { HMSPeer } from '@100mslive/react-sdk';
 
 interface MiniSpaceBannerProps {
@@ -10,7 +10,7 @@ interface MiniSpaceBannerProps {
     isSpeaker: boolean;
     isConnected: boolean;
     participantCount: number;
-    activeRoom: any;
+    activeRoom: MSRoom | null;
     speakerRequests: SpeakerRequest[];
     activeSpeakers: HMSPeer[];
     handRaised: boolean;
@@ -31,8 +31,6 @@ interface MiniSpaceBannerProps {
     currentTrack: string | null;
     onPlayTrack: (url: string) => void;
     onStopTrack: () => void;
-    onPinTweet: (url: string) => void;
-    pinnedLink?: string | null;
 }
 
 export default function MiniSpaceBanner({
@@ -61,14 +59,11 @@ export default function MiniSpaceBanner({
     onRemoveSpeaker,
     onPlayTrack,
     onStopTrack,
-    onPinTweet,
-    pinnedLink,
 }: MiniSpaceBannerProps) {
     const [showRequests, setShowRequests] = React.useState(false);
     const [showSpeakers, setShowSpeakers] = React.useState(false);
     const [showPlaylist, setShowPlaylist] = React.useState(false);
-    const [showPinInput, setShowPinInput] = React.useState(false);
-    const [tweetUrl, setTweetUrl] = React.useState('');
+
 
     // Animation variants
     const containerVariants = {
@@ -136,48 +131,56 @@ export default function MiniSpaceBanner({
             animate="visible"
             className="relative z-50"
         >
-            <div className="flex items-center gap-2 p-1.5 pr-4 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-purple-500/10">
+            <div className="flex flex-col sm:flex-row items-center gap-2 p-1.5 pr-2 sm:pr-4 bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl sm:rounded-full shadow-2xl shadow-purple-500/10">
 
-                {/* Status Indicator / Avatar */}
-                <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shrink-0 overflow-hidden">
-                    {activeRoom?.hostName ? (
-                        <span className="text-sm font-bold text-white">{activeRoom.hostName[0]}</span>
-                    ) : (
-                        <span className="text-lg">🎙️</span>
-                    )}
-                    {isConnected && (
-                        <motion.div
-                            className="absolute inset-0 border-2 border-green-400 rounded-full"
-                            animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.1, 1] }}
-                            transition={{ duration: 2, repeat: Infinity }}
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    {/* Status Indicator / Avatar */}
+                    <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shrink-0 overflow-hidden">
+                        <img
+                            src={`https://unavatar.io/x/${activeRoom?.hostName}`}
+                            alt={activeRoom?.hostName}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                                // Fallback if image fails
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            }}
                         />
-                    )}
-                </div>
+                        {isConnected && (
+                            <motion.div
+                                className="absolute inset-0 border-2 border-green-400 rounded-full"
+                                animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.1, 1] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            />
+                        )}
+                    </div>
 
-                {/* Info Section */}
-                <div className="flex flex-col mr-2">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-white tracking-wide">
-                            {activeRoom?.hostName || 'Live Space'}
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 flex items-center gap-1">
-                            <span className="w-1 h-1 bg-red-500 rounded-full animate-pulse" />
-                            LIVE
-                        </span>
+                    {/* Info Section */}
+                    <div className="flex flex-col mr-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-white tracking-wide">
+                                {activeRoom?.hostName || 'Live Space'}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30 flex items-center gap-1">
+                                <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
+                                LIVE
+                            </span>
+                        </div>
+                        <div className="text-[10px] text-white/60 flex items-center gap-1 hidden sm:flex">
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            {participantCount} listening
+                        </div>
                     </div>
-                    <div className="text-[10px] text-white/60 flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        {participantCount} listening
-                    </div>
+
                 </div>
 
                 {/* Vertical Divider */}
-                <div className="w-px h-8 bg-white/10 mx-1" />
+                <div className="w-px h-8 bg-white/10 mx-1 hidden sm:block" />
 
                 {/* Controls */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start pt-2 sm:pt-0 border-t border-white/5 sm:border-0">
 
                     {/* Join Button (if not connected) */}
                     {!isConnected && (
@@ -185,7 +188,7 @@ export default function MiniSpaceBanner({
                             onClick={onJoin}
                             className="px-4 py-1.5 bg-white text-black hover:bg-gray-200 rounded-full text-xs font-bold transition-colors"
                         >
-                            Join Space
+                            Join<span className="hidden sm:inline"> Space</span>
                         </button>
                     )}
 
@@ -248,7 +251,7 @@ export default function MiniSpaceBanner({
                                                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                className="absolute top-full right-0 mt-3 w-72 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                                                className="fixed top-24 left-2 right-2 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:w-[450px] sm:mt-3 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[60]"
                                             >
                                                 <div className="px-3 py-2 bg-white/5 border-b border-white/5 flex justify-between items-center">
                                                     <h3 className="text-xs font-bold text-white/80">DJ Playlist</h3>
@@ -325,7 +328,7 @@ export default function MiniSpaceBanner({
                                                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                className="absolute top-full right-0 mt-3 w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                                                className="fixed top-24 left-2 right-2 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:w-[350px] sm:mt-3 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[60]"
                                             >
                                                 <div className="px-3 py-2 bg-white/5 border-b border-white/5">
                                                     <h3 className="text-xs font-bold text-white/80">Active Speakers</h3>
@@ -364,67 +367,6 @@ export default function MiniSpaceBanner({
                                 </div>
                             )}
 
-                            {/* Host: Pin Tweet */}
-                            {isHost && (
-                                <div className="relative">
-                                    <button
-                                        onClick={() => setShowPinInput(!showPinInput)}
-                                        className={`p-2 rounded-full transition-all ${showPinInput || pinnedLink
-                                            ? 'bg-blue-400/20 text-blue-400 border border-blue-400/50'
-                                            : 'bg-white/10 hover:bg-white/20 text-white/60'
-                                            }`}
-                                        title="Pin Tweet"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                        </svg>
-                                    </button>
-
-                                    {/* Pin Input Dropdown */}
-                                    <AnimatePresence>
-                                        {showPinInput && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                className="absolute top-full right-0 mt-3 w-80 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden p-3"
-                                            >
-                                                <h3 className="text-xs font-bold text-white/80 mb-2">Pin a Tweet</h3>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="text"
-                                                        value={tweetUrl}
-                                                        onChange={(e) => setTweetUrl(e.target.value)}
-                                                        placeholder="Paste tweet URL..."
-                                                        className="flex-1 bg-black/50 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-blue-500"
-                                                    />
-                                                    <button
-                                                        onClick={() => {
-                                                            onPinTweet(tweetUrl);
-                                                            setShowPinInput(false);
-                                                            setTweetUrl('');
-                                                        }}
-                                                        className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded transition-colors"
-                                                    >
-                                                        Pin
-                                                    </button>
-                                                </div>
-                                                {pinnedLink && (
-                                                    <button
-                                                        onClick={() => {
-                                                            onPinTweet(''); // Unpin
-                                                            setShowPinInput(false);
-                                                        }}
-                                                        className="mt-2 w-full py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs rounded transition-colors"
-                                                    >
-                                                        Unpin Current Tweet
-                                                    </button>
-                                                )}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            )}
 
                             {/* Host: Speaker Requests */}
                             {isHost && (
@@ -451,7 +393,7 @@ export default function MiniSpaceBanner({
                                                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                className="absolute top-full right-0 mt-3 w-64 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                                                className="fixed top-24 left-2 right-2 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:w-[350px] sm:mt-3 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[60]"
                                             >
                                                 <div className="px-3 py-2 bg-white/5 border-b border-white/5">
                                                     <h3 className="text-xs font-bold text-white/80">Speaker Requests</h3>
@@ -491,9 +433,15 @@ export default function MiniSpaceBanner({
                             {/* Leave / End Button */}
                             <button
                                 onClick={isHost ? onEndRoom : onLeave}
-                                className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 rounded-full text-xs font-bold transition-all"
+                                className="px-3 py-2 sm:py-1.5 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 rounded-full text-xs font-bold transition-all flex items-center justify-center"
+                                title={isHost ? 'End Space' : 'Leave Space'}
                             >
-                                {isHost ? 'End Space' : 'Leave'}
+                                <span className="hidden sm:inline">{isHost ? 'End Space' : 'Leave'}</span>
+                                <span className="sm:hidden">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </span>
                             </button>
                         </>
                     )}

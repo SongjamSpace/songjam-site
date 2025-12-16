@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import "@neynar/react/dist/style.css";
 
 export const metadata: Metadata = {
   title: "Songjam - The Future of Engagement",

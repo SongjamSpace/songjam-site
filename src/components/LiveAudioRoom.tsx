@@ -47,29 +47,26 @@ const getStableSpeakerPosition = (userId: string) => {
         hash = userId.charCodeAt(i) + ((hash << 5) - hash);
     }
 
-    // Distribute speakers on the sides or top, avoiding the center card area
-    // Center card is roughly 30% - 70% width, 20% - 80% height depending on screen
-    // We will place speakers in:
-    // Zone 1 (Left): X = 5-25%
-    // Zone 2 (Right): X = 75-95%
-    // Zone 3 (Top): X = 25-75%, Y = 5-20%
+    // Generate angle from hash (0 to 360 degrees)
+    const angle = (Math.abs(hash) % 360) * (Math.PI / 180);
 
-    const zone = Math.abs(hash) % 3;
-    let x, y;
+    // Distance from host: Base 16% + 0-10% variation
+    // This keeps them relatively close (16-26% away)
+    const distance = 16 + (Math.abs(hash >> 4) % 10);
 
-    if (zone === 0) {
-        // Left
-        x = 5 + (Math.abs(hash >> 2) % 20); // 5% - 25%
-        y = 15 + (Math.abs(hash >> 4) % 60); // 15% - 75%
-    } else if (zone === 1) {
-        // Right
-        x = 75 + (Math.abs(hash >> 2) % 20); // 75% - 95%
-        y = 15 + (Math.abs(hash >> 4) % 60); // 15% - 75%
-    } else {
-        // Top
-        x = 25 + (Math.abs(hash >> 2) % 50); // 25% - 75%
-        y = 5 + (Math.abs(hash >> 4) % 15); // 5% - 20%
-    }
+    // Stretch X axis slightly for landscape view (1.3x)
+    const xOffset = Math.cos(angle) * distance * 1.3;
+    const yOffset = Math.sin(angle) * distance;
+
+    let x = 50 + xOffset;
+    let y = 35 + yOffset;
+
+    // Clamp X to avoid Jumbotron on the right (max 70%)
+    // And keep off the far left edge (min 5%)
+    x = Math.max(5, Math.min(70, x));
+
+    // Clamp Y to keep within reasonable vertical bounds
+    y = Math.max(10, Math.min(80, y));
 
     return { x, y };
 };
@@ -517,9 +514,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     // Fetch Playlist for Host
     useEffect(() => {
         const fetchPlaylist = async () => {
-            if (isHost && (twitterObj?.twitterId || user?.uid)) {
+            if (isHost && user?.uid) {
                 try {
-                    const tracks = await getMusicUploadsByUserId(twitterObj?.twitterId || user?.uid || '');
+                    const tracks = await getMusicUploadsByUserId(user.uid);
                     setPlaylist(tracks);
                 } catch (error) {
                     console.error('Failed to fetch playlist', error);
@@ -527,7 +524,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             }
         };
         fetchPlaylist();
-    }, [isHost, twitterObj?.twitterId, user?.uid]);
+    }, [isHost, user?.uid]);
 
     // Cleanup audio on unmount or leave
     useEffect(() => {
@@ -847,7 +844,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
     return (
         <>
-            {activeRoom?.pinnedLinks?.length && <Jumbotron
+            {activeRoom && <Jumbotron
                 pinnedLinks={activeRoom?.pinnedLinks || []}
                 isHost={isHost}
                 onUnpin={handleUnpinTweet}
@@ -936,8 +933,6 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             onRemoveSpeaker={handleRemoveSpeaker}
                             onPlayTrack={handlePlayTrack}
                             onStopTrack={handleStopTrack}
-                            onPinTweet={handlePinTweet}
-                            pinnedLink={activeRoom?.pinnedLink}
                         />
                     </div>
                 </div>
