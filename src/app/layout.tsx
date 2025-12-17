@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Songjam - The Future of Engagement",
   description:
     "Agentic CRM and AI-powered outreach for X Spaces. Supercharge your engagement and grow your audience with the power of verifiable human connection.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
