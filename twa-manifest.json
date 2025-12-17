@@ -1,0 +1,58 @@
+{
+  "packageId": "space.songjam.www.twa",
+  "host": "www.songjam.space",
+  "name": "Songjam",
+  "launcherName": "Songjam",
+  "display": "standalone",
+  "themeColor": "#000000",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#000000",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://www.songjam.space/logo-bg-512.png",
+  "monochromeIconUrl": "https://firebasestorage.googleapis.com/v0/b/lustrous-stack-453106-f6.firebasestorage.app/o/logo1.png?alt=media",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "/Users/logeshrajappa/work/songjam-site/android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "2",
+  "appVersionCode": 2,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://www.songjam.space/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": true
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://www.songjam.space/",
+  "minSdkVersion": 21,
+  "orientation": "default",
+  "fingerprints": [
+    {
+      "value": "58:CE:EE:98:AA:C9:8D:2B:DE:30:5B:CE:96:6F:52:FF:9A:92:73:BD:94:57:F1:59:B6:E0:7A:02:3F:30:A5:58"
+    },
+    {
+      "value": "58:CE:EE:98:AA:C9:8D:2B:DE:30:5B:CE:96:6F:52:FF:9A:92:73:BD:94:57:F1:59:B6:E0:7A:02:3F:30:A5:58"
+    }
+  ],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "2"
+}
