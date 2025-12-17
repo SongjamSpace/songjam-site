@@ -3,3 +3,28 @@ node_modules
 .env.local
 .env
 .env.production
+.gradle
+app
+app-release-bundle.aab
+app-release-signed.apk
+app-release-signed.apk.idsig
+app-release-unsigned-aligned.apk
+app-release-signed-aligned.apk
+
+# OS files
+.DS_Store
+*.DS_Store
+
+# Build artifacts
+build/
+tsconfig.tsbuildinfo
+
+# PWA / TWA / Android
+*.keystore
+manifest-checksum.txt
+
+# Generated PWA files (if using next-pwa)
+public/sw.js
+public/workbox-*.js
+public/worker-*.js
+public/fallback-*.js

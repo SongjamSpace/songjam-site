@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "space.songjam.www.twa",
+        "sha256_cert_fingerprints": ["58:CE:EE:98:AA:C9:8D:2B:DE:30:5B:CE:96:6F:52:FF:9A:92:73:BD:94:57:F1:59:B6:E0:7A:02:3F:30:A5:58", "58:CE:EE:98:AA:C9:8D:2B:DE:30:5B:CE:96:6F:52:FF:9A:92:73:BD:94:57:F1:59:B6:E0:7A:02:3F:30:A5:58"]
+      }
+    }]
