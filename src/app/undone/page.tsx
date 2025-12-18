@@ -185,7 +185,7 @@ export default function Page() {
                       bit.ly/unWF1
                     </a>{" "}
                     highlight the awesome watches, your wins in the miniApp and
-                    the Gran Prix itself!
+                    the Grand Prix itself!
                   </p>
                 </div>
 
