@@ -924,7 +924,7 @@ export default function MindshareLeaderboard({
                             className="text-white/70 font-medium text-xs md:text-sm"
                             style={{ fontFamily: "Inter, sans-serif" }}
                           >
-                            {((u.pointsWithoutMultiplier || 0) - (u.spacePoints || 0))?.toFixed(2) || "0"}
+                            {((u.pointsWithoutMultiplier || u.totalPoints) - (u.spacePoints || 0))?.toFixed(2) || "0"}
                           </span>
                         </td>
                       )}
