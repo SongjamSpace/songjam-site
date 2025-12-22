@@ -173,7 +173,7 @@ const CustomCastCard = ({ item }: { item: PinnedItem }) => {
                 <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden shrink-0 border border-white/5">
                     {/* Use unavatar as fallback if pfp is missing */}
                     <img
-                        src={`https://unavatar.io/twitter/${item.author?.username}`}
+                        src={isFarcaster && item.author?.pfp ? item.author.pfp : `https://unavatar.io/twitter/${item.author?.username}`}
                         onError={(e) => { (e.target as HTMLImageElement).src = `https://unavatar.io/${item.author?.username}` }}
                         alt={item.author?.username}
                         className="w-full h-full object-cover"
@@ -191,14 +191,9 @@ const CustomCastCard = ({ item }: { item: PinnedItem }) => {
 
             {/* Content */}
             <div className="flex flex-col gap-3">
-                {item.html ? (
-                    <div
-                        className="text-white/90 text-[15px] leading-relaxed whitespace-pre-wrap font-sans [&_a]:text-blue-400 [&_a]:underline"
-                        dangerouslySetInnerHTML={{ __html: item.html }}
-                    />
-                ) : (
+                {item.text ? (
                     <ParsedText text={item.text || ''} />
-                )}
+                ) : null}
 
                 {/* Media Grid */}
                 {media.length > 0 && (
@@ -226,7 +221,7 @@ const CustomCastCard = ({ item }: { item: PinnedItem }) => {
                     <svg className={`w-4 h-4 ${liked ? 'fill-current' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
-                    <span>{likesCountLocal + (liked ? 1 : 0)}</span>
+                    {!isFarcaster && <span>{likesCountLocal + (liked ? 1 : 0)}</span>}
                 </button>
                 <button
                     onClick={handleRecast}
@@ -236,7 +231,7 @@ const CustomCastCard = ({ item }: { item: PinnedItem }) => {
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
-                    <span>{recastsCountLocal + (recasted ? 1 : 0)}</span>
+                    {!isFarcaster && <span>{recastsCountLocal + (recasted ? 1 : 0)}</span>}
                 </button>
 
                 {/* Follow Button */}
@@ -277,7 +272,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
             return { link: item, id, type: 'tweet', hash: undefined };
         }
         // If it has custom properties
-        if (item.text || item.html) {
+        if (item.text) {
             return { link: item.url, ...item, type: 'custom-text' };
         }
         // Else check for url
@@ -294,7 +289,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
     const [showTweetSelector, setShowTweetSelector] = React.useState(false);
     const [isCollapsed, setIsCollapsed] = React.useState(true); // Collapse state
     const [hostTweetUrl, setHostTweetUrl] = React.useState('');
-
+    console.log(neynarUser?.signer_uuid);
 
     const handleEarnPoints = async () => {
         if (!neynarUser?.signer_uuid) return;
@@ -307,7 +302,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                 params.projectId = projectId;
             }
             if (twitterId) {
-                params.userId = twitterId;
+                params.userId = '1837397504729493505';
             }
             // Assuming default values or that these will be passed if needed
             params.limit = 3; // Example default limit
@@ -342,10 +337,13 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
         setIsProcessing(true);
 
         try {
-            const { text, html } = tweet;
+            const { text, html, photos, videos } = tweet;
+
+            const photoUrls = photos?.map(p => p.url) || [];
+            const videoUrls = videos?.map(v => v.url) || [];
 
             // 2. Post to Neynar
-            const response = await neynarClient.postCast(neynarUser.signer_uuid, text || '');
+            const response = await neynarClient.postCast(neynarUser.signer_uuid, text || '', [...photoUrls, ...videoUrls]);
             // Assuming response looks like { success: true, cast: { hash: "0x...", author: {...} } } or similar
             // We need the hash to allow interactions. Use a fallback if response structure varies
             const castHash = response?.cast?.hash;
@@ -357,9 +355,8 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
             // 3. Auto-pin 
             if (onPin) {
                 const pinnedItem: PinnedItem = {
-                    url: `https://warpcast.com/${neynarUser.username}/${castHash}`,
+                    url: `https://farcaster.xyz/${neynarUser.username}/${castHash}`,
                     text: text,
-                    html: html,
                     hash: castHash,
                     author: {
                         username: neynarUser.username || 'unknown',
@@ -403,19 +400,13 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                 return;
             }
 
-            let castText = '';
-            let pinnedText = '';
-            let tweetHtml = '';
+            let tweetData: TwitterApiTweet;
 
             try {
                 const res = await axios.get(`${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/twitter-api/tweet?tweet_id=${tweetId}`);
-                const tweetData: TwitterApiTweet = res.data.tweet;
+                tweetData = res.data.tweet;
 
-                if (tweetData && tweetData.text) {
-                    castText = tweetData.text;
-                    pinnedText = tweetData.text;
-                    tweetHtml = tweetData.html || '';
-                } else {
+                if (!tweetData?.text) {
                     throw new Error("No text content in tweet");
                 }
             } catch (fetchErr) {
@@ -425,15 +416,20 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                 return;
             }
 
+            const castText = tweetData.text;
+            const pinnedText = tweetData.text;
+
+            const photoUrls = tweetData.extendedEntities?.media?.map(m => m.media_url_https) || [];
+            const videoUrls = tweetData.extendedEntities?.media?.map(m => m.media_url_https) || [];
+
             // Post to Neynar
-            const response = await neynarClient.postCast(neynarUser.signer_uuid, castText);
+            const response = await neynarClient.postCast(neynarUser.signer_uuid, castText, [...photoUrls, ...videoUrls]);
             const castHash = response?.cast?.hash;
 
             if (onPin && castHash) {
                 const pinnedItem: PinnedItem = {
-                    url: `https://warpcast.com/${neynarUser.username}/${castHash}`,
+                    url: `https://farcaster.xyz/${neynarUser.username}/${castHash}`,
                     text: pinnedText,
-                    html: tweetHtml,
                     hash: castHash,
                     author: {
                         username: neynarUser.username || 'unknown',
@@ -474,41 +470,16 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                     throw new Error('Tweet not found');
                 }
 
-                // Map media from entities
-                const media: { type: 'photo' | 'video', url: string, previewUrl?: string }[] = [];
-                // Check if entities.media exists (standard Twitter API)
-                if (tweetData.entities?.media) {
-                    tweetData.entities.media.forEach((m: any) => {
-                        if (m.type === 'photo') {
-                            media.push({ type: 'photo', url: m.media_url_https });
-                        } else if (m.type === 'video' || m.type === 'animated_gif') {
-                            const variants = m.video_info?.variants || [];
-                            const best = variants.sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0))[0];
-                            if (best) {
-                                media.push({ type: 'video', url: best.url, previewUrl: m.media_url_https });
-                            }
-                        }
-                    });
-                }
-                // Fallback / legacy support if needed (or if added to type)
-                if (tweetData.photos) {
-                    tweetData.photos.forEach(p => media.push({ type: 'photo', url: p.url }));
-                }
-                if (tweetData.videos) {
-                    tweetData.videos.forEach(v => media.push({ type: 'video', url: v.url, previewUrl: v.preview }));
-                }
 
                 pinnedItem = {
                     url: hostTweetUrl || '',
                     text: tweetData.text || hostTweetUrl || '',
-                    html: tweetData.html || '',
                     timestamp: tweetData.createdAt ? Date.parse(tweetData.createdAt) : Date.now(),
                     author: {
                         username: tweetData.author.userName || 'twitter_user',
                         display_name: tweetData.author.name || 'Twitter User',
                         pfp: tweetData.author.profilePicture || '',
                     },
-                    media: media,
                     hash: '',
                     engagement: {
                         likes: tweetData.likeCount || 0,
@@ -593,12 +564,12 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                         {isCollapsed ? (
                             <>
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                                <span className="text-xs font-bold">Expand</span>
+                                <span className="text-xs font-bold">Open</span>
                             </>
                         ) : (
                             <>
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                                <span className="text-xs font-bold">Collapse</span>
+                                <span className="text-xs font-bold">Close</span>
                             </>
                         )}
                     </button>
@@ -631,7 +602,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                                     Select a Tweet to Cast
                                 </div>
                                 <div className="text-white/60 text-sm mb-2">
-                                    Choose one of the following tweets to share and earn bonus points.
+                                    Choose one of the following tweets to share on farcaster.
                                 </div>
                                 {availableTweets.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-10 gap-2 opacity-60">
@@ -681,9 +652,6 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                                             </div>
 
                                             <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
-                                                <span className="text-yellow-400 font-bold text-xs flex items-center gap-1">
-                                                    <span className="text-sm">🪙</span> {(t.views || 0) > 1000 ? '+50' : '+20'} pts
-                                                </span>
                                                 <button
                                                     onClick={() => handleCast(t)}
                                                     disabled={isProcessing}

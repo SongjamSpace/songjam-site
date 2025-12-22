@@ -3,15 +3,17 @@ import axios from "axios";
 const NEYNAR_API_URL = "https://api.neynar.com/v2";
 
 export const neynarService = {
-    publishCast: async ({ signerUuid, text }: { signerUuid: string; text: string }) => {
+    publishCast: async ({ signerUuid, text, embeds }: { signerUuid: string; text: string; embeds?: string[] }) => {
         try {
             console.log("signerUuid:", signerUuid);
             console.log("text:", text);
+            console.log("embeds:", embeds);
             const response = await axios.post(
                 `${NEYNAR_API_URL}/farcaster/cast`,
                 {
                     signer_uuid: signerUuid,
                     text: text,
+                    embeds: embeds?.map(url => ({ url })) || [],
                 },
                 {
                     headers: {

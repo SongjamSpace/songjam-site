@@ -3,7 +3,7 @@ import { neynarService } from "@/services/neynar.service";
 
 export async function POST(req: Request) {
     try {
-        const { signer_uuid, text } = await req.json();
+        const { signer_uuid, text, embeds } = await req.json();
 
         if (!signer_uuid || !text) {
             return NextResponse.json(
@@ -15,6 +15,7 @@ export async function POST(req: Request) {
         const castRes = await neynarService.publishCast({
             signerUuid: signer_uuid,
             text: text,
+            embeds
         });
 
         return NextResponse.json(castRes);

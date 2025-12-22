@@ -34,7 +34,6 @@ export type PinnedItem = string | {
     url?: string;
     // Custom cast properties
     text?: string;
-    html?: string;
     hash?: string;
     author?: {
         username: string;

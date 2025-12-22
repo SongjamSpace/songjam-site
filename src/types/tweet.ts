@@ -1,4 +1,130 @@
-export interface TweetAuthor {
+interface PollV2 {
+    id: string;
+    options: {
+        position: number;
+        label: string;
+        votes: number;
+    }[];
+    duration_minutes?: number;
+    end_datetime?: string;
+    voting_status?: string;
+}
+interface Photo {
+    id: string;
+    url: string;
+    alt_text: string | undefined;
+}
+interface Video {
+    id: string;
+    preview: string;
+    url?: string;
+}
+interface Mention {
+    id: string;
+    username?: string;
+    name?: string;
+}
+
+interface Mention {
+    id: string;
+    username?: string;
+    name?: string;
+}
+interface Photo {
+    id: string;
+    url: string;
+    alt_text: string | undefined;
+}
+interface Video {
+    id: string;
+    preview: string;
+    url?: string;
+}
+interface PlaceRaw {
+    id?: string;
+    place_type?: string;
+    name?: string;
+    full_name?: string;
+    country_code?: string;
+    country?: string;
+    bounding_box?: {
+        type?: string;
+        coordinates?: number[][][];
+    };
+}
+
+/**
+ * A parsed Tweet object.
+ */
+export interface MongoTweet {
+    bookmarkCount?: number;
+    conversationId?: string;
+    hashtags: string[];
+    html?: string;
+    id: string;
+    //   inReplyToStatus?: MongoTweet;
+    inReplyToStatusId?: string;
+    isQuoted?: boolean;
+    isPin?: boolean;
+    isReply?: boolean;
+    isRetweet?: boolean;
+    isSelfThread?: boolean;
+    language?: string;
+    likes?: number;
+    name?: string;
+    mentions: Mention[];
+    permanentUrl?: string;
+    photos: Photo[];
+    place?: PlaceRaw;
+    //   quotedStatus?: MongoTweet;
+    quotedStatusId?: string;
+    quotes?: number;
+    replies?: number;
+    retweets?: number;
+    //   retweetedStatus?: MongoTweet;
+    retweetedStatusId?: string;
+    text?: string;
+    //   thread: MongoTweet[];
+    timeParsed?: Date | null;
+    timestamp?: number;
+    urls: string[];
+    userId?: string;
+    username?: string;
+    videos: Video[];
+    views?: number;
+    sensitiveContent?: boolean;
+    poll?: PollV2 | null;
+    isApiFetch?: boolean;
+    createdAt?: string;
+}
+export interface MongoTweetWithPoints extends MongoTweet {
+    likes: number;
+    replies: number;
+    retweets: number;
+    quotes: number;
+    bookmarkCount: number;
+    engagementPoints: number;
+    earlyMultiplier: number;
+    baseEngagementPoints: number;
+    projectId: string;
+    //TODO: remove Temporary field for batch insert
+    batchInsert?: boolean;
+    customMultiplier?: number;
+    penaltyMultiplier?: number;
+}
+
+export interface TwitterApiUrl {
+    display_url: string;
+    expanded_url: string;
+    indices: number[];
+    url: string;
+}
+
+export interface TwitterApiUserEntity {
+    urls: TwitterApiUrl[];
+}
+
+export interface TwitterApiUser {
     type: string;
     userName: string;
     url: string;
@@ -31,62 +157,24 @@ export interface TweetAuthor {
     profile_bio: {
         description: string;
         entities: {
-            description: {
-                urls: {
-                    display_url: string;
-                    expanded_url: string;
-                    indices: number[];
-                    url: string;
-                }[];
-            };
-            url: {
-                urls: {
-                    display_url: string;
-                    expanded_url: string;
-                    indices: number[];
-                    url: string;
-                }[];
-            };
+            description: TwitterApiUserEntity;
+            url: TwitterApiUserEntity;
         };
     };
 }
 
-export interface TweetEntities {
+export interface TwitterApiEntities {
     hashtags: {
         indices: number[];
         text: string;
     }[];
-    urls: {
-        display_url: string;
-        expanded_url: string;
-        indices: number[];
-        url: string;
-    }[];
+    urls: TwitterApiUrl[];
     user_mentions: {
         id_str: string;
         name: string;
         screen_name: string;
     }[];
-    // Adding media optional as it is common in tweets and code might use it, though not in user snippet explicitly.
-    media?: {
-        display_url: string;
-        expanded_url: string;
-        id_str: string;
-        indices: number[];
-        media_url_https: string;
-        type: string;
-        url: string;
-        sizes: any;
-        video_info?: {
-            aspect_ratio: number[];
-            duration_millis: number;
-            variants: {
-                bitrate?: number;
-                content_type: string;
-                url: string;
-            }[];
-        };
-    }[];
+    media?: any[];
 }
 
 export interface TwitterApiTweet {
@@ -109,13 +197,14 @@ export interface TwitterApiTweet {
     displayTextRange: number[];
     inReplyToUserId: string;
     inReplyToUsername: string;
-    author: TweetAuthor;
-    entities: TweetEntities;
+    author: TwitterApiUser;
+    entities: TwitterApiEntities;
     quoted_tweet?: any;
     retweeted_tweet?: any;
     isLimitedReply: boolean;
-    // Compatibility fields (optional) if needed by existing code logic that we might adapt or fields that might be present
-    html?: string;
-    photos?: { url: string }[];
-    videos?: { url: string; preview: string }[];
+    extendedEntities?: {
+        media?: {
+            media_url_https: string
+        }[]
+    }
 }

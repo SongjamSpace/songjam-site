@@ -1,11 +1,12 @@
 import axios from "axios";
 
 export const neynarClient = {
-    postCast: async (signerUuid: string, text: string) => {
+    postCast: async (signerUuid: string, text: string, mediaUrls: string[]) => {
         try {
             const response = await axios.post("/api/neynar/cast", {
                 signer_uuid: signerUuid,
                 text,
+                embeds: mediaUrls
             });
             return response.data;
         } catch (error: any) {

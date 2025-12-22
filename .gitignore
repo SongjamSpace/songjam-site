@@ -4,13 +4,6 @@ node_modules
 .env
 .env.production
 .gradle
-app
-app-release-bundle.aab
-app-release-signed.apk
-app-release-signed.apk.idsig
-app-release-unsigned-aligned.apk
-app-release-signed-aligned.apk
-
 # OS files
 .DS_Store
 *.DS_Store

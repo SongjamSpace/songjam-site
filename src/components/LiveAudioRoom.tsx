@@ -907,7 +907,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     };
 
     const handlePinTweet = async (item: PinnedItem) => {
-        if (!firestoreRoomId || !isHost) return;
+        if (!firestoreRoomId) return;
         try {
             await addPinnedLink(firestoreRoomId, item);
         } catch (error) {
