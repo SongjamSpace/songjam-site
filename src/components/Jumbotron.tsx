@@ -338,12 +338,13 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
 
         try {
             const { text, html, photos, videos } = tweet;
+            const cleanText = (text || '').replace(/&amp;/g, '&').trim().replace(/\s*https?:\/\/[^\s]+$/, '');
 
             const photoUrls = photos?.map(p => p.url) || [];
             const videoUrls = videos?.map(v => v.url) || [];
 
             // 2. Post to Neynar
-            const response = await neynarClient.postCast(neynarUser.signer_uuid, text || '', [...photoUrls, ...videoUrls]);
+            const response = await neynarClient.postCast(neynarUser.signer_uuid, cleanText, [...photoUrls, ...videoUrls]);
             // Assuming response looks like { success: true, cast: { hash: "0x...", author: {...} } } or similar
             // We need the hash to allow interactions. Use a fallback if response structure varies
             const castHash = response?.cast?.hash;
@@ -356,7 +357,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
             if (onPin) {
                 const pinnedItem: PinnedItem = {
                     url: `https://farcaster.xyz/${neynarUser.username}/${castHash}`,
-                    text: text,
+                    text: cleanText,
                     hash: castHash,
                     author: {
                         username: neynarUser.username || 'unknown',
@@ -416,11 +417,10 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                 return;
             }
 
-            const castText = tweetData.text;
-            const pinnedText = tweetData.text;
+            const castText = (tweetData.text || '').replace(/&amp;/g, '&').trim().replace(/\s*https?:\/\/[^\s]+$/, '');
 
             const photoUrls = tweetData.extendedEntities?.media?.map(m => m.media_url_https) || [];
-            const videoUrls = tweetData.extendedEntities?.media?.map(m => m.media_url_https) || [];
+            const videoUrls = tweetData.extendedEntities?.media?.map(m => m.video_info?.variants[0]?.url as string).filter((url: string | undefined) => !!url) || [];
 
             // Post to Neynar
             const response = await neynarClient.postCast(neynarUser.signer_uuid, castText, [...photoUrls, ...videoUrls]);
@@ -429,7 +429,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
             if (onPin && castHash) {
                 const pinnedItem: PinnedItem = {
                     url: `https://farcaster.xyz/${neynarUser.username}/${castHash}`,
-                    text: pinnedText,
+                    text: castText,
                     hash: castHash,
                     author: {
                         username: neynarUser.username || 'unknown',
@@ -604,6 +604,14 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                                 <div className="text-white/60 text-sm mb-2">
                                     Choose one of the following tweets to share on farcaster.
                                 </div>
+                                {availableTweets.some(t => t.videos?.length > 0) && (
+                                    <div className="mb-4 px-3 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg flex gap-2 items-start">
+                                        <span className="text-yellow-500 text-sm">⚠️</span>
+                                        <p className="text-xs text-yellow-200/90 leading-relaxed">
+                                            Videos/GIFs are not natively supported on Farcaster yet, so they will be previewed in a separate window.
+                                        </p>
+                                    </div>
+                                )}
                                 {availableTweets.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-10 gap-2 opacity-60">
                                         <span className="text-3xl">🔍</span>

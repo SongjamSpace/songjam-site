@@ -204,7 +204,15 @@ export interface TwitterApiTweet {
     isLimitedReply: boolean;
     extendedEntities?: {
         media?: {
-            media_url_https: string
+            media_url_https: string;
+            type: 'photo' | 'video' | 'animated_gif';
+            video_info?: {
+                variants: {
+                    bitrate?: number;
+                    content_type: string;
+                    url: string;
+                }[];
+            };
         }[]
     }
 }
