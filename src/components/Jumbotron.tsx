@@ -289,7 +289,100 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
     const [showTweetSelector, setShowTweetSelector] = React.useState(false);
     const [isCollapsed, setIsCollapsed] = React.useState(true); // Collapse state
     const [hostTweetUrl, setHostTweetUrl] = React.useState('');
+    const [participantTweetUrl, setParticipantTweetUrl] = React.useState('');
+    const [isParticipantCasting, setIsParticipantCasting] = React.useState(false);
     console.log(neynarUser?.signer_uuid);
+
+    const handleParticipantUrlCast = async () => {
+        if (!neynarUser?.signer_uuid || !participantTweetUrl) return;
+        setIsParticipantCasting(true);
+
+        try {
+            // Validate URL and get ID
+            const tweetId = getTweetId(participantTweetUrl);
+            if (!tweetId) {
+                alert("Please enter a valid Twitter URL");
+                setIsParticipantCasting(false);
+                return;
+            }
+
+            // Fetch tweet details
+            let tweetData: TwitterApiTweet;
+            try {
+                const res = await axios.get(`${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/twitter-api/tweet?tweet_id=${tweetId}`);
+                tweetData = res.data.tweet;
+
+                if (!tweetData?.text) {
+                    throw new Error("No text content in tweet");
+                }
+            } catch (fetchErr) {
+                console.error("Failed to fetch tweet details", fetchErr);
+                alert("Failed to fetch tweet content. Please check the URL and try again.");
+                setParticipantTweetUrl('');
+                setIsParticipantCasting(false);
+                return;
+            }
+
+            // Verify Ownership: Check if tweet author ID matches connected twitterId
+            if (twitterId && tweetData.author.id !== twitterId) {
+                alert("You can only cast your own tweets! Please verify the tweet is from your account.");
+                setParticipantTweetUrl('');
+                setIsParticipantCasting(false);
+                return;
+            }
+
+            // If twitterId prop is missing but user is authenticated, we might want to warn or just proceed if we can't verify 
+            // BUT the requirement is strict: "check if the tweet.author.id is user's twitterId"
+            if (!twitterId) {
+                alert("Could not verify your Twitter identity. Please reconnect your account.");
+                setParticipantTweetUrl('');
+                setIsParticipantCasting(false);
+                return;
+            }
+
+            const castText = (tweetData.text || '').replace(/&amp;/g, '&').trim().replace(/\s*https?:\/\/[^\s]+$/, '');
+            const photoUrls = tweetData.extendedEntities?.media?.map(m => m.media_url_https) || [];
+            const videoUrls = tweetData.extendedEntities?.media?.map(m => m.video_info?.variants[0]?.url as string).filter((url: string | undefined) => !!url) || [];
+
+            // Post to Neynar
+            const response = await neynarClient.postCast(neynarUser.signer_uuid, castText, [...photoUrls, ...videoUrls]);
+            const castHash = response?.cast?.hash;
+
+            if (!castHash) {
+                throw new Error("Failed to retrieve cast hash");
+            }
+
+            // Auto-pin
+            if (onPin) {
+                const pinnedItem: PinnedItem = {
+                    url: `https://farcaster.xyz/${neynarUser.username}/${castHash}`,
+                    text: castText,
+                    hash: castHash,
+                    author: {
+                        username: neynarUser.username || 'unknown',
+                        display_name: neynarUser.display_name || 'Anonymous',
+                        pfp: neynarUser.pfp_url || '',
+                        fid: neynarUser.fid,
+                    },
+                    engagement: {
+                        likes: 0,
+                        recasts: 0
+                    }
+                };
+                onPin(pinnedItem);
+            }
+
+            setParticipantTweetUrl('');
+            alert("Successfully casted!");
+
+        } catch (e) {
+            console.error("Error casting participant tweet:", e);
+            alert("Failed to cast. Please try again.");
+        } finally {
+            setIsParticipantCasting(false);
+        }
+    };
+
 
     const handleEarnPoints = async () => {
         if (!neynarUser?.signer_uuid) return;
@@ -756,22 +849,55 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                                         </div>
                                     ) : (
                                         !showTweetSelector && (
-                                            <button
-                                                onClick={handleEarnPoints}
-                                                disabled={isProcessing}
-                                                className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all flex items-center justify-center gap-2"
-                                            >
-                                                {isProcessing ? (
-                                                    <>
-                                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                        Processing...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <span className="text-lg">📢</span> Cast Tweet
-                                                    </>
-                                                )}
-                                            </button>
+                                            <div className="flex flex-col gap-3">
+                                                {/* Manual URL Input for Participants */}
+                                                <div className="flex gap-2 p-2 bg-white/5 rounded-lg border border-white/5">
+                                                    <input
+                                                        type="text"
+                                                        value={participantTweetUrl}
+                                                        onChange={(e) => setParticipantTweetUrl(e.target.value)}
+                                                        placeholder="Enter your tweet URL..."
+                                                        className="flex-1 bg-transparent text-xs text-white placeholder-white/30 focus:outline-none"
+                                                    />
+                                                    <button
+                                                        onClick={handleParticipantUrlCast}
+                                                        disabled={isParticipantCasting || !participantTweetUrl}
+                                                        className="px-3 py-1 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-[10px] font-bold rounded transition-colors flex items-center gap-1"
+                                                    >
+                                                        {isParticipantCasting ? (
+                                                            <span className="w-2.5 h-2.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                        ) : (
+                                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                                            </svg>
+                                                        )}
+                                                        Cast
+                                                    </button>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-[1px] flex-1 bg-white/10" />
+                                                    <span className="text-[10px] text-white/30 font-medium">OR SELECT RECENT</span>
+                                                    <div className="h-[1px] flex-1 bg-white/10" />
+                                                </div>
+
+                                                <button
+                                                    onClick={handleEarnPoints}
+                                                    disabled={isProcessing}
+                                                    className="w-full px-4 py-1 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    {isProcessing ? (
+                                                        <>
+                                                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                            Processing...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span className="text-lg">📢</span> Choose Tweets
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
                                         )
                                     )}
                                 </div>
