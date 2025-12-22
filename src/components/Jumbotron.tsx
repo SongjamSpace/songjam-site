@@ -302,7 +302,7 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                 params.projectId = projectId;
             }
             if (twitterId) {
-                params.userId = '1837397504729493505';
+                params.userId = twitterId;
             }
             // Assuming default values or that these will be passed if needed
             params.limit = 3; // Example default limit
