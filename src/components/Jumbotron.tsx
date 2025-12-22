@@ -305,8 +305,8 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
                 params.userId = twitterId;
             }
             // Assuming default values or that these will be passed if needed
-            params.limit = 3; // Example default limit
-            params.sortByPoints = true; // Example default sort
+            params.limit = 10; // Example default limit
+            params.sortByPoints = false; // Example default sort
 
             const res = await axios.get(
                 `${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/leaderboard/user-tweets`,
