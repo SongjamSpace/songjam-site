@@ -610,7 +610,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         const fetchPlaylist = async () => {
             if (isHost && user?.uid) {
                 try {
-                    const tracks = await getMusicUploadsByUserId(user.uid);
+                    const tracks = await getMusicUploadsByUserId('ad849d39-c425-4172-9eb9-bc5006f397d7');
                     setPlaylist(tracks);
                 } catch (error) {
                     console.error('Failed to fetch playlist', error);
