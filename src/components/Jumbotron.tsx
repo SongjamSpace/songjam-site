@@ -320,7 +320,6 @@ export const Jumbotron = ({ pinnedLinks, isHost, onUnpin, onPin, projectId, twit
     const [hostTweetUrl, setHostTweetUrl] = React.useState('');
     const [participantTweetUrl, setParticipantTweetUrl] = React.useState('');
     const [isParticipantCasting, setIsParticipantCasting] = React.useState(false);
-    console.log(neynarUser?.signer_uuid);
 
     const handleParticipantUrlCast = async () => {
         if (!neynarUser?.signer_uuid || !participantTweetUrl) return;

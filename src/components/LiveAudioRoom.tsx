@@ -16,7 +16,8 @@ import {
     useTranscript,
     selectIsTranscriptionEnabled,
     HMSTranscriptionMode,
-    HMSTranscript
+    HMSTranscript,
+    selectHMSMessages
 } from '@100mslive/react-sdk';
 import { useAuth } from '@/components/providers';
 // import { useNeynarContext } from "@neynar/react";
@@ -77,13 +78,58 @@ const getStableSpeakerPosition = (userId: string) => {
     return { x, y };
 };
 
+const ReactionBurst = ({ emoji }: { emoji: string }) => {
+    // Generate ~8 particles with random directions
+    const particles = useMemo(() => {
+        return Array.from({ length: 8 }).map((_, i) => {
+            const angle = (Math.PI * 2 * i) / 8; // Uniform distribution
+            // Add some randomness to spread
+            const spreadAngle = angle + (Math.random() - 0.5) * 0.5;
+            const distance = 60 + Math.random() * 60; // 60-120px burst radius (increased)
+            return {
+                x: Math.cos(spreadAngle) * distance,
+                y: Math.sin(spreadAngle) * distance,
+                scale: 0.5 + Math.random() * 1.0, // Increased scale variation
+                rotation: (Math.random() - 0.5) * 60
+            };
+        });
+    }, []);
+
+    return (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[100]">
+            {particles.map((p, i) => (
+                <motion.div
+                    key={i}
+                    initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
+                    animate={{
+                        x: p.x,
+                        y: p.y,
+                        opacity: [0, 1, 1, 0],
+                        scale: [0, p.scale, p.scale * 0.8],
+                        rotate: p.rotation
+                    }}
+                    transition={{
+                        duration: 3, // Increased from 1.5s
+                        ease: "easeOut",
+                        times: [0, 0.1, 0.6, 1]
+                    }}
+                    className="absolute text-4xl" // Increased from text-2xl
+                >
+                    {emoji}
+                </motion.div>
+            ))}
+        </div>
+    );
+};
+
 const ParticipantBubble = ({
     participant,
     isHost,
     isSpeaker,
     isActiveSpeaker,
     isSpeaking,
-    targetPosition
+    targetPosition,
+    reaction
 }: {
     participant: RoomParticipant;
     isHost: boolean;
@@ -91,13 +137,14 @@ const ParticipantBubble = ({
     isActiveSpeaker: boolean;
     isSpeaking?: boolean;
     targetPosition?: { x: number; y: number };
+    reaction?: { content: string; timestamp: number } | null;
 }) => {
     // Memoize random values with a "safe zone" logic for listeners
     const randomValues = useMemo(() => {
         // Generate a random angle and distance for "orbiting"
         const angle = Math.random() * Math.PI * 2;
-        // Minimum distance of 12% from center, max 24% (Increased buffer to prevent overlap)
-        const distance = 12 + Math.random() * 12;
+        // Minimum distance of 30% from center, max 45% (Increased buffer to prevent overlap with jumbo host bubble)
+        const distance = 30 + Math.random() * 15;
 
         // Calculate offset in %
         const xOffset = Math.cos(angle) * distance * 1.3; // Slightly increased horizontal stretch back to 1.3
@@ -295,6 +342,31 @@ const ParticipantBubble = ({
                     Speaking...
                 </div>
             )}
+
+            {/* Reaction Display */}
+            <AnimatePresence mode="wait">
+                {reaction && (
+                    <>
+                        {/* Check if simple emoji (1-2 chars usually) - rudimentary check */}
+                        {/^\p{Extended_Pictographic}+$/u.test(reaction.content) || reaction.content.length <= 4 ? (
+                            <ReactionBurst key={reaction.timestamp} emoji={reaction.content} />
+                        ) : (
+                            // Text Chip
+                            <motion.div
+                                key={reaction.timestamp}
+                                initial={{ opacity: 0, y: 10, scale: 0.5 }}
+                                animate={{ opacity: 1, y: -15, scale: 1 }}
+                                exit={{ opacity: 0, y: -20, scale: 0.5 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-black px-2 py-1 rounded-full shadow-xl z-[100] whitespace-nowrap font-bold text-2xl border-2 border-black/10"
+                            >
+                                {reaction.content}
+                                <div className="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 border-b-2 border-r-2 border-black/10"></div>
+                            </motion.div>
+                        )}
+                    </>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };
@@ -365,6 +437,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const localPeer = useHMSStore(selectLocalPeer);
     const isAudioEnabled = useHMSStore(selectIsPeerAudioEnabled(localPeer?.id || ''));
     const dominantSpeaker = useHMSStore(selectDominantSpeaker);
+    const messages = useHMSStore(selectHMSMessages);
     const { user, authenticated, login, twitterObj } = useAuth();
     // const { user: neynarUser, isAuthenticated } = useNeynarContext();
     // const authenticated = isAuthenticated;
@@ -415,6 +488,10 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
     // Caption State
     const [showCaptions, setShowCaptions] = useState(false);
+
+    // Reaction State
+    const [activeReactions, setActiveReactions] = useState<Record<string, { content: string; timestamp: number }>>({});
+    const reactionTimeouts = useRef<Record<string, NodeJS.Timeout>>({});
 
     // Check if current user is the host of the active room
     // This handles the refresh case where user is logged in but not connected to 100ms yet
@@ -637,6 +714,65 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             }
         };
     }, [audioElement]);
+
+    // Handle incoming reactions
+    useEffect(() => {
+        if (messages && messages.length > 0) {
+            const latest = messages[messages.length - 1];
+            // Check for REACTION type
+            if (latest.type === 'REACTION' && latest.sender && latest.message) {
+                const senderPeer = peers.find(p => p.id === latest.sender);
+
+                if (senderPeer?.customerUserId) {
+                    const userId = senderPeer.customerUserId;
+                    const text = latest.message;
+
+                    // Update state
+                    setActiveReactions(prev => ({ ...prev, [userId]: { content: text, timestamp: Date.now() } }));
+
+                    // Clear existing timeout
+                    if (reactionTimeouts.current[userId]) {
+                        clearTimeout(reactionTimeouts.current[userId]);
+                    }
+
+                    // Set new timeout to clear after 5s
+                    reactionTimeouts.current[userId] = setTimeout(() => {
+                        setActiveReactions(prev => {
+                            const next = { ...prev };
+                            delete next[userId];
+                            return next;
+                        });
+                    }, 5000);
+                }
+            }
+        }
+    }, [messages, peers]);
+
+    const handleSendReaction = async (content: string) => {
+        try {
+            await hmsActions.sendBroadcastMessage(content, "REACTION");
+
+            // Optimistically show for self since we might not receive our own broadcast
+            if (localPeer?.customerUserId) {
+                const userId = localPeer.customerUserId;
+                setActiveReactions(prev => ({ ...prev, [userId]: { content, timestamp: Date.now() } }));
+
+                if (reactionTimeouts.current[userId]) {
+                    clearTimeout(reactionTimeouts.current[userId]);
+                }
+
+                reactionTimeouts.current[userId] = setTimeout(() => {
+                    setActiveReactions(prev => {
+                        const next = { ...prev };
+                        delete next[userId];
+                        return next;
+                    });
+                }, 5000);
+            }
+        } catch (err) {
+            console.error("Failed to send reaction", err);
+        }
+    };
 
     const handleGoLive = async () => {
         if (!authenticated) {
@@ -1035,6 +1171,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                                 isActiveSpeaker={isActiveSpeaker}
                                 isSpeaking={isSpeaking}
                                 targetPosition={targetPosition}
+                                reaction={activeReactions[participant.id]}
                             />
                         );
                     })}
@@ -1076,6 +1213,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             onPlayTrack={handlePlayTrack}
                             onStopTrack={handleStopTrack}
                             showCaptions={showCaptions}
+                            onSendReaction={handleSendReaction}
                             onToggleCaptions={async () => {
                                 const nextState = !showCaptions;
                                 setShowCaptions(nextState);

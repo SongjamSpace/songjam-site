@@ -33,6 +33,7 @@ interface MiniSpaceBannerProps {
     onStopTrack: () => void;
     showCaptions: boolean;
     onToggleCaptions: () => void;
+    onSendReaction?: (text: string) => void;
 }
 
 export default function MiniSpaceBanner({
@@ -62,11 +63,14 @@ export default function MiniSpaceBanner({
     onPlayTrack,
     onStopTrack,
     showCaptions,
-    onToggleCaptions
+    onToggleCaptions,
+    onSendReaction = () => { }
 }: MiniSpaceBannerProps) {
     const [showRequests, setShowRequests] = React.useState(false);
     const [showSpeakers, setShowSpeakers] = React.useState(false);
     const [showPlaylist, setShowPlaylist] = React.useState(false);
+    const [showReactions, setShowReactions] = React.useState(false);
+    const [reactionText, setReactionText] = React.useState('');
 
 
     // Animation variants
@@ -230,6 +234,72 @@ export default function MiniSpaceBanner({
                                     <span className="text-sm">✋</span>
                                 </button>
                             )}
+
+                            {/* Reaction Button */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowReactions(!showReactions)}
+                                    className={`p-2 rounded-full transition-all ${showReactions
+                                        ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30'
+                                        : 'bg-white/10 hover:bg-white/20 text-white'
+                                        }`}
+                                    title="Send Reaction"
+                                >
+                                    <span className="text-sm">❤️</span>
+                                </button>
+                                <AnimatePresence>
+                                    {showReactions && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                            className="fixed top-24 left-1/2 -translate-x-1/2 sm:absolute sm:bottom-full sm:top-auto sm:left-1/2 sm:-translate-x-1/2 sm:mb-3 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[70] p-3 w-64"
+                                        >
+                                            <div className="grid grid-cols-5 gap-1 mb-3">
+                                                {['😂', '😲', '😢', '💜', '💯', '👏', '✊', '👍', '👎', '👋'].map(emoji => (
+                                                    <button
+                                                        key={emoji}
+                                                        onClick={() => {
+                                                            onSendReaction(emoji);
+                                                            setShowReactions(false);
+                                                        }}
+                                                        className="aspect-square bg-white/5 hover:bg-white/10 rounded-lg text-xl flex items-center justify-center transition-colors hover:scale-110 active:scale-95"
+                                                    >
+                                                        {emoji}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <form
+                                                onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    if (reactionText.trim()) {
+                                                        onSendReaction(reactionText.trim().slice(0, 40));
+                                                        setReactionText('');
+                                                        setShowReactions(false);
+                                                    }
+                                                }}
+                                                className="flex gap-2"
+                                            >
+                                                <input
+                                                    type="text"
+                                                    value={reactionText}
+                                                    onChange={(e) => setReactionText(e.target.value)}
+                                                    placeholder="Say something..."
+                                                    maxLength={40}
+                                                    className="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30"
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={!reactionText.trim()}
+                                                    className="px-3 bg-white text-black rounded-lg text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
+                                                >
+                                                    Send
+                                                </button>
+                                            </form>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
 
                             {/* Caption Toggle */}
                             <button
