@@ -39,6 +39,7 @@ import {
     addPinnedLink,
     removePinnedLink,
     PinnedItem,
+    updateRoomMusicStatus,
 } from '@/services/db/msRooms.db';
 import { getMusicUploadsByUserId } from '@/services/storage/dj.storage';
 import MiniSpaceBanner from './MiniSpaceBanner';
@@ -95,11 +96,11 @@ const ParticipantBubble = ({
     const randomValues = useMemo(() => {
         // Generate a random angle and distance for "orbiting"
         const angle = Math.random() * Math.PI * 2;
-        // Minimum distance of 15% from center, max 40%
-        const distance = 15 + Math.random() * 25;
+        // Minimum distance of 12% from center, max 24% (Increased buffer to prevent overlap)
+        const distance = 12 + Math.random() * 12;
 
         // Calculate offset in %
-        const xOffset = Math.cos(angle) * distance * 1.5; // Stretch X for landscape aspect ratio
+        const xOffset = Math.cos(angle) * distance * 1.3; // Slightly increased horizontal stretch back to 1.3
         const yOffset = Math.sin(angle) * distance;
 
         return {
@@ -178,7 +179,7 @@ const ParticipantBubble = ({
 
     return (
         <motion.div
-            className="absolute flex flex-col items-center justify-center pointer-events-auto cursor-pointer"
+            className="absolute flex flex-col items-center justify-center pointer-events-auto cursor-pointer group"
             initial={{ opacity: 0, scale: 0 }}
             animate={{
                 opacity: 1, // Always enforce opacity 1
@@ -279,14 +280,14 @@ const ParticipantBubble = ({
                 )}
             </div>
 
-            {/* Name Label */}
-            {!isHost && !isSpeaker ? null : (
-                <div className={`mt-2 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-white font-semibold tracking-wide shadow-xl 
-                    ${isHost ? 'mt-4 text-sm' : 'text-xs'}
-                 `}>
-                    {participant.userName}
-                </div>
-            )}
+            {/* Name Label - Show for everyone, but hover-only/absolute for listeners */}
+            <div className={`px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-white font-semibold tracking-wide shadow-xl 
+                ${isHost ? 'mt-4 text-sm relative' : ''}
+                ${!isHost && isSpeaker ? 'mt-2 text-xs relative' : ''}
+                ${!isHost && !isSpeaker ? 'absolute top-full mt-2 left-1/2 -translate-x-1/2 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50' : ''}
+             `}>
+                {participant.userName}
+            </div>
 
             {/* Speaking Indicator */}
             {isSpeaking && (isHost || isSpeaker) && (
@@ -620,6 +621,13 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         fetchPlaylist();
     }, [isHost, user?.uid]);
 
+    // Auto-disable captions if music is playing globally
+    useEffect(() => {
+        if (activeRoom?.isMusicPlaying) {
+            setShowCaptions(false);
+        }
+    }, [activeRoom?.isMusicPlaying]);
+
     // Cleanup audio on unmount or leave
     useEffect(() => {
         return () => {
@@ -864,6 +872,11 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             audio.crossOrigin = "anonymous";
             setAudioElement(audio);
             setCurrentTrack(url);
+            setShowCaptions(false); // Disable CC locally immediately
+
+            if (firestoreRoomId) {
+                updateRoomMusicStatus(firestoreRoomId, true);
+            }
 
             // Use Web Audio API for more robust stream capture
             const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
@@ -891,6 +904,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                 setCurrentTrack(null);
                 // Cleanup
                 audioContext.close();
+                if (firestoreRoomId) {
+                    updateRoomMusicStatus(firestoreRoomId, false);
+                }
             };
 
         } catch (error) {
@@ -903,6 +919,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             audioElement.pause();
             setCurrentTrack(null);
             // Ideally remove track from HMS too, but for now pausing stops the audio stream
+            if (firestoreRoomId) {
+                await updateRoomMusicStatus(firestoreRoomId, false);
+            }
         }
     };
 

@@ -104,4 +104,32 @@ export const neynarService = {
             throw error;
         }
     },
+
+    fetchBulkUsers: async (fids: string | number[], viewerFid?: number) => {
+        try {
+            const fidsParam = Array.isArray(fids) ? fids.join(',') : fids;
+            const params: any = { fids: fidsParam };
+            if (viewerFid) {
+                params.viewer_fid = viewerFid;
+            }
+
+            const response = await axios.get(
+                `${NEYNAR_API_URL}/farcaster/user/bulk`,
+                {
+                    params,
+                    headers: {
+                        'x-api-key': process.env.NEYNAR_API_KEY,
+                        "content-type": "application/json",
+                    },
+                }
+            );
+            return response.data;
+        } catch (error: any) {
+            console.error(
+                "Neynar API Error (Bulk Users):",
+                error.response?.data || error.message
+            );
+            throw error;
+        }
+    },
 };

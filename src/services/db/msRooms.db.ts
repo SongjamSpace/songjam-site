@@ -28,6 +28,7 @@ export interface MSRoom {
     endedAt?: number;
     pinnedLink?: string | null;
     pinnedLinks?: PinnedItem[];
+    isMusicPlaying?: boolean;
 }
 
 export type PinnedItem = string | {
@@ -563,5 +564,21 @@ export async function incrementUserBonusPoints(
     } catch (error) {
         console.error('Error incrementing user bonus points:', error);
         throw error;
+    }
+}
+
+/**
+ * Update room music playing status
+ */
+export async function updateRoomMusicStatus(
+    roomId: string,
+    isMusicPlaying: boolean
+): Promise<void> {
+    try {
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+        await updateDoc(docRef, { isMusicPlaying });
+    } catch (error) {
+        console.error('Error updating room music status:', error);
+        // Don't throw, just log
     }
 }

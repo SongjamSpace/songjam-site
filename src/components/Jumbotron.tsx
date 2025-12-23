@@ -104,6 +104,35 @@ const CustomCastCard = ({ item }: { item: PinnedItem }) => {
     const [followed, setFollowed] = React.useState(false);
     const [isInteracting, setIsInteracting] = React.useState(false);
 
+    React.useEffect(() => {
+        if (typeof item === 'string') return;
+
+        const checkFollowStatus = async () => {
+            if (!neynarUser?.fid || !item.author?.fid) return;
+
+            // Don't check if it's the user themselves
+            if (neynarUser.fid === item.author.fid) return;
+
+            try {
+                const response = await axios.get('/api/neynar/user/bulk', {
+                    params: {
+                        fids: item.author.fid,
+                        viewer_fid: neynarUser.fid
+                    }
+                });
+
+                const users = response.data.users;
+                if (users && users.length > 0) {
+                    setFollowed(users[0].viewer_context?.following || false);
+                }
+            } catch (error) {
+                console.error("Error checking follow status:", error);
+            }
+        };
+
+        checkFollowStatus();
+    }, [neynarUser?.fid, typeof item !== 'string' ? item.author?.fid : undefined]);
+
     // Helper to get safe values
     // If item is just a string, we can't do much.
     if (typeof item === 'string') return null;
