@@ -29,6 +29,14 @@ export interface MSRoom {
     pinnedLink?: string | null;
     pinnedLinks?: PinnedItem[];
     isMusicPlaying?: boolean;
+    speakers?: SpeakerDetails[];
+}
+
+export interface SpeakerDetails {
+    twitterId: string;
+    username: string;
+    name: string;
+    uuid: string; // Often same as twitterId for twitter users, or uid for others
 }
 
 export type PinnedItem = string | {
@@ -582,3 +590,22 @@ export async function updateRoomMusicStatus(
         // Don't throw, just log
     }
 }
+
+/**
+ * Add a speaker to the room's speakers list
+ */
+export async function addSpeakerToRoom(
+    roomId: string,
+    speaker: SpeakerDetails
+): Promise<void> {
+    try {
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+        await updateDoc(docRef, {
+            speakers: arrayUnion(speaker)
+        });
+    } catch (error) {
+        console.error('Error adding speaker to room:', error);
+        // Don't throw, just log
+    }
+}
+

@@ -34,13 +34,15 @@ import {
     leaveRoom,
     subscribeToRoomParticipants,
     updateParticipantRole,
-    MSRoom,
-    SpeakerRequest,
-    RoomParticipant,
     addPinnedLink,
     removePinnedLink,
     PinnedItem,
     updateRoomMusicStatus,
+    addSpeakerToRoom,
+    SpeakerDetails,
+    RoomParticipant,
+    SpeakerRequest,
+    MSRoom,
 } from '@/services/db/msRooms.db';
 import { getMusicUploadsByUserId } from '@/services/storage/dj.storage';
 import MiniSpaceBanner from './MiniSpaceBanner';
@@ -986,6 +988,18 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
             // Update request status in Firestore
             await updateSpeakerRequestStatus(firestoreRoomId, request.id, 'approved');
+
+            // Add speaker details to ms_rooms doc
+            const speakerDetails: SpeakerDetails = {
+                twitterId: request.userId, // Assuming userId is twitterId for now as per app convention
+                username: request.userName, // Or fetch actual username if needed, but request has userName
+                name: request.userName,
+                uuid: request.userId,
+            };
+
+            // We might want to refine username/name from peers or other sources if request.userName is not enough,
+            // but request.userName comes from addSpeakerRequest which uses twitterObj if available.
+            await addSpeakerToRoom(firestoreRoomId, speakerDetails);
 
             // Delete the request
             await deleteSpeakerRequest(firestoreRoomId, request.id);
