@@ -34,6 +34,7 @@ interface MiniSpaceBannerProps {
     showCaptions: boolean;
     onToggleCaptions: () => void;
     onSendReaction?: (text: string) => void;
+    sessionPoints?: number;
 }
 
 export default function MiniSpaceBanner({
@@ -64,7 +65,8 @@ export default function MiniSpaceBanner({
     onStopTrack,
     showCaptions,
     onToggleCaptions,
-    onSendReaction = () => { }
+    onSendReaction = () => { },
+    sessionPoints = 0
 }: MiniSpaceBannerProps) {
     const [showRequests, setShowRequests] = React.useState(false);
     const [showSpeakers, setShowSpeakers] = React.useState(false);
@@ -179,6 +181,7 @@ export default function MiniSpaceBanner({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                             {participantCount} listening
+                            {participantCount} listening
                         </div>
                     </div>
 
@@ -194,9 +197,13 @@ export default function MiniSpaceBanner({
                     {!isConnected && (
                         <button
                             onClick={onJoin}
-                            className="px-4 py-1.5 bg-white text-black hover:bg-gray-200 rounded-full text-xs font-bold transition-colors"
+                            className="group relative px-6 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 text-white rounded-full text-xs sm:text-sm font-bold shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:shadow-[0_0_30px_rgba(168,85,247,0.7)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden"
                         >
-                            Join<span className="hidden sm:inline"> Space</span>
+                            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out" />
+                            <span className="relative flex items-center gap-2">
+                                <span>🎙️</span>
+                                Join<span className="hidden sm:inline"> Space</span>
+                            </span>
                         </button>
                     )}
 
@@ -229,9 +236,13 @@ export default function MiniSpaceBanner({
                                         ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-500/30'
                                         : 'bg-white/10 hover:bg-white/20 text-white'
                                         }`}
-                                    title={authenticated ? "Raise Hand" : "Login to Raise Hand"}
+                                    title={authenticated ? "Request to Speak" : "Login to Raise Hand"}
                                 >
-                                    <span className="text-sm">✋</span>
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <title>Request to Speak</title>
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21.5 6.5C22.5 7.5 22.5 10.5 21.5 11.5M19 8.5c.5.5.5 1.5 0 2" />
+                                    </svg>
                                 </button>
                             )}
 

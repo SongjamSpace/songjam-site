@@ -47,6 +47,7 @@ import MiniSpaceBanner from './MiniSpaceBanner';
 import { Jumbotron } from './Jumbotron';
 import { motion, AnimatePresence } from 'framer-motion';
 import DevicePreviewModal from './DevicePreviewModal';
+import { useSpacePoints } from '@/hooks/useSpacePoints';
 
 const getStableSpeakerPosition = (userId: string) => {
     let hash = 0;
@@ -513,6 +514,18 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         }
         prevSpeakerRequestsLengthRef.current = speakerRequests.length;
     }, [speakerRequests.length, isHost]);
+
+    // Speaking Logic for Points (Host or Speaker and is Dominant)
+    const isSpeakingForPoints = (isHost && dominantSpeaker?.customerUserId === (twitterObj?.twitterId || user?.uid)) || (localPeer?.roleName === 'speaker' && dominantSpeaker?.customerUserId === (twitterObj?.twitterId || user?.uid));
+
+    // Points System Integration
+    const { sessionPoints } = useSpacePoints({
+        userId: twitterObj?.twitterId || user?.uid,
+        spaceId: firestoreRoomId || undefined,
+        role: isHost ? 'host' : (localPeer?.roleName === 'speaker' ? 'speaker' : 'listener'),
+        isSpeaking: isSpeakingForPoints,
+        isConnected: isConnected
+    });
 
     // Join Notifications Logic
     useEffect(() => {
@@ -1081,6 +1094,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
 
     const isSpeaker = localPeer?.roleName?.toLowerCase() === 'speaker';
+    const role = isHost ? 'host' : (localPeer?.roleName === 'speaker' ? 'speaker' : 'listener');
 
     // Get all active speakers (excluding host if needed, but usually we want to see them)
     // Actually, we want to see everyone who is a speaker
@@ -1179,7 +1193,46 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             </div>
 
             {/* Main UI Layer */}
-            <div className="relative z-10 pointer-events-auto flex justify-center p-4">
+            <div className="relative z-10 pointer-events-auto flex items-center justify-center gap-4 p-4">
+
+                {/* Points Counter (Only for non-hosts when connected) */}
+                <AnimatePresence>
+                    {isConnected && !isHost && (
+                        <motion.div
+                            initial={{ opacity: 0, x: -20, scale: 0.8 }}
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            exit={{ opacity: 0, x: -20, scale: 0.8 }}
+                            className="relative group rounded-2xl h-[58px]" // Match MiniSpaceBanner height approx
+                        >
+                            <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 rounded-2xl blur opacity-50 group-hover:opacity-80 transition duration-500 animate-gradient-x"></div>
+                            <div className="relative h-full px-6 flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl border border-yellow-500/20 rounded-2xl shadow-2xl">
+                                <div className="text-[10px] font-bold text-yellow-500/60 uppercase tracking-wider mb-0.5">SING POINTS</div>
+                                <div className="flex items-end gap-1">
+                                    <motion.span
+                                        key={sessionPoints}
+                                        initial={{ y: 5, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        className="text-2xl font-black text-white tabular-nums leading-none tracking-tight font-outfit"
+                                    >
+                                        {sessionPoints.toLocaleString()}
+                                    </motion.span>
+                                    {/* Show 2x when speaking, otherwise nothing */}
+                                    {isSpeakingForPoints && (role === 'speaker') ? (
+                                        <motion.span
+                                            initial={{ opacity: 0, scale: 0.5, x: -5 }}
+                                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                                            exit={{ opacity: 0, scale: 0.5, x: -5 }}
+                                            className="text-xs font-bold text-orange-500 mb-0.5 bg-orange-500/20 px-1 rounded ml-1 animate-pulse"
+                                        >
+                                            2x 🔥
+                                        </motion.span>
+                                    ) : null}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 <div className="relative group rounded-2xl">
                     {/* Animated Gradient Border / Glow */}
                     <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-cyan-500 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-gradient-x"></div>
@@ -1198,6 +1251,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             isAudioEnabled={isAudioEnabled}
                             authenticated={authenticated}
                             playlist={playlist}
+                            sessionPoints={sessionPoints}
                             currentTrack={currentTrack}
                             onGoLive={handleGoLive}
                             onJoin={handleJoin}
