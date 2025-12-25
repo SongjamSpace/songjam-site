@@ -864,7 +864,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         }
 
         try {
-            const userId = twitterObj?.twitterId || user?.uid;
+            const userId = twitterObj?.twitterId;
 
             if (!userId) {
                 console.error("No user ID found for fetching token");
