@@ -14,6 +14,7 @@ interface LeaderboardRow {
   stakingMultiplier?: number;
   spacePoints?: number;
   pointsWithoutMultiplier?: number;
+  songjamSpacePoints?: number;
 }
 
 // Mindshare data will be generated dynamically from leaderboard data
@@ -357,6 +358,11 @@ export default function MindshareLeaderboard({
       return [] as LeaderboardRow[];
     return leaderboardData as LeaderboardRow[]; // Already sorted
   }, [leaderboardData]);
+
+  const showSongjamPoints =
+    projectId === "bettercallzaal" &&
+    selectedTimeframe === "ALL" &&
+    sortedAllUsers.some((u) => (u.songjamSpacePoints || 0) > 0);
 
   const handleTimeframeChange = (timeframe: Timeframe) => {
     setSelectedTimeframe(timeframe);
@@ -854,6 +860,17 @@ export default function MindshareLeaderboard({
                         <span className="md:hidden">Timeline</span>
                       </th>
                     )}
+                    {showSongjamPoints && (
+                      <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap align-bottom">
+                        <div className="flex flex-col items-end">
+                          <span className="text-[10px] uppercase font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FF0080] to-[#7928CA] tracking-wider mb-0.5">
+                            Songjam
+                          </span>
+                          <span className="hidden md:inline">Space Points</span>
+                          <span className="md:hidden">Points</span>
+                        </div>
+                      </th>
+                    )}
                     <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
                       <span className="hidden md:inline">Total Points</span>
                       <span className="md:hidden">Points</span>
@@ -925,6 +942,16 @@ export default function MindshareLeaderboard({
                             style={{ fontFamily: "Inter, sans-serif" }}
                           >
                             {((u.pointsWithoutMultiplier || u.totalPoints) - (u.spacePoints || 0))?.toFixed(2) || "0"}
+                          </span>
+                        </td>
+                      )}
+                      {showSongjamPoints && (
+                        <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
+                          <span
+                            className="text-white/70 font-medium text-xs md:text-sm"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            {u.songjamSpacePoints?.toFixed(2) || "-"}
                           </span>
                         </td>
                       )}
