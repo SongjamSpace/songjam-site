@@ -966,7 +966,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                     await endMSRoom(firestoreRoomId);
                 }
                 if (isConnected) {
-                    await hmsActions.leave();
+                    await hmsActions.endRoom(false, "Host ended the space");
                 }
                 setFirestoreRoomId(null);
             } catch (error) {
