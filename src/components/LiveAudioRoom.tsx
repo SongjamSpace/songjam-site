@@ -879,9 +879,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
             const { token } = await response.json();
 
-            if (token) {
+            if (token && twitterObj?.username) {
                 await hmsActions.join({
-                    userName: twitterObj?.name || twitterObj?.username || user?.displayName || 'Listener',
+                    userName: twitterObj.username,
                     authToken: token,
                 });
             }
