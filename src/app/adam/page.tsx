@@ -4,8 +4,7 @@ import MindshareLeaderboard from "@/components/mindshare-leaderboard";
 import Navbar from "@/components/navbar";
 import HybridTarget from "@/components/hybrid-target";
 import AudioReactiveBackground from "@/components/audio-reactive-background";
-import AgentConversation from "@/components/agent-conversation";
-import axios from "axios";
+// import AgentConversation from "@/components/agent-conversation";
 import { subscribeToActiveRoom, MSRoom } from "@/services/db/msRooms.db";
 import { getAudiofiLatestCountAndTimestamp, getLatestCountAndTimestamp } from "@/services/db/leaderboardProjects";
 
@@ -88,12 +87,12 @@ export default function Page() {
           showStakingMultiplier
           minStakeStr="10,000"
           lastUpdatedAt={lastUpdatedAt}
-        // audioRoomEnabled
+          // audioRoomEnabled
         />
       </div>
 
       {/* Agent conversation UI - Only show if no active room */}
-      {!activeRoom && (
+      {/* {!activeRoom && (
         <AgentConversation
           onVolumeChange={handleVolumeChange}
           onStateChange={handleStateChange}
@@ -102,7 +101,7 @@ export default function Page() {
             // totalDiscussions
           }}
         />
-      )}
+      )} */}
     </div>
   );
 }
