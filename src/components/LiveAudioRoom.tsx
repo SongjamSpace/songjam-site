@@ -17,9 +17,11 @@ import {
     selectIsTranscriptionEnabled,
     HMSTranscriptionMode,
     HMSTranscript,
-    selectHMSMessages
+    selectHMSMessages,
+    selectRoom,
 } from '@100mslive/react-sdk';
 import { useAuth } from '@/components/providers';
+
 // import { useNeynarContext } from "@neynar/react";
 import {
     subscribeToActiveRoom,
@@ -442,6 +444,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const dominantSpeaker = useHMSStore(selectDominantSpeaker);
     const messages = useHMSStore(selectHMSMessages);
     const { user, authenticated, login, twitterObj } = useAuth();
+
+    const room = useHMSStore(selectRoom);
+    const isRecordingOn = room?.recording?.server?.running || room?.recording?.browser?.running;
     // const { user: neynarUser, isAuthenticated } = useNeynarContext();
     // const authenticated = isAuthenticated;
 
@@ -1088,6 +1093,22 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         }
     };
 
+    const handleToggleRecording = async () => {
+        try {
+            if (isRecordingOn) {
+                if (window.confirm("Stop recording?")) {
+                    await hmsActions.stopRTMPAndRecording();
+                }
+            } else {
+                await hmsActions.startRTMPOrRecording({
+                    record: true,
+                });
+            }
+        } catch (err) {
+            console.error("Failed to toggle recording", err);
+        }
+    };
+
     const handlePinTweet = async (item: PinnedItem) => {
         if (!firestoreRoomId) return;
         try {
@@ -1282,6 +1303,23 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             onStopTrack={handleStopTrack}
                             showCaptions={showCaptions}
                             onSendReaction={handleSendReaction}
+                            onMuteAll={async () => {
+                                if (window.confirm("Are you sure you want to mute all speakers?")) {
+                                    try {
+                                        // Get all remote speakers
+                                        const remoteSpeakers = peers.filter(p => !p.isLocal && p.roleName?.toLowerCase() === 'speaker');
+                                        for (const speaker of remoteSpeakers) {
+                                            if (speaker.audioTrack) {
+                                                await hmsActions.setRemoteTrackEnabled(speaker.audioTrack, false);
+                                            }
+                                        }
+                                    } catch (err) {
+                                        console.error("Failed to mute all speakers", err);
+                                    }
+                                }
+                            }}
+                            isRecordingOn={!!isRecordingOn}
+                            onToggleRecording={handleToggleRecording}
                             onToggleCaptions={async () => {
                                 const nextState = !showCaptions;
                                 setShowCaptions(nextState);

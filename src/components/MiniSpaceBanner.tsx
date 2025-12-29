@@ -3,7 +3,65 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MSRoom, SpeakerRequest } from '@/services/db/msRooms.db';
-import { HMSPeer } from '@100mslive/react-sdk';
+import {
+    HMSPeer,
+    useHMSStore,
+    selectIsPeerAudioEnabled,
+} from '@100mslive/react-sdk';
+import { Mic, MicOff, X } from 'lucide-react';
+
+const SpeakerRow = ({
+    peer,
+    onMutePeer,
+    onRemoveSpeaker,
+    currentTrack
+}: {
+    peer: HMSPeer;
+    onMutePeer: (peerId: string) => void;
+    onRemoveSpeaker: (peerId: string) => void;
+    currentTrack: any;
+}) => {
+    const isAudioEnabled = useHMSStore(selectIsPeerAudioEnabled(peer.id));
+
+    return (
+        <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors">
+            <div className="flex items-center gap-2 overflow-hidden">
+                <div className="w-6 h-6 rounded-full overflow-hidden border border-white/10 flex-shrink-0">
+                    {/* Simple Avatar */}
+                    <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-[10px] font-bold text-white">
+                        {peer.name?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                </div>
+                <span className="text-xs text-white/80 font-medium truncate">
+                    {peer.name} {peer.isLocal && '(You)'}
+                </span>
+            </div>
+            <div className="flex items-center gap-1">
+                {/* Mute Button */}
+                <button
+                    onClick={() => onMutePeer(peer.id)}
+                    className={`p-1.5 hover:bg-white/10 rounded-full transition-colors ${!isAudioEnabled ? 'text-red-500' : 'text-white/60 hover:text-white'
+                        }`}
+                    title={isAudioEnabled ? "Mute Speaker" : "Speaker Muted"}
+                >
+                    {isAudioEnabled ? (
+                        <Mic size={14} />
+                    ) : (
+                        <MicOff size={14} />
+                    )}
+                </button>
+                {/* Remove Speaker Button */}
+                <button
+                    onClick={() => onRemoveSpeaker(peer.id)}
+                    className="p-1.5 hover:bg-red-500/20 rounded-full text-white/40 hover:text-red-400 transition-colors"
+                    title="Remove Speaker"
+                >
+                    <X size={14} />
+                </button>
+            </div>
+        </div>
+    );
+};
 
 interface MiniSpaceBannerProps {
     isHost: boolean;
@@ -34,6 +92,9 @@ interface MiniSpaceBannerProps {
     showCaptions: boolean;
     onToggleCaptions: () => void;
     onSendReaction?: (text: string) => void;
+    onMuteAll?: () => void;
+    isRecordingOn?: boolean;
+    onToggleRecording?: () => void;
     sessionPoints?: number;
 }
 
@@ -66,6 +127,9 @@ export default function MiniSpaceBanner({
     showCaptions,
     onToggleCaptions,
     onSendReaction = () => { },
+    onMuteAll,
+    isRecordingOn = false,
+    onToggleRecording,
     sessionPoints = 0
 }: MiniSpaceBannerProps) {
     const [showRequests, setShowRequests] = React.useState(false);
@@ -323,6 +387,23 @@ export default function MiniSpaceBanner({
                                 <span className="text-sm font-bold">CC</span>
                             </button>
 
+                            {/* Host: Recording Toggle */}
+                            {/* {isHost && onToggleRecording && (
+                                <button
+                                    onClick={onToggleRecording}
+                                    className={`p-2 rounded-full transition-all ${isRecordingOn
+                                        ? 'bg-red-500/20 text-red-400 border border-red-500/50 shadow-lg shadow-red-500/10'
+                                        : 'bg-white/10 hover:bg-white/20 text-white'
+                                        }`}
+                                    title={isRecordingOn ? "Stop Recording" : "Start Recording"}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        <div className={`w-2 h-2 rounded-full ${isRecordingOn ? 'bg-red-500 animate-pulse' : 'bg-current'}`} />
+                                        <span className="text-xs font-bold hidden sm:inline">{isRecordingOn ? 'REC' : 'REC'}</span>
+                                    </div>
+                                </button>
+                            )} */}
+
                             {/* Host: DJ Console */}
                             {isHost && (
                                 <div className="relative">
@@ -426,35 +507,29 @@ export default function MiniSpaceBanner({
                                                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
                                                 className="fixed top-24 left-2 right-2 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:w-[350px] sm:mt-3 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[60]"
                                             >
-                                                <div className="px-3 py-2 bg-white/5 border-b border-white/5">
+                                                <div className="px-3 py-2 bg-white/5 border-b border-white/5 flex items-center justify-between">
                                                     <h3 className="text-xs font-bold text-white/80">Active Speakers</h3>
+                                                    <div className="flex gap-2">
+                                                        {onMuteAll && (
+                                                            <button
+                                                                onClick={onMuteAll}
+                                                                className="px-2 py-0.5 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 rounded text-[10px] font-bold transition-colors"
+                                                                title="Mute All Speakers"
+                                                            >
+                                                                Mute All
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <div className="max-h-48 overflow-y-auto p-1">
                                                     {activeSpeakers.map((peer) => (
-                                                        <div key={peer.id} className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors">
-                                                            <div className="flex items-center gap-2 overflow-hidden">
-                                                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white">
-                                                                    {peer.name?.[0] || '?'}
-                                                                </div>
-                                                                <span className="text-xs text-white truncate">{peer.name || 'Unknown'}</span>
-                                                            </div>
-                                                            <div className="flex gap-1">
-                                                                <button
-                                                                    onClick={() => onMutePeer(peer.id)}
-                                                                    className="p-1.5 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded transition-colors"
-                                                                    title="Mute"
-                                                                >
-                                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth={2} /></svg>
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => onRemoveSpeaker(peer.id)}
-                                                                    className="p-1.5 bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white rounded transition-colors"
-                                                                    title="Remove Speaker"
-                                                                >
-                                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                                                </button>
-                                                            </div>
-                                                        </div>
+                                                        <SpeakerRow
+                                                            key={peer.id}
+                                                            peer={peer}
+                                                            onMutePeer={onMutePeer}
+                                                            onRemoveSpeaker={onRemoveSpeaker}
+                                                            currentTrack={currentTrack}
+                                                        />
                                                     ))}
                                                 </div>
                                             </motion.div>
