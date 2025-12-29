@@ -36,7 +36,7 @@ export default function Page() {
       <div className="relative z-10">
         <Navbar />
         <MindshareOverview
-          countdownTargetDate="2026-01-01T09:00:00-05:00"
+          countdownTargetDate="2026-01-01T11:00:00-05:00"
           leftSection={{
             title: "Timeline Singers",
             subtitle: "Mention @bettercallzaal or $ZABAL",
