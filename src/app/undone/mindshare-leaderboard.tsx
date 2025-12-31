@@ -750,7 +750,7 @@ export default function MindshareLeaderboard({
                     } text-sm`}
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
-                  Contributors
+                  Winners
                 </div>
               </div>
 
