@@ -37,6 +37,8 @@ export default function Page() {
         <Navbar />
         <MindshareOverview
           countdownTargetDate="2026-01-01T11:00:00-05:00"
+          nextLaunchLabel="$ZABAL Empire Season 2 Launching in:"
+          nextLaunchDate="2026-01-06T00:00:00-05:00"
           leftSection={{
             title: "Timeline Singers",
             subtitle: "Mention @bettercallzaal or $ZABAL",
@@ -54,7 +56,7 @@ export default function Page() {
           title="$ZABAL Empire"
           moto="Assembling the Zabal so artists own profit - Building on Base for the Farcaster Future"
           projectId={PROJECT_ID}
-          timeframes={["24H", "7D", "ALL"]}
+          timeframes={["ALL"]}
           backgroundImageUrl="/images/banners/zaal.png"
           showStakingMultiplier
           minStakeStr="100,000"

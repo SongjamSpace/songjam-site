@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 
 interface MindshareOverviewProps {
     countdownTargetDate: string; // ISO
+    nextLaunchLabel: string;
+    nextLaunchDate: string;
     leftSection: {
         title: string;
         subtitle: string;
@@ -94,13 +96,42 @@ function CountdownTimer({ targetDate }: { targetDate: number }) {
 
 export default function MindshareOverview({
     countdownTargetDate,
+    nextLaunchLabel,
+    nextLaunchDate,
     leftSection,
     rightSection,
 }: MindshareOverviewProps) {
-    const targetDate = new Date(countdownTargetDate).getTime();
+    const [isCampaignEnded, setIsCampaignEnded] = useState(false);
+    const [targetDate, setTargetDate] = useState<number>(new Date(countdownTargetDate).getTime());
+
+    useEffect(() => {
+        const checkTime = () => {
+            const now = new Date().getTime();
+            const initialTarget = new Date(countdownTargetDate).getTime();
+            
+            if (now > initialTarget) {
+                setIsCampaignEnded(true);
+                setTargetDate(new Date(nextLaunchDate).getTime());
+            } else {
+                setIsCampaignEnded(false);
+                setTargetDate(initialTarget);
+            }
+        };
+
+        checkTime();
+        const interval = setInterval(checkTime, 1000);
+        return () => clearInterval(interval);
+    }, [countdownTargetDate]);
 
     return (
         <div className="max-w-4xl mx-auto my-8">
+            {isCampaignEnded && <div className="px-4 mb-4">
+                <div className="max-w-7xl mx-auto bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 text-center backdrop-blur-md">
+                <h3 className="text-xl md:text-2xl font-bold text-yellow-400 uppercase tracking-wider" style={{ fontFamily: "var(--font-williams), sans-serif" }}>
+                    This Campaign has ended
+                </h3>
+                </div>
+            </div>}
             {/* Main Container */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -129,12 +160,13 @@ export default function MindshareOverview({
                         {/* Countdown Section */}
                         <div className="text-center space-y-4">
                             <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
-                                LAUNCHING IN
+                                {isCampaignEnded ? nextLaunchLabel : "LAUNCHING IN"}
                             </h2>
                             <CountdownTimer targetDate={targetDate} />
                         </div>
 
                         {/* Side by Side Sections */}
+                        {!isCampaignEnded && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Left Section */}
                             <div className="bg-gradient-to-br from-purple-500/5 to-transparent border border-purple-500/20 rounded-2xl p-6">
@@ -188,6 +220,7 @@ export default function MindshareOverview({
                                 </div>
                             </div>
                         </div>
+                        )}
                     </div>
                 </div>
             </motion.div>
