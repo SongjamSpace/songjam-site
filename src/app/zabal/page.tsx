@@ -6,7 +6,7 @@ import MindshareOverview from "@/components/mindshare-overview";
 import { getAudiofiLatestCountAndTimestamp, getLatestCountAndTimestamp } from "@/services/db/leaderboardProjects";
 import { number } from "framer-motion";
 
-const PROJECT_ID = 'bettercallzaal';
+const PROJECT_ID = 'bettercallzaal_s2';
 
 export default function Page() {
   const [totalUsersCount, setTotalUsersCount] = useState(0);
