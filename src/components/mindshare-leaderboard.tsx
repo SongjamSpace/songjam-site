@@ -12,6 +12,7 @@ interface LeaderboardRow {
   totalPoints: number;
   userId: string;
   stakingMultiplier?: number;
+  empireMultiplier?: number; // New property for Empire Multiplier
   spacePoints?: number;
   pointsWithoutMultiplier?: number;
   songjamSpacePoints?: number;
@@ -363,6 +364,8 @@ export default function MindshareLeaderboard({
     projectId === "bettercallzaal" &&
     selectedTimeframe === "ALL" &&
     sortedAllUsers.some((u) => (u.songjamSpacePoints || 0) > 0);
+
+  const showEmpireMultiplier = projectId === "bettercallzaal_s2"; // Logic to show Empire Multiplier
 
   const handleTimeframeChange = (timeframe: Timeframe) => {
     setSelectedTimeframe(timeframe);
@@ -848,6 +851,27 @@ export default function MindshareLeaderboard({
                         </div>
                       </th>
                     )}
+                    {showEmpireMultiplier && (
+                      <th className="px-2 md:px-6 py-2 md:py-3 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1 md:gap-1.5 group relative">
+                          <span className="hidden md:inline">
+                            Empire Multiplier
+                          </span>
+                          <span className="md:hidden">Empire Mult.</span>
+                          <div className="relative inline-block">
+                            <span className="text-white/50 hover:text-white/80 transition-colors text-xs md:text-base">
+                              ⓘ
+                            </span>
+                            <div className="absolute left-1/2 -translate-x-1/2 mb-2 w-64 bg-black/95 text-white text-xs rounded-lg p-3 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-none z-50 shadow-2xl border border-white/30 whitespace-normal">
+                              <div className="text-white/80 text-center">
+                                Multiplier applied for Empire Season 2
+                              </div>
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-[6px] border-transparent border-t-black/95"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </th>
+                    )}
                     {showSpacePoints && (
                       <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
                         <span className="hidden md:inline">Space Points</span>
@@ -921,6 +945,21 @@ export default function MindshareLeaderboard({
                           >
                             {u.stakingMultiplier
                               ? u.stakingMultiplier.toFixed(2) + "x"
+                              : "1x"}
+                          </span>
+                        </td>
+                      )}
+                      {showEmpireMultiplier && (
+                        <td className="px-2 md:px-6 py-2 md:py-3 text-center align-middle">
+                          <span
+                            className={`inline-flex items-center px-2 md:px-3 py-0.5 md:py-1 rounded-full font-semibold text-xs md:text-sm shadow-sm ${u.empireMultiplier && u.empireMultiplier > 1
+                              ? "bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-400/30 text-white"
+                              : "bg-gradient-to-r from-gray-500/20 to-gray-600/20 border border-gray-500/30 text-white/70"
+                              }`}
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            {u.empireMultiplier
+                              ? u.empireMultiplier.toFixed(2) + "x"
                               : "1x"}
                           </span>
                         </td>
