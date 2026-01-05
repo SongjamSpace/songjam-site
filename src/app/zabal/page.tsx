@@ -56,7 +56,7 @@ export default function Page() {
           title="$ZABAL Empire"
           moto="Assembling the Zabal so artists own profit - Building on Base for the Farcaster Future"
           projectId={PROJECT_ID}
-          timeframes={["ALL"]}
+          timeframes={["24H", "7D", "ALL"]}
           backgroundImageUrl="/images/banners/zaal.png"
           showStakingMultiplier
           minStakeStr="100,000"
