@@ -721,7 +721,7 @@ export default function MindshareLeaderboard({
                 >
                   {mindshareData
                     .reduce((sum, item) => sum + item.points, 0)
-                    .toLocaleString()}
+                    .toFixed(0)}
                 </div>
                 <div
                   className={`${isLight ? "text-slate-700" : "text-white/70"
