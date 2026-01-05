@@ -36,7 +36,7 @@ export default function Page() {
       <div className="relative z-10">
         <Navbar />
         <MindshareOverview
-          countdownTargetDate="2026-01-01T11:00:00-05:00"
+          countdownTargetDate=""
           nextLaunchLabel="$ZABAL Empire Season 2 Launching in:"
           nextLaunchDate="2026-01-06T00:00:00-05:00"
           leftSection={{
@@ -59,7 +59,7 @@ export default function Page() {
           timeframes={["24H", "7D", "ALL"]}
           backgroundImageUrl="/images/banners/zaal.png"
           showStakingMultiplier
-          minStakeStr="100,000"
+          minStakeStr="250,000"
           audioRoomEnabled
           lastUpdatedAt={lastUpdatedAt}
         />

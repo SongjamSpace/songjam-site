@@ -158,12 +158,12 @@ export default function MindshareOverview({
 
                     <div className="relative z-10 space-y-8">
                         {/* Countdown Section */}
-                        <div className="text-center space-y-4">
+                        {!!countdownTargetDate && <div className="text-center space-y-4">
                             <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
                                 {isCampaignEnded ? nextLaunchLabel : "LAUNCHING IN"}
                             </h2>
                             <CountdownTimer targetDate={targetDate} />
-                        </div>
+                        </div>}
 
                         {/* Side by Side Sections */}
                         {!isCampaignEnded && (
