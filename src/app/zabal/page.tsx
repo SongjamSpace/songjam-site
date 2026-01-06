@@ -6,7 +6,7 @@ import MindshareOverview from "@/components/mindshare-overview";
 import { getAudiofiLatestCountAndTimestamp, getLatestCountAndTimestamp } from "@/services/db/leaderboardProjects";
 import { number } from "framer-motion";
 
-const PROJECT_ID = 'bettercallzaal';
+const PROJECT_ID = 'bettercallzaal_s2';
 
 export default function Page() {
   const [totalUsersCount, setTotalUsersCount] = useState(0);
@@ -36,7 +36,7 @@ export default function Page() {
       <div className="relative z-10">
         <Navbar />
         <MindshareOverview
-          countdownTargetDate="2026-01-01T11:00:00-05:00"
+          countdownTargetDate=""
           nextLaunchLabel="$ZABAL Empire Season 2 Launching in:"
           nextLaunchDate="2026-01-06T00:00:00-05:00"
           leftSection={{
@@ -56,10 +56,10 @@ export default function Page() {
           title="$ZABAL Empire"
           moto="Assembling the Zabal so artists own profit - Building on Base for the Farcaster Future"
           projectId={PROJECT_ID}
-          timeframes={["ALL"]}
+          timeframes={["24H", "7D", "ALL"]}
           backgroundImageUrl="/images/banners/zaal.png"
           showStakingMultiplier
-          minStakeStr="100,000"
+          minStakeStr="250,000"
           audioRoomEnabled
           lastUpdatedAt={lastUpdatedAt}
         />
