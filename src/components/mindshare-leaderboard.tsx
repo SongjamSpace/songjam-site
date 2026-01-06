@@ -362,7 +362,6 @@ export default function MindshareLeaderboard({
 
   const showSongjamPoints =
     projectId === "bettercallzaal_s2" &&
-    selectedTimeframe === "ALL" &&
     sortedAllUsers.some((u) => (u.songjamSpacePoints || 0) > 0);
 
   const showEmpireMultiplier = projectId === "bettercallzaal_s2"; // Logic to show Empire Multiplier

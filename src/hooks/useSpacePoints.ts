@@ -3,7 +3,9 @@ import { saveUserPoints, getUserPoints } from '@/services/db/points.db';
 
 interface UseSpacePointsProps {
     userId?: string;
+    userName?: string;
     spaceId?: string;
+    projectId?: string;
     role?: 'host' | 'speaker' | 'listener';
     isSpeaking?: boolean; // Signal for "actually speaking"
     isConnected?: boolean;
@@ -11,7 +13,9 @@ interface UseSpacePointsProps {
 
 export const useSpacePoints = ({
     userId,
+    userName = 'User',
     spaceId,
+    projectId = 'unknown',
     role = 'listener',
     isSpeaking = false,
     isConnected = false
@@ -64,6 +68,8 @@ export const useSpacePoints = ({
         // Reset saved ref if connection status changes to true (re-join)
         if (isConnected) {
             savedRef.current = false;
+            // Reset joinedAt to now, so this new session has a fresh start time
+            joinedAtRef.current = Date.now();
         }
 
         return () => {
@@ -71,12 +77,12 @@ export const useSpacePoints = ({
             // Use ref to get latest points without triggering effect re-run
             const finalPoints = sessionPointsRef.current;
             if (userId && spaceId && finalPoints > 0 && !savedRef.current) {
-                saveUserPoints(userId, spaceId, finalPoints, role, joinedAtRef.current);
+                saveUserPoints(userId, userName, spaceId, projectId, finalPoints, role, joinedAtRef.current);
                 savedRef.current = true;
                 setSessionPoints(0);
             }
         };
-    }, [userId, spaceId, role, isConnected]);
+    }, [userId, spaceId, projectId, role, isConnected]);
 
     return {
         totalPoints,

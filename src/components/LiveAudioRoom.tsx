@@ -525,10 +525,14 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     // Speaking Logic for Points (Host or Speaker and is Dominant)
     const isSpeakingForPoints = (isHost && dominantSpeaker?.customerUserId === (twitterObj?.twitterId || user?.uid)) || (localPeer?.roleName === 'speaker' && dominantSpeaker?.customerUserId === (twitterObj?.twitterId || user?.uid));
 
+    const currentUserName = twitterObj?.username || 'User';
+
     // Points System Integration
     const { sessionPoints } = useSpacePoints({
         userId: twitterObj?.twitterId || user?.uid,
+        userName: currentUserName,
         spaceId: firestoreRoomId || undefined,
+        projectId: projectId,
         role: isHost ? 'host' : (localPeer?.roleName === 'speaker' ? 'speaker' : 'listener'),
         isSpeaking: isSpeakingForPoints,
         isConnected: isConnected
