@@ -361,7 +361,7 @@ export default function MindshareLeaderboard({
   }, [leaderboardData]);
 
   const showSongjamPoints =
-    projectId === "bettercallzaal" &&
+    projectId === "bettercallzaal_s2" &&
     selectedTimeframe === "ALL" &&
     sortedAllUsers.some((u) => (u.songjamSpacePoints || 0) > 0);
 
@@ -862,9 +862,16 @@ export default function MindshareLeaderboard({
                             <span className="text-white/50 hover:text-white/80 transition-colors text-xs md:text-base">
                               ⓘ
                             </span>
-                            <div className="absolute left-1/2 -translate-x-1/2 mb-2 w-64 bg-black/95 text-white text-xs rounded-lg p-3 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-none z-50 shadow-2xl border border-white/30 whitespace-normal">
+                            <div className="absolute left-1/2 -translate-x-1/2 mb-2 w-64 bg-black/95 text-white text-xs rounded-lg p-3 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 z-50 shadow-2xl border border-white/30 whitespace-normal">
                               <div className="text-white/80 text-center">
-                                Multiplier applied for Empire Season 2
+                                Multiplier retrieved from{" "}
+                                <Link
+                                  href="https://www.empirebuilder.world/empire/0xbB48f19B0494Ff7C1fE5Dc2032aeEE14312f0b07"
+                                  target="_blank"
+                                  className="underline hover:text-white"
+                                >
+                                  Empire Builder Booster
+                                </Link>
                               </div>
                               <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-[6px] border-transparent border-t-black/95"></div>
                             </div>
