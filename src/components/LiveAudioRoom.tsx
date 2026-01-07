@@ -819,8 +819,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
             alert('No user name found');
             return;
         }
-        if (projectId !== userName.toLowerCase()) {
-            alert(`Mindshare space can only be hosted by the creator: @${projectId}`);
+        const season = projectId.includes('_s2') ? '_s2' : '';
+        if (projectId !== userName.toLowerCase() + season) {
+            alert(`Mindshare space can only be hosted by the creator of the campaign`);
             return;
         }
         try {
