@@ -1,6 +1,69 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Songjam - Voice Space Styles */
+@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap");
+
+/* Custom scrollbar for dark theme */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Geist Mono for data elements */
+.font-geist-mono {
+  font-family: "Geist Mono", ui-monospace, monospace;
+}
+
+/* Radar glow effects */
+.radar-glow {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.3), 0 0 40px rgba(168, 85, 247, 0.2),
+    inset 0 0 60px rgba(6, 182, 212, 0.1);
+}
+
+/* Neon text glow */
+.neon-text-purple {
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.8),
+    0 0 20px rgba(168, 85, 247, 0.6), 0 0 30px rgba(168, 85, 247, 0.4);
+}
+
+.neon-text-cyan {
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.6),
+    0 0 30px rgba(6, 182, 212, 0.4);
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Line clamp utility */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -44,7 +107,9 @@
   --animate-tilt: tilt 10s infinite linear;
 
   @keyframes tilt {
-    0%, 50%, 100% {
+    0%,
+    50%,
+    100% {
       transform: rotate(0deg);
     }
     25% {
@@ -96,19 +161,27 @@
     background-size: 200% 200%;
     animation: gradient-x 3s ease infinite;
   }
-  
+
   .animate-shine {
     animation: shine 1.5s infinite;
   }
 
   @keyframes gradient-x {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   @keyframes shine {
-    100% { transform: translateX(100%); }
+    100% {
+      transform: translateX(100%);
+    }
   }
 }
 
