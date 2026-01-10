@@ -376,7 +376,7 @@ export default function MiniSpaceBanner({
                             </div>
 
                             {/* Caption Toggle */}
-                            <button
+                            {/* <button
                                 onClick={onToggleCaptions}
                                 className={`p-2 rounded-full transition-all ${showCaptions
                                     ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
@@ -385,7 +385,7 @@ export default function MiniSpaceBanner({
                                 title={showCaptions ? "Hide Captions" : "Show Captions"}
                             >
                                 <span className="text-sm font-bold">CC</span>
-                            </button>
+                            </button> */}
 
                             {/* Host: Recording Toggle */}
                             {/* {isHost && onToggleRecording && (

@@ -5,6 +5,7 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import Link from "next/link";
 import LiveAudioRoom from "./LiveAudioRoom";
 import moment from "moment";
+import { ethers } from "ethers";
 
 interface LeaderboardRow {
   username: string;
@@ -16,6 +17,7 @@ interface LeaderboardRow {
   spacePoints?: number;
   pointsWithoutMultiplier?: number;
   songjamSpacePoints?: number;
+  zabalBalance?: string; // Zabal balance as bigint string
 }
 
 // Mindshare data will be generated dynamically from leaderboard data
@@ -365,6 +367,10 @@ export default function MindshareLeaderboard({
     sortedAllUsers.some((u) => (u.songjamSpacePoints || 0) > 0);
 
   const showEmpireMultiplier = projectId === "bettercallzaal_s2"; // Logic to show Empire Multiplier
+
+  const showZabalBalance =
+    projectId === "bettercallzall_s2" &&
+    sortedAllUsers.some((u) => u.zabalBalance && u.zabalBalance !== "0"); // Show $ZABAL column for bettercallzall_s2 only if at least one user has a balance
 
   const handleTimeframeChange = (timeframe: Timeframe) => {
     setSelectedTimeframe(timeframe);
@@ -901,6 +907,11 @@ export default function MindshareLeaderboard({
                         </div>
                       </th>
                     )}
+                    {showZabalBalance && (
+                      <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
+                        <span>$ZABAL</span>
+                      </th>
+                    )}
                     <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
                       <span className="hidden md:inline">Total Points</span>
                       <span className="md:hidden">Points</span>
@@ -997,6 +1008,18 @@ export default function MindshareLeaderboard({
                             style={{ fontFamily: "Inter, sans-serif" }}
                           >
                             {u.songjamSpacePoints?.toFixed(2) || "-"}
+                          </span>
+                        </td>
+                      )}
+                      {showZabalBalance && (
+                        <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
+                          <span
+                            className="text-white/70 font-medium text-xs md:text-sm"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            {u.zabalBalance
+                              ? parseFloat(ethers.formatUnits(u.zabalBalance, 18)).toLocaleString(undefined, { maximumFractionDigits: 2 })
+                              : "-"}
                           </span>
                         </td>
                       )}
