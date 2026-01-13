@@ -21,6 +21,7 @@ export const ListeningHomepage = ({ onStartSpace }: ListeningHomepageProps) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const animationFrameRef = useRef<number | null>(null);
+  const conversationRef = useRef<ReturnType<typeof useConversation> | null>(null);
 
   const conversation = useConversation({
     onConnect: () => {
@@ -58,6 +59,9 @@ export const ListeningHomepage = ({ onStartSpace }: ListeningHomepageProps) => {
     }
   });
 
+  // Keep conversation ref updated
+  conversationRef.current = conversation;
+
   // Volume monitoring loop
   useEffect(() => {
     if (agentState !== 'connected') {
@@ -67,8 +71,9 @@ export const ListeningHomepage = ({ onStartSpace }: ListeningHomepageProps) => {
     }
 
     const updateVolumes = () => {
-      const rawInput = conversation.getInputVolume?.() ?? 0;
-      const rawOutput = conversation.getOutputVolume?.() ?? 0;
+      const conv = conversationRef.current;
+      const rawInput = conv?.getInputVolume?.() ?? 0;
+      const rawOutput = conv?.getOutputVolume?.() ?? 0;
       
       const normalizedInput = Math.min(1.0, Math.pow(rawInput, 0.5) * 2.5);
       const normalizedOutput = Math.min(1.0, Math.pow(rawOutput, 0.5) * 2.5);
@@ -98,7 +103,7 @@ export const ListeningHomepage = ({ onStartSpace }: ListeningHomepageProps) => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [agentState, conversation]);
+  }, [agentState]);
 
   const startConversation = useCallback(async () => {
     try {
@@ -109,10 +114,24 @@ export const ListeningHomepage = ({ onStartSpace }: ListeningHomepageProps) => {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       
       await conversation.startSession({
-        agentId: process.env.NEXT_PUBLIC_ADAM_AGENT!,
+        agentId: 'agent_3201kes1g6w6fhbrna2t2yv26rkv',
         connectionType: 'webrtc',
         onStatusChange: (status) => {
           setAgentState(status.status);
+        },
+        clientTools: {
+          start_space: async () => {
+            console.log("Client tool start_space triggered!");
+            setOrbState('transitioning');
+            setStatusText('Creating Space...');
+            
+            const result = await onStartSpace();
+            if (!result.success) {
+              setOrbState('listening');
+              setStatusText('Listening...');
+            }
+            return result.success ? "Space created successfully" : "Failed to create space";
+          }
         }
       });
     } catch (error) {

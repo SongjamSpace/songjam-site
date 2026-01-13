@@ -121,9 +121,10 @@ export const VoiceOrb = ({
   };
 
   return (
-    <div
+    <button
+      type="button"
       className={cn(
-        "relative flex items-center justify-center cursor-pointer",
+        "relative flex items-center justify-center cursor-pointer border-none bg-transparent",
         className
       )}
       onClick={onClick}
@@ -133,7 +134,7 @@ export const VoiceOrb = ({
         <motion.div
           key={i}
           className={cn(
-            "absolute rounded-full border",
+            "absolute rounded-full border pointer-events-none",
             state === 'listening' ? 'border-cyan-500/30' : 'border-purple-500/30'
           )}
           style={{
@@ -149,7 +150,7 @@ export const VoiceOrb = ({
       {/* Glow layer */}
       <motion.div
         className={cn(
-          "absolute w-full h-full rounded-full blur-2xl",
+          "absolute w-full h-full rounded-full blur-2xl pointer-events-none",
           `bg-gradient-to-br ${getGradientColors()}`
         )}
         animate={{
@@ -162,7 +163,7 @@ export const VoiceOrb = ({
       {/* Main orb */}
       <motion.div
         className={cn(
-          "relative w-full h-full rounded-full",
+          "relative w-full h-full rounded-full pointer-events-none",
           `bg-gradient-to-br ${getGradientColors()}`,
           getGlowColor(),
           "transition-shadow duration-300"
@@ -223,7 +224,7 @@ export const VoiceOrb = ({
           ))}
         </>
       )}
-    </div>
+    </button>
   );
 };
 
