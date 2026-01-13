@@ -5,8 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DailyProvider, useDaily, useParticipantIds, useLocalParticipant, DailyAudio } from '@daily-co/daily-react';
 import { getEmpireBuilderByHostSlug, EmpireBuilder } from '@/services/db/empireBuilder.db';
-import { useAuth } from '@/components/providers';
-import { Mic, MicOff, Users, LogOut, Radio, Crown, Loader2 } from 'lucide-react';
+import { 
+    goLive, 
+    endSpace,
+    subscribeToLiveSpace,
+    LiveSpaceDoc 
+} from '@/services/db/liveSpaces.db';
+import { NeynarAuthButton, useNeynarContext, SIWN_variant } from '@neynar/react';
+import { Mic, MicOff, Users, LogOut, Radio, Crown, Loader2, Send, Wifi } from 'lucide-react';
 
 // Loading component
 const LoadingSpinner = () => (
@@ -66,6 +72,47 @@ const TokenNotDeployed = ({ hostData }: { hostData: EmpireBuilder }) => (
     </div>
 );
 
+// Connect Farcaster prompt component
+const ConnectFarcasterPrompt = ({ hostData }: { hostData: EmpireBuilder }) => (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-3xl" />
+            <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-3xl" />
+        </div>
+        
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative z-10 max-w-md w-full"
+        >
+            <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-800 p-8 text-center">
+                {hostData.imageUrl && (
+                    <motion.img 
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        src={hostData.imageUrl}
+                        alt={hostData.name}
+                        className="w-24 h-24 mx-auto mb-6 rounded-full border-4 border-purple-500 shadow-xl shadow-purple-500/20"
+                    />
+                )}
+                
+                <h1 className="text-3xl font-bold text-white mb-2">
+                    {hostData.name}&apos;s Space
+                </h1>
+                <p className="text-slate-400 mb-6">
+                    @{hostData.hostSlug} • ${hostData.symbol}
+                </p>
+                
+                <p className="text-slate-300 mb-6">
+                    Connect your Farcaster account to join or start this space
+                </p>
+                
+                <NeynarAuthButton variant={SIWN_variant.FARCASTER} />
+            </div>
+        </motion.div>
+    </div>
+);
+
 // Participant bubble component
 const ParticipantBubble = ({ id, isHost }: { id: string; isHost: boolean }) => {
     const participant = useLocalParticipant();
@@ -104,13 +151,17 @@ const ParticipantBubble = ({ id, isHost }: { id: string; isHost: boolean }) => {
 
 // Main room content component
 const RoomContent = ({ 
-    hostData, 
+    hostData,
+    liveSpace,
     isHost,
-    onLeave 
+    onLeave,
+    onEndSpace
 }: { 
     hostData: EmpireBuilder;
+    liveSpace: LiveSpaceDoc;
     isHost: boolean;
     onLeave: () => void;
+    onEndSpace: () => void;
 }) => {
     const daily = useDaily();
     const localParticipant = useLocalParticipant();
@@ -174,6 +225,15 @@ const RoomContent = ({
                         {isMicEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
                     </button>
                     
+                    {isHost && (
+                        <button
+                            onClick={onEndSpace}
+                            className="px-4 py-2 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-all text-sm font-medium"
+                        >
+                            End Space
+                        </button>
+                    )}
+                    
                     <button
                         onClick={handleLeave}
                         className="p-3 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-all"
@@ -195,7 +255,7 @@ const RoomContent = ({
                         <ParticipantBubble 
                             key={id} 
                             id={id} 
-                            isHost={index === 0} // First participant is usually the host
+                            isHost={index === 0}
                         />
                     ))}
                     
@@ -235,19 +295,20 @@ const RoomContent = ({
     );
 };
 
-// Pre-join lobby component
+// Pre-join lobby component - shown when space is live and user wants to join
 const PreJoinLobby = ({ 
     hostData, 
+    liveSpace,
     onJoin, 
     isJoining 
 }: { 
     hostData: EmpireBuilder;
+    liveSpace: LiveSpaceDoc;
     onJoin: () => void;
     isJoining: boolean;
 }) => {
     return (
         <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-            {/* Background effects */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-3xl" />
                 <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-3xl" />
@@ -259,14 +320,13 @@ const PreJoinLobby = ({
                 className="relative z-10 max-w-md w-full"
             >
                 <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-800 p-8 text-center">
-                    {/* Host token image */}
                     {hostData.imageUrl && (
                         <motion.img 
                             initial={{ scale: 0.8 }}
                             animate={{ scale: 1 }}
                             src={hostData.imageUrl}
                             alt={hostData.name}
-                            className="w-24 h-24 mx-auto mb-6 rounded-full border-4 border-purple-500 shadow-xl shadow-purple-500/20"
+                            className="w-24 h-24 mx-auto mb-6 rounded-full border-4 border-green-500 shadow-xl shadow-green-500/20"
                         />
                     )}
                     
@@ -278,10 +338,10 @@ const PreJoinLobby = ({
                     </p>
                     
                     {/* Live badge */}
-                    <div className="flex items-center justify-center gap-2 mb-8">
+                    <div className="flex items-center justify-center gap-2 mb-4">
                         <span className="flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
                             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                            Ready to go live
+                            Live Now • {liveSpace.participantCount} listening
                         </span>
                     </div>
                     
@@ -312,25 +372,176 @@ const PreJoinLobby = ({
     );
 };
 
+// Host Go Live lobby - shown when host visits and space is offline
+const HostGoLiveLobby = ({ 
+    hostData, 
+    onGoLive, 
+    isGoingLive 
+}: { 
+    hostData: EmpireBuilder;
+    onGoLive: () => void;
+    isGoingLive: boolean;
+}) => {
+    return (
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+            <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-3xl" />
+                <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-3xl" />
+            </div>
+            
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative z-10 max-w-md w-full"
+            >
+                <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-800 p-8 text-center">
+                    {hostData.imageUrl && (
+                        <motion.img 
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            src={hostData.imageUrl}
+                            alt={hostData.name}
+                            className="w-24 h-24 mx-auto mb-6 rounded-full border-4 border-purple-500 shadow-xl shadow-purple-500/20"
+                        />
+                    )}
+                    
+                    <h1 className="text-3xl font-bold text-white mb-2">
+                        Your Space
+                    </h1>
+                    <p className="text-slate-400 mb-6">
+                        @{hostData.hostSlug} • ${hostData.symbol}
+                    </p>
+                    
+                    <div className="flex items-center justify-center gap-2 mb-8">
+                        <span className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-400 rounded-full text-sm font-medium">
+                            <span className="w-2 h-2 rounded-full bg-slate-500" />
+                            Currently Offline
+                        </span>
+                    </div>
+                    
+                    <button
+                        onClick={onGoLive}
+                        disabled={isGoingLive}
+                        className="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-2xl font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                        {isGoingLive ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Going Live...
+                            </>
+                        ) : (
+                            <>
+                                <Wifi className="w-5 h-5" />
+                                Go Live
+                            </>
+                        )}
+                    </button>
+                    
+                    <p className="text-slate-500 text-sm mt-4">
+                        Start your space and invite your community
+                    </p>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+// Non-host waiting lobby - shown when non-host visits and space is offline
+const RequestHostLobby = ({ 
+    hostData,
+    onRequestStart,
+    requestSent
+}: { 
+    hostData: EmpireBuilder;
+    onRequestStart: () => void;
+    requestSent: boolean;
+}) => {
+    return (
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+            <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-3xl" />
+                <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-3xl" />
+            </div>
+            
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative z-10 max-w-md w-full"
+            >
+                <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-800 p-8 text-center">
+                    {hostData.imageUrl && (
+                        <motion.img 
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            src={hostData.imageUrl}
+                            alt={hostData.name}
+                            className="w-24 h-24 mx-auto mb-6 rounded-full border-4 border-slate-600 shadow-xl opacity-75"
+                        />
+                    )}
+                    
+                    <h1 className="text-3xl font-bold text-white mb-2">
+                        {hostData.name}&apos;s Space
+                    </h1>
+                    <p className="text-slate-400 mb-6">
+                        @{hostData.hostSlug} • ${hostData.symbol}
+                    </p>
+                    
+                    <div className="flex items-center justify-center gap-2 mb-8">
+                        <span className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-400 rounded-full text-sm font-medium">
+                            <span className="w-2 h-2 rounded-full bg-slate-500" />
+                            Host is Offline
+                        </span>
+                    </div>
+                    
+                    {requestSent ? (
+                        <div className="w-full py-4 bg-green-500/20 text-green-400 rounded-2xl font-medium flex items-center justify-center gap-2">
+                            <Send className="w-5 h-5" />
+                            Request sent to @{hostData.hostSlug}
+                        </div>
+                    ) : (
+                        <button
+                            onClick={onRequestStart}
+                            className="w-full py-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2"
+                        >
+                            <Send className="w-5 h-5" />
+                            Request Host to Go Live
+                        </button>
+                    )}
+                    
+                    <p className="text-slate-500 text-sm mt-4">
+                        {requestSent 
+                            ? "We'll notify you when the space goes live"
+                            : "Send a notification to the host via Farcaster"
+                        }
+                    </p>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
 // Main page component (wrapped with DailyProvider)
 const HostSpaceContent = () => {
     const params = useParams();
     const router = useRouter();
-    const twitterUsername = params.twitterUsername as string;
-    const { user, authenticated, twitterObj } = useAuth();
+    const farcasterUsername = params.farcasterUsername as string;
+    const { user: neynarUser, isAuthenticated } = useNeynarContext();
     
     const daily = useDaily();
     
     const [hostData, setHostData] = useState<EmpireBuilder | null>(null);
+    const [liveSpace, setLiveSpace] = useState<LiveSpaceDoc | null>(null);
     const [loading, setLoading] = useState(true);
     const [roomState, setRoomState] = useState<'lobby' | 'joining' | 'joined'>('lobby');
     const [error, setError] = useState<string | null>(null);
+    const [isGoingLive, setIsGoingLive] = useState(false);
+    const [requestSent, setRequestSent] = useState(false);
 
     // Fetch host data
     useEffect(() => {
         const fetchHost = async () => {
             try {
-                const host = await getEmpireBuilderByHostSlug(twitterUsername);
+                const host = await getEmpireBuilderByHostSlug(farcasterUsername);
                 setHostData(host);
             } catch (err) {
                 console.error('Error fetching host:', err);
@@ -340,28 +551,43 @@ const HostSpaceContent = () => {
             }
         };
         
-        if (twitterUsername) {
+        if (farcasterUsername) {
             fetchHost();
         }
-    }, [twitterUsername]);
+    }, [farcasterUsername]);
 
-    // Check if current user is the host
-    const isHost = hostData && (twitterObj?.twitterId === hostData.twitterId || user?.uid === hostData.twitterId);
+    // Subscribe to live space updates
+    useEffect(() => {
+        if (!farcasterUsername) return;
 
-    // Handle joining the room
-    const handleJoinRoom = useCallback(async () => {
-        if (!hostData || !daily) return;
+        const unsubscribe = subscribeToLiveSpace(farcasterUsername, (space) => {
+            setLiveSpace(space);
+            // If space ends while we're joined, go back to lobby
+            if (!space && roomState === 'joined') {
+                daily?.leave();
+                setRoomState('lobby');
+            }
+        });
+
+        return () => unsubscribe();
+    }, [farcasterUsername, roomState, daily]);
+
+    // Check if current user is the host (compare Farcaster FIDs)
+    const isHost = hostData && neynarUser && hostData.fid === neynarUser.fid?.toString();
+
+    // Handle host going live
+    const handleGoLive = useCallback(async () => {
+        if (!hostData || !daily || !neynarUser) return;
         
-        setRoomState('joining');
+        setIsGoingLive(true);
         
         try {
-            // Create a room via the API
+            // Create a Daily room
             const response = await fetch('/api/daily/room', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     properties: {
-                        // Room will expire in 24 hours
                         exp: Math.round(Date.now() / 1000) + 24 * 60 * 60,
                     }
                 })
@@ -373,13 +599,45 @@ const HostSpaceContent = () => {
             
             const roomData = await response.json();
             
+            // Write to Firebase so others can join the same room
+            await goLive({
+                hostSlug: hostData.hostSlug,
+                hostFid: neynarUser.fid.toString(),
+                dailyRoomUrl: roomData.url,
+            });
+            
             // Request mic permission
             await navigator.mediaDevices.getUserMedia({ audio: true });
             
             // Join the Daily room
             await daily.join({
                 url: roomData.url,
-                userName: twitterObj?.name || user?.displayName || 'Guest',
+                userName: neynarUser.display_name || neynarUser.username || 'Host',
+            });
+            
+            setRoomState('joined');
+        } catch (err) {
+            console.error('Error going live:', err);
+            setError('Failed to go live');
+        } finally {
+            setIsGoingLive(false);
+        }
+    }, [hostData, daily, neynarUser]);
+
+    // Handle joining an existing live space
+    const handleJoinRoom = useCallback(async () => {
+        if (!hostData || !daily || !liveSpace) return;
+        
+        setRoomState('joining');
+        
+        try {
+            // Request mic permission
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // Join the existing Daily room from Firebase
+            await daily.join({
+                url: liveSpace.dailyRoomUrl,
+                userName: neynarUser?.display_name || neynarUser?.username || 'Guest',
             });
             
             setRoomState('joined');
@@ -388,12 +646,31 @@ const HostSpaceContent = () => {
             setError('Failed to join room');
             setRoomState('lobby');
         }
-    }, [hostData, daily, twitterObj, user]);
+    }, [hostData, daily, liveSpace, neynarUser]);
+
+    // Handle host ending the space
+    const handleEndSpace = useCallback(async () => {
+        if (!liveSpace) return;
+        
+        try {
+            await endSpace(liveSpace.hostSlug);
+            daily?.leave();
+            setRoomState('lobby');
+        } catch (err) {
+            console.error('Error ending space:', err);
+        }
+    }, [liveSpace, daily]);
 
     // Handle leaving the room
     const handleLeaveRoom = useCallback(() => {
         setRoomState('lobby');
     }, []);
+
+    // Handle requesting host to start (placeholder - does nothing for now)
+    const handleRequestStart = useCallback(() => {
+        if (!hostData) return;
+        setRequestSent(true);
+    }, [hostData]);
 
     // Loading state
     if (loading) {
@@ -407,7 +684,7 @@ const HostSpaceContent = () => {
                 <div className="text-center">
                     <p className="text-red-400 mb-4">{error}</p>
                     <button 
-                        onClick={() => router.push('/songjam-space')}
+                        onClick={() => router.push('/spaces')}
                         className="text-purple-400 hover:text-purple-300"
                     >
                         Go back
@@ -419,7 +696,7 @@ const HostSpaceContent = () => {
 
     // Not found state
     if (!hostData) {
-        return <NotFound username={twitterUsername} />;
+        return <NotFound username={farcasterUsername} />;
     }
 
     // Token not deployed state
@@ -427,25 +704,56 @@ const HostSpaceContent = () => {
         return <TokenNotDeployed hostData={hostData} />;
     }
 
+    // Not authenticated with Farcaster - show connect prompt
+    if (!isAuthenticated || !neynarUser) {
+        return <ConnectFarcasterPrompt hostData={hostData} />;
+    }
+
     // Joined state - show the room
-    if (roomState === 'joined') {
+    if (roomState === 'joined' && liveSpace) {
         return (
             <RoomContent 
                 hostData={hostData}
+                liveSpace={liveSpace}
                 isHost={isHost || false}
                 onLeave={handleLeaveRoom}
+                onEndSpace={handleEndSpace}
             />
         );
     }
 
-    // Lobby state - show pre-join UI
-    return (
-        <PreJoinLobby 
-            hostData={hostData}
-            onJoin={handleJoinRoom}
-            isJoining={roomState === 'joining'}
-        />
-    );
+    // Space is live - show join lobby
+    if (liveSpace) {
+        return (
+            <PreJoinLobby 
+                hostData={hostData}
+                liveSpace={liveSpace}
+                onJoin={handleJoinRoom}
+                isJoining={roomState === 'joining'}
+            />
+        );
+    }
+
+    // Space is offline
+    if (isHost) {
+        // Host sees "Go Live" button
+        return (
+            <HostGoLiveLobby 
+                hostData={hostData}
+                onGoLive={handleGoLive}
+                isGoingLive={isGoingLive}
+            />
+        );
+    } else {
+        // Non-host sees "Request to Start" button
+        return (
+            <RequestHostLobby 
+                hostData={hostData}
+                onRequestStart={handleRequestStart}
+                requestSent={requestSent}
+            />
+        );
+    }
 };
 
 // Export with DailyProvider wrapper
