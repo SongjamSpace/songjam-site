@@ -132,4 +132,41 @@ export const neynarService = {
             throw error;
         }
     },
+
+    fetchBestFriends: async (fid: number, limit: number = 100) => {
+        try {
+            const allUsers: Array<{ fid: number; mutual_affinity_score: number; username: string }> = [];
+            let cursor: string | null = null;
+
+            // Paginate to fetch all best friends
+            do {
+                const params: any = { fid, limit };
+                if (cursor) {
+                    params.cursor = cursor;
+                }
+
+                const response = await axios.get(
+                    `${NEYNAR_API_URL}/farcaster/user/best_friends`,
+                    {
+                        params,
+                        headers: {
+                            'x-api-key': process.env.NEYNAR_API_KEY,
+                            "content-type": "application/json",
+                        },
+                    }
+                );
+
+                allUsers.push(...response.data.users);
+                cursor = response.data.next?.cursor || null;
+            } while (cursor);
+
+            return { users: allUsers };
+        } catch (error: any) {
+            console.error(
+                "Neynar API Error (Best Friends):",
+                error.response?.data || error.message
+            );
+            throw error;
+        }
+    },
 };
