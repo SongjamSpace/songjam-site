@@ -1,23 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import {
-  FarcasterCast,
-  InviteTarget,
-  Participant,
-  TranscriptMessage,
-  generateMockCast,
-  generateMockInviteTarget,
-  generateMockTranscriptMessage,
-  generateInitialMockData
-} from '@/lib/songjam/mockData';
+
 import { 
-  getEmpireBuilder, 
   createEmpireBuilder,
   updateDeploymentStatus,
   updateEmpireBuilderDeployment 
 } from '@/services/db/empireBuilder.db';
-import axios from 'axios';
 import { Clanker } from 'clanker-sdk/v4';
 import { createPublicClient, createWalletClient, http, custom } from 'viem';
 import {base} from 'viem/chains';
@@ -47,19 +35,9 @@ export interface HostInfo {
 // Default token params - can be changed later
 const DEFAULT_TOKEN_PARAMS = {
   name: 'Songjam Host Token',
-  symbol: 'SJHT',
+  symbol: 'SHT',
   imageUrl: '', // Will be set based on host username
 };
-
-interface SongjamSpaceState {
-  viewState: SpaceViewState;
-  roomUrl: string | null;
-  participants: Participant[];
-  inviteTargets: InviteTarget[];
-  radarCasts: FarcasterCast[];
-  transcript: TranscriptMessage[];
-  inviteProgress: { current: number; total: number };
-}
 
 // Helper function to auto-deploy token - exported via hook
 export async function autoDeployToken(hostInfo: HostInfo): Promise<{ success: boolean; hostSlug: string }> {
@@ -67,7 +45,7 @@ export async function autoDeployToken(hostInfo: HostInfo): Promise<{ success: bo
   const hostSlug = username;
   
   // Create default token params with host-specific values
-  const tokenName = displayName ? `${displayName}'s Token` : DEFAULT_TOKEN_PARAMS.name;
+  const tokenName = displayName ? `${displayName} - Songjam Host` : DEFAULT_TOKEN_PARAMS.name;
   const tokenSymbol = username.slice(0, 4).toUpperCase() || DEFAULT_TOKEN_PARAMS.symbol;
   const imageUrl = ``;
 
