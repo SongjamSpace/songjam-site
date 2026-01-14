@@ -1,82 +1,68 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import VoiceOrb from "@/components/songjam/VoiceOrb";
-import { useConversation } from "@elevenlabs/react";
 import { NeynarAuthButton, useNeynarContext, SIWN_variant } from "@neynar/react";
-import { subscribeToActiveRoom, MSRoom } from "@/services/db/msRooms.db";
-import { useSongjamSpace, autoDeployToken } from "@/hooks/useSongjamSpace";
-import { getEmpireBuilder } from "@/services/db/empireBuilder.db";
+import { subscribeToAllLiveSpaces, LiveSpaceDoc } from "@/services/db/liveSpaces.db";
+import { autoDeployToken } from "@/hooks/useSongjamSpace";
+import { getEmpireBuilder, getEmpireBuilderByHostSlug, subscribeToDeployedEmpireBuilders, EmpireBuilder } from "@/services/db/empireBuilder.db";
 import { useEthWallet } from "@/lib/hooks/useEthWallet";
 
-type AgentState = 'disconnected' | 'connecting' | 'connected' | 'disconnecting' | null;
 
 export default function SpacesPage() {
   const router = useRouter();
   const { user: neynarUser, isAuthenticated } = useNeynarContext();
-  const { startSpace } = useSongjamSpace();
   const { walletAddress, isConnected, isSigning, connectWallet, signMessage } = useEthWallet();
 
   // Get the host's fid for token check
   const hostFid = neynarUser?.fid?.toString();
 
-  // Voice agent state
-  const [agentState, setAgentState] = useState<AgentState>('disconnected');
-  const [orbState, setOrbState] = useState<'idle' | 'listening' | 'speaking' | 'transitioning'>('idle');
-  const [inputVolume, setInputVolume] = useState(0);
-  const [outputVolume, setOutputVolume] = useState(0);
-  const [statusText, setStatusText] = useState('Tap to Talk');
-  const [activeSpaces, setActiveSpaces] = useState<MSRoom[]>([]);
+  const [activeSpaces, setActiveSpaces] = useState<LiveSpaceDoc[]>([]);
+  const [hostDataMap, setHostDataMap] = useState<Record<string, EmpireBuilder>>({});
+  const [deployedTokens, setDeployedTokens] = useState<EmpireBuilder[]>([]);
   const [isTokenDeployed, setIsTokenDeployed] = useState<boolean>(false);
   const [isDeploying, setIsDeploying] = useState(false);
-  
-  const animationFrameRef = useRef<number | null>(null);
-  const conversationRef = useRef<ReturnType<typeof useConversation> | null>(null);
 
-  console.log({
-      isFarcasterConnected: isConnected,
-      isTokenDeployed: !!isTokenDeployed,
-      hostName: neynarUser?.display_name || neynarUser?.username || '',
-  })
-
-  // ElevenLabs conversation setup
-  const conversation = useConversation({
-    dynamicVariables: {
-      isFarcasterConnected: isConnected,
-      isTokenDeployed: !!isTokenDeployed,
-      hostName: neynarUser?.display_name || neynarUser?.username || '',
-    },
-    onConnect: () => {
-      setAgentState('connected');
-      setOrbState('listening');
-      setStatusText('Listening...');
-    },
-    onDisconnect: () => {
-      setAgentState('disconnected');
-      setOrbState('idle');
-      setStatusText('Tap to Talk');
-    },
-    onMessage: (message) => console.log("Message:", message),
-    onError: (error) => {
-      console.error("ElevenLabs Error:", error);
-      setAgentState('disconnected');
-      setOrbState('idle');
-      setStatusText('Tap to Talk');
-    },
-  });
-
-  conversationRef.current = conversation;
-
-  // Subscribe to active spaces
+  // Subscribe to all live spaces
   useEffect(() => {
-    const unsubscribe = subscribeToActiveRoom("songjam_space", (room) => {
-      if (room) {
-        setActiveSpaces([room]);
-      } else {
-        setActiveSpaces([]);
+    const unsubscribe = subscribeToAllLiveSpaces((spaces) => {
+      setActiveSpaces(spaces);
+    });
+    return unsubscribe;
+  }, []);
+
+  // Fetch host data for live spaces (for avatars)
+  useEffect(() => {
+    const fetchHostData = async () => {
+      const newHostDataMap: Record<string, EmpireBuilder> = {};
+      for (const space of activeSpaces) {
+        if (!hostDataMap[space.hostSlug]) {
+          try {
+            const hostData = await getEmpireBuilderByHostSlug(space.hostSlug);
+            if (hostData) {
+              newHostDataMap[space.hostSlug] = hostData;
+            }
+          } catch (error) {
+            console.error('Error fetching host data:', error);
+          }
+        } else {
+          newHostDataMap[space.hostSlug] = hostDataMap[space.hostSlug];
+        }
       }
+      if (Object.keys(newHostDataMap).length > 0) {
+        setHostDataMap(prev => ({ ...prev, ...newHostDataMap }));
+      }
+    };
+    if (activeSpaces.length > 0) {
+      fetchHostData();
+    }
+  }, [activeSpaces]);
+
+  // Subscribe to all deployed empire builders
+  useEffect(() => {
+    const unsubscribe = subscribeToDeployedEmpireBuilders((builders) => {
+      setDeployedTokens(builders);
     });
     return unsubscribe;
   }, []);
@@ -99,116 +85,6 @@ export default function SpacesPage() {
     checkTokenDeployment();
   }, [hostFid]);
 
-  // Volume monitoring loop
-  useEffect(() => {
-    if (agentState !== 'connected') {
-      setInputVolume(0);
-      setOutputVolume(0);
-      return;
-    }
-
-    const updateVolumes = () => {
-      const conv = conversationRef.current;
-      const rawInput = conv?.getInputVolume?.() ?? 0;
-      const rawOutput = conv?.getOutputVolume?.() ?? 0;
-
-      const normalizedInput = Math.min(1.0, Math.pow(rawInput, 0.5) * 2.5);
-      const normalizedOutput = Math.min(1.0, Math.pow(rawOutput, 0.5) * 2.5);
-
-      setInputVolume(normalizedInput);
-      setOutputVolume(normalizedOutput);
-
-      if (normalizedOutput > normalizedInput && normalizedOutput > 0.05) {
-        setOrbState('speaking');
-        setStatusText('Speaking...');
-      } else if (normalizedInput > 0.05) {
-        setOrbState('listening');
-        setStatusText('Listening...');
-      } else if (agentState === 'connected') {
-        setOrbState('listening');
-        setStatusText('Listening...');
-      }
-
-      animationFrameRef.current = requestAnimationFrame(updateVolumes);
-    };
-
-    updateVolumes();
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [agentState]);
-
-  const startConversation = useCallback(async () => {
-    try {
-      setAgentState('connecting');
-      setStatusText('Connecting...');
-
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      await conversation.startSession({
-        agentId: 'agent_3201kes1g6w6fhbrna2t2yv26rkv',
-        connectionType: 'websocket',
-        clientTools: {
-          start_space: async () => {
-            setOrbState('transitioning');
-            setStatusText('Creating Space...');
-            
-            // Build hostInfo for auto-deployment
-            const hostInfo = hostFid ? {
-              twitterId: hostFid,
-              username: neynarUser?.username || `host_${hostFid.slice(0, 8)}`,
-              displayName: neynarUser?.display_name || undefined,
-              fid: neynarUser?.fid?.toString()
-            } : undefined;
-            
-            const result = await startSpace(hostFid, hostInfo);
-            
-            if (!result.success) {
-              setOrbState('listening');
-              
-              if (result.error === 'NOT_AUTHENTICATED') {
-                setStatusText('Please login');
-                return 'You need to be logged in to start a space';
-              }
-              
-              if (result.error === 'DEPLOYMENT_FAILED') {
-                setStatusText('Deployment failed');
-                return result.message || 'Failed to deploy token';
-              }
-              
-              setStatusText('Failed');
-              return result.message || 'Failed to create space';
-            }
-            
-            // Redirect to the host's dedicated space page
-            if (result.redirectTo) {
-              router.push(result.redirectTo);
-            }
-            
-            return 'Space created successfully';
-          }
-        }
-      });
-    } catch (error) {
-      console.error("Error starting conversation:", error);
-      setAgentState('disconnected');
-      setOrbState('idle');
-      setStatusText('Tap to Talk');
-    }
-  }, [conversation, hostFid, router, startSpace, neynarUser]);
-
-  const handleOrbClick = useCallback(() => {
-    if (orbState === 'transitioning') return;
-
-    if (agentState === 'disconnected' || agentState === null) {
-      startConversation();
-    } else if (agentState === 'connected') {
-      conversation.endSession();
-    }
-  }, [agentState, orbState, conversation, startConversation]);
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col max-w-[1200px] mx-auto">
@@ -321,7 +197,8 @@ export default function SpacesPage() {
 
       {/* Live Spaces Section */}
       <main className="flex-1 px-6">
-        <div className="mb-6">
+        {/* Live Spaces */}
+        <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
             <h2 className="text-lg font-semibold text-white">Live Spaces</h2>
@@ -331,34 +208,59 @@ export default function SpacesPage() {
           </div>
 
           {activeSpaces.length > 0 ? (
-            <div className="space-y-3">
-              {activeSpaces.map((space) => (
-                <motion.div
-                  key={space.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-purple-500/40 transition-colors cursor-pointer"
-                  onClick={() => router.push(`/spaces/${neynarUser?.username}`)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium text-white">
-                        {space.hostName}&apos;s Space
-                      </h3>
-                      <p className="text-sm text-slate-500">
-                        @{space.hostName}
-                      </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {activeSpaces.map((space) => {
+                const hostData = hostDataMap[space.hostSlug];
+                return (
+                  <motion.div
+                    key={space.hostSlug}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative rounded-2xl overflow-hidden cursor-pointer group"
+                    onClick={() => router.push(`/spaces/${space.hostSlug}`)}
+                  >
+                    {/* Background with host avatar */}
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ 
+                        backgroundImage: hostData?.imageUrl 
+                          ? `url(${hostData.imageUrl})` 
+                          : 'linear-gradient(to br, #7c3aed, #06b6d4)' 
+                      }}
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-slate-900/60" />
+                    
+                    {/* Content */}
+                    <div className="relative p-5 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        {hostData?.imageUrl && (
+                          <img 
+                            src={hostData.imageUrl} 
+                            alt={space.hostSlug}
+                            className="w-14 h-14 rounded-full border-2 border-green-400 shadow-lg shadow-green-400/20"
+                          />
+                        )}
+                        <div>
+                          <h3 className="font-semibold text-white text-lg">
+                            @{space.hostSlug}
+                          </h3>
+                          <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
+                            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                            {space.participantCount} {space.participantCount === 1 ? 'listener' : 'listeners'}
+                          </div>
+                        </div>
+                      </div>
+                      <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity">
+                        Join
+                      </button>
                     </div>
-                    <div className="flex items-center gap-1.5 text-cyan-400 text-sm">
-                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                      Live
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           ) : (
-            <div className="text-center py-12">
+            <div className="text-center py-12 bg-slate-900/40 rounded-2xl border border-slate-800/60">
               <p className="text-slate-500">No active spaces</p>
               <p className="text-sm text-slate-600 mt-1">
                 Tap the orb below to create one
@@ -366,32 +268,76 @@ export default function SpacesPage() {
             </div>
           )}
         </div>
-      </main>
 
-      {/* Bottom Orb Section */}
-      <footer className="p-8 pb-12">
-        <div className="flex flex-col items-center gap-4">
-          <VoiceOrb
-            state={orbState}
-            inputVolume={inputVolume}
-            outputVolume={outputVolume}
-            onClick={handleOrbClick}
-            className="w-20 h-20"
-          />
-          
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={statusText}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              className="text-sm text-slate-400"
-            >
-              {statusText}
-            </motion.span>
-          </AnimatePresence>
+        {/* Space Host Tokens Section */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">🪙</span>
+            <h2 className="text-lg font-semibold text-white">Space Host Tokens</h2>
+            <span className="px-2 py-0.5 text-xs font-medium bg-purple-500/20 text-purple-400 rounded-full">
+              {deployedTokens.length}
+            </span>
+          </div>
+
+          {deployedTokens.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {deployedTokens.map((token) => (
+                <motion.div
+                  key={token.hostSlug}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-purple-500/40 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    {token.imageUrl && (
+                      <img 
+                        src={token.imageUrl} 
+                        alt={token.name}
+                        className="w-12 h-12 rounded-full border-2 border-purple-500/50"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-white truncate">
+                        {token.name}
+                      </h3>
+                      <p className="text-sm text-slate-400">
+                        ${token.symbol} • @{token.hostSlug}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/spaces/${token.hostSlug}`);
+                      }}
+                      className="px-3 py-1.5 text-sm font-medium bg-purple-600/20 text-purple-400 rounded-lg hover:bg-purple-600/30 transition-colors whitespace-nowrap"
+                    >
+                      View Space
+                    </button>
+                  </div>
+                  {token.tokenAddress && (
+                    <a
+                      href={`https://www.empirebuilder.world/empire/${token.tokenAddress}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="block mt-2 text-xs text-slate-500 hover:text-cyan-400 transition-colors"
+                    >
+                      View on Empire Builder →
+                    </a>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-slate-900/40 rounded-2xl border border-slate-800/60">
+              <p className="text-slate-500">No host tokens yet</p>
+              <p className="text-sm text-slate-600 mt-1">
+                Deploy your token to appear here
+              </p>
+            </div>
+          )}
         </div>
-      </footer>
+      </main>
     </div>
   );
 }

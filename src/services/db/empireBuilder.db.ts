@@ -8,6 +8,8 @@ import {
     collection,
     getDocs,
     updateDoc,
+    onSnapshot,
+    Unsubscribe,
 } from 'firebase/firestore';
 
 export type DeploymentStatus = 'pending' | 'deploying' | 'deployed' | 'failed';
@@ -158,4 +160,32 @@ export async function updateEmpireBuilderDeployment(
         console.error('Error updating EmpireBuilder deployment:', error);
         throw new Error('Failed to update EmpireBuilder deployment');
     }
+}
+
+/**
+ * Subscribe to all deployed EmpireBuilders in real-time
+ * Returns an unsubscribe function
+ */
+export function subscribeToDeployedEmpireBuilders(
+    callback: (empireBuilders: EmpireBuilder[]) => void
+): Unsubscribe {
+    const deployedQuery = query(
+        collection(db, EMPIRE_BUILDERS_COLLECTION),
+        where('deploymentStatus', '==', 'deployed')
+    );
+
+    return onSnapshot(
+        deployedQuery,
+        (snapshot) => {
+            const builders: EmpireBuilder[] = [];
+            snapshot.forEach((docSnap) => {
+                builders.push(docSnap.data() as EmpireBuilder);
+            });
+            callback(builders);
+        },
+        (error) => {
+            console.error('Error in deployed empire builders subscription:', error);
+            callback([]);
+        }
+    );
 }

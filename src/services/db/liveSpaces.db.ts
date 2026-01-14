@@ -7,6 +7,8 @@ import {
     setDoc,
     updateDoc,
     onSnapshot,
+    query,
+    where,
     Unsubscribe,
 } from 'firebase/firestore';
 
@@ -196,6 +198,34 @@ export function subscribeToLiveSpace(
         (error) => {
             console.error('Error in live space subscription:', error);
             callback(null);
+        }
+    );
+}
+
+/**
+ * Subscribe to all live spaces in real-time
+ * Returns an unsubscribe function
+ */
+export function subscribeToAllLiveSpaces(
+    callback: (liveSpaces: LiveSpaceDoc[]) => void
+): Unsubscribe {
+    const liveSpacesQuery = query(
+        collection(db, LIVE_SPACES_COLLECTION),
+        where('state', '==', 'Live')
+    );
+
+    return onSnapshot(
+        liveSpacesQuery,
+        (snapshot) => {
+            const spaces: LiveSpaceDoc[] = [];
+            snapshot.forEach((docSnap) => {
+                spaces.push(docSnap.data() as LiveSpaceDoc);
+            });
+            callback(spaces);
+        },
+        (error) => {
+            console.error('Error in all live spaces subscription:', error);
+            callback([]);
         }
     );
 }
