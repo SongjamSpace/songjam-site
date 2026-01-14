@@ -130,7 +130,9 @@ const ConnectFarcasterPrompt = ({
                     }
                 </p>
                 
-                <NeynarAuthButton variant={SIWN_variant.FARCASTER} />
+                <div className="flex justify-center">
+                    <NeynarAuthButton variant={SIWN_variant.FARCASTER} />
+                </div>
             </div>
         </motion.div>
     </div>
