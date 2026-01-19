@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import { Lock } from "lucide-react";
 
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/services/firebase.service";
@@ -199,8 +200,9 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
 
         if (profiles.length > 0) {
              // Sort/shuffle
-             const shuffled = profiles.sort(() => 0.5 - Math.random());
-             setData(shuffled.slice(0, 50));
+            //  const shuffled = profiles.sort(() => 0.5 - Math.random());
+            //  setData(shuffled.slice(0, 50));
+             setData(profiles);
         } else {
              // Empty subcollection
              setData([]); 
@@ -295,147 +297,147 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
   return (
     <div className="w-full h-auto md:h-[600px] relative flex flex-col md:flex-row overflow-hidden bg-slate-900/20 rounded-3xl border border-slate-800/50 backdrop-blur-sm my-8">
       {/* Left Side: Graph Visualization */}
-      <div className="relative w-full h-[400px] md:h-full md:flex-1 flex items-center justify-center bg-slate-900/10" ref={containerRef}>
-          {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 to-transparent pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent opacity-50" />
-
-          {/* Metadata / Status Display */}
-          {metadata && (
-              <div className="absolute top-4 left-6 z-30 font-mono text-xs space-y-1 bg-slate-900/40 p-3 rounded-lg border border-slate-700/50 backdrop-blur-md">
-                  <div className="flex items-center gap-2">
-                      <span className="text-slate-400">Status:</span>
-                      <span className={`font-bold capitalize ${
-                          metadata.status === 'completed' ? 'text-green-400' :
-                          metadata.status === 'processing' ? 'text-yellow-400 animate-pulse' :
-                          metadata.status === 'failed' ? 'text-red-400' : 'text-slate-300'
-                      }`}>
-                          {metadata.status}
-                      </span>
-                  </div>
-                   {totalCount > 0 && (
+      <div className="relative w-full h-[400px] md:h-full md:flex-1 flex flex-col bg-slate-900/10">
+          
+          {/* Header Bar */}
+          <div className="w-full h-12 border-b border-slate-800/50 bg-slate-900/40 flex items-center justify-between px-4 shrink-0 z-20 backdrop-blur-md">
+             {metadata && (
+                 <div className="flex items-center gap-4 text-xs font-mono">
                       <div className="flex items-center gap-2">
-                          <span className="text-slate-400">Found:</span>
-                          <span className="text-cyan-400 font-bold">{totalCount} fascasters</span>
+                          <span className="text-slate-500">Status:</span>
+                          <span className={`font-bold capitalize ${
+                              metadata.status === 'completed' ? 'text-green-400' :
+                              metadata.status === 'processing' ? 'text-yellow-400 animate-pulse' :
+                              metadata.status === 'failed' ? 'text-red-400' : 'text-slate-300'
+                          }`}>
+                              {metadata.status}
+                          </span>
                       </div>
-                  )}
-                  {metadata.updatedAt && (
-                      <div className="text-slate-500">
-                          Updated: {formatDate(metadata.updatedAt)}
-                      </div>
-                  )}
-              </div>
-          )}
-
-          {loading && !data.length && (
-            <div className="absolute text-cyan-400 animate-pulse font-mono text-sm">
-               {metadata?.status === 'processing' ? 'Indexing social graph...' : 'Scanning social network...'}
-            </div>
-          )}
-
-          {error && (
-            <div className="absolute text-red-400/70 text-sm">
-              {error}
-            </div>
-          )}
-
-
-          <div className="relative w-full h-full flex items-center justify-center">
-             {/* Loading indication if needed, though graph handles it gracefully mostly */}
-             
-             {dimensions.width > 0 && dimensions.height > 0 && (
-                <div className="absolute inset-0 z-10">
-                    <SocialGraphVisualization
-                        data={graphData}
-                        width={dimensions.width}
-                        height={dimensions.height}
-                        onNodeClick={(node) => {
-                            if (node.id !== 'root') {
-                                // Maybe open profile or something?
-                                // For now, handleFollow logic logic maybe?
-                                // handleFollow(node.farcasterId);
-                                window.open(`https://warpcast.com/${node.farcasterUsername}`, '_blank');
-                            }
-                        }}
-                    />
-                </div>
+                       {totalCount > 0 && (
+                          <div className="flex items-center gap-2">
+                              <span className="text-slate-500">Found:</span>
+                              <span className="text-cyan-400 font-bold">{totalCount} profiles</span>
+                          </div>
+                      )}
+                      {metadata.updatedAt && (
+                          <div className="hidden md:block text-slate-500">
+                              Updated: {formatDate(metadata.updatedAt)}
+                          </div>
+                      )}
+                 </div>
              )}
-
-            {!loading && data.length === 0 && !error && (
-                <div className="absolute flex flex-col items-center justify-center p-6 text-center z-20 mt-80">
-                    {internalTwitterUsername ? (
-                         <div className="text-slate-500 text-sm">No social graph connections found.</div>
-                    ) : !currentUser ? (
-                         <div className="flex flex-col items-center gap-3">
-                            <div className="text-slate-500 text-sm max-w-[200px] text-center">
-                                Sign in with Farcaster to generate your social graph.
-                            </div>
-                         </div>
-                    ) : (
-                        currentUser?.verified_accounts?.find(acc => acc.platform === 'x') ? (
-                            <button 
-                                onClick={() => {
-                                    const xAccount = currentUser.verified_accounts?.find(acc => acc.platform === 'x');
-                                    if (xAccount) {
-                                        handleGenerateGraph(xAccount.username);
-                                    }
-                                }}
-                                disabled={isGenerating}
-                                className={`px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl font-bold text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-105 transition-all flex items-center gap-2 group ${isGenerating ? 'opacity-70 cursor-wait' : ''}`}
-                            >
-                                {isGenerating ? (
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                ) : (
-                                    <span className="text-xl">🕸️</span>
-                                )}
-                                <div>
-                                    <div className="text-sm">Generate Social Graph</div>
-                                    <div className="text-[10px] font-normal text-purple-200">
-                                        using @{currentUser.verified_accounts.find(acc => acc.platform === 'x')?.username}
-                                    </div>
-                                </div>
-                                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
-                            </button>
-                        ) : (
-                            <div className="flex flex-col items-center gap-3">
-                                <div className="text-slate-500 text-sm max-w-[200px] text-center">
-                                    Connect your X (Twitter) account to generate your social graph.
-                                </div>
-                                <a 
-                                    href="https://warpcast.com/~/settings/verified-addresses"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium border border-slate-700 transition-colors flex items-center gap-2"
-                                >
-                                    <span>Link on Warpcast</span>
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                    </svg>
-                                </a>
-                            </div>
-                        )
-                    )}
-                </div>
-            )}
           </div>
 
-          {/* Legend */}
-          {/* <div className="absolute bottom-4 right-6 flex gap-4 text-xs font-mono bg-slate-900/50 p-2 rounded-lg backdrop-blur-sm border border-slate-800/50">
-             <div className="flex items-center gap-1.5">
-                 <div className="w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.6)]" />
-                 <span className="text-slate-300">Follower</span>
-             </div>
-          </div> */}
+          <div className="flex-1 w-full relative flex items-center justify-center overflow-hidden" ref={containerRef}>
+              {/* Background decoration */}
+              <div className="absolute inset-0 bg-gradient-to-b from-purple-900/10 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent opacity-50" />
+
+              {loading && !data.length && (
+                <div className="absolute text-cyan-400 animate-pulse font-mono text-sm z-30">
+                   {metadata?.status === 'processing' ? 'Indexing social graph...' : 'Scanning social network...'}
+                </div>
+              )}
+
+              {error && (
+                <div className="absolute text-red-400/70 text-sm z-30">
+                  {error}
+                </div>
+              )}
+
+              <div className="relative w-full h-full flex items-center justify-center">
+                 
+                 {dimensions.width > 0 && dimensions.height > 0 && (
+                    <div className="absolute inset-0 z-10">
+                        <SocialGraphVisualization
+                            data={graphData}
+                            width={dimensions.width}
+                            height={dimensions.height}
+                            contextLabel={`@${internalTwitterUsername || currentUser?.username}`}
+                            onNodeClick={(node) => {
+                                if (node.id !== 'root') {
+                                    window.open(`https://warpcast.com/${node.farcasterUsername}`, '_blank');
+                                }
+                            }}
+                        />
+                    </div>
+                 )}
+
+                {!loading && data.length === 0 && !error && (
+                    <div className="absolute flex flex-col items-center justify-center p-6 text-center z-20">
+                        {internalTwitterUsername ? (
+                             <div className="text-slate-500 text-sm">No social graph connections found.</div>
+                        ) : !currentUser ? (
+                             <div className="flex flex-col items-center gap-3">
+                                <div className="text-slate-500 text-sm max-w-[200px] text-center">
+                                    Sign in with Farcaster to generate your social graph.
+                                </div>
+                             </div>
+                        ) : (
+                            currentUser?.verified_accounts?.find(acc => acc.platform === 'x') ? (
+                                <button 
+                                    onClick={() => {
+                                        const xAccount = currentUser.verified_accounts?.find(acc => acc.platform === 'x');
+                                        if (xAccount) {
+                                            handleGenerateGraph(xAccount.username);
+                                        }
+                                    }}
+                                    disabled={isGenerating}
+                                    className={`px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl font-bold text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-105 transition-all flex items-center gap-2 group ${isGenerating ? 'opacity-70 cursor-wait' : ''}`}
+                                >
+                                    {isGenerating ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <span className="text-xl">🕸️</span>
+                                    )}
+                                    <div>
+                                        <div className="text-sm">Generate Social Graph</div>
+                                        <div className="text-[10px] font-normal text-purple-200">
+                                            using @{currentUser.verified_accounts.find(acc => acc.platform === 'x')?.username}
+                                        </div>
+                                    </div>
+                                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </button>
+                            ) : (
+                                <div className="flex flex-col items-center gap-3">
+                                    <div className="text-slate-500 text-sm max-w-[200px] text-center">
+                                        Connect your X (Twitter) account to generate your social graph.
+                                    </div>
+                                    <a 
+                                        href="https://warpcast.com/~/settings/verified-addresses"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium border border-slate-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <span>Link on Warpcast</span>
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            )
+                        )}
+                    </div>
+                )}
+              </div>
+          </div>
       </div>
 
       {/* Right Side: Quick Follow List */}
       <div className="w-full md:w-80 h-[300px] md:h-full border-t md:border-t-0 md:border-l border-slate-800/50 bg-slate-950/30 backdrop-blur-md flex flex-col">
-          <div className="p-4 border-b border-slate-800/50 bg-slate-900/40">
+          <div className="p-4 border-b border-slate-800/50 bg-slate-900/40 flex items-center justify-between">
               <h3 className="text-white font-semibold flex items-center gap-2 text-sm uppercase tracking-wide">
                   <span className="text-yellow-400">⚡</span> Quick Follow
               </h3>
+              <button
+                  disabled
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/50 text-slate-400 text-xs font-medium border border-slate-700/50 cursor-not-allowed opacity-75"
+               >
+                  <Lock className="w-3 h-3" />
+                  <span>Follow All</span>
+              </button>
           </div>
           
           <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
@@ -470,24 +472,11 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
                       </div>
                       
                       <button
-                          onClick={() => handleFollow(user.farcasterId)}
-                          disabled={followLoading[user.farcasterId] || followingState[user.farcasterId]}
-                          className={`
-                              px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all min-w-[70px] flex justify-center
-                              ${followingState[user.farcasterId] 
-                                  ? 'bg-green-500/10 text-green-400 border border-green-500/30' 
-                                  : 'bg-white text-black hover:bg-cyan-400 hover:text-black hover:shadow-[0_0_10px_rgba(34,211,238,0.4)]'
-                              }
-                              disabled:opacity-50 disabled:cursor-not-allowed
-                          `}
+                          disabled
+                          className="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all min-w-[70px] flex items-center justify-center gap-1 bg-slate-800/50 text-slate-400 border border-slate-700/50 cursor-not-allowed"
                       >
-                          {followLoading[user.farcasterId] ? (
-                              <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                          ) : followingState[user.farcasterId] ? (
-                              'Following'
-                          ) : (
-                              'Follow'
-                          )}
+                          <Lock className="w-3 h-3" />
+                          <span>Follow</span>
                       </button>
                   </div>
               ))}
