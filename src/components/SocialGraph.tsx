@@ -1,12 +1,18 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/services/firebase.service";
 import { useNeynarContext } from "@neynar/react";
 import { neynarClient } from "@/services/neynar-client";
 import axios from "axios";
+import dynamic from 'next/dynamic';
+
+const SocialGraphVisualization = dynamic(
+  () => import('./SocialGraphVisualization'),
+  { ssr: false }
+);
 
 export interface ProcessFarcasterProfile {
   twitterId: string;
@@ -22,6 +28,9 @@ interface ProcessMetadata {
   status: "queued" | "processing" | "completed" | "failed";
   createdAt?: number;
   updatedAt?: number;
+  pfpUrl?: string;
+  farcasterUsername?: string;
+  fid?: number;
 }
 
 interface SocialGraphProps {
@@ -57,6 +66,64 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
   
   // Ref for container constraints if needed
   const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setDimensions({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
+    });
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const graphData = React.useMemo(() => {
+    if (!internalTwitterUsername && !currentUser) return { nodes: [], links: [] };
+
+    // Central node
+    const centralNode = {
+      id: "root",
+      farcasterUsername: internalTwitterUsername || currentUser?.username,
+      // Priority: 1. Metadata from generation (most recent/accurate) 2. Unavatar fallback 3. Current user PFP
+      pfpUrl: metadata?.pfpUrl 
+        ? metadata.pfpUrl 
+        : currentUser?.verified_accounts?.find(acc => acc.platform === 'x' && acc.username === internalTwitterUsername)?.username 
+            ? `https://unavatar.io/twitter/${internalTwitterUsername}`
+            : currentUser?.pfp_url,
+      type: "root",
+      x: 0,
+      y: 0,
+      fx: 0, // Fix central node to center essentially, or let it float? Let's fix it initially or let forces handle it.
+             // Actually, force-graph centers automatically.
+    };
+    
+    // If no data yet, just return central node if we have a user
+    if (data.length === 0) {
+        return { nodes: [centralNode], links: [] };
+    }
+
+    const nodes = [
+      centralNode,
+      ...data.map((user) => ({
+        ...user,
+        id: user.farcasterId, // Use farcasterId as ID
+      })),
+    ];
+
+    const links = data.map((user) => ({
+      source: "root",
+      target: user.farcasterId,
+    }));
+
+    return { nodes, links };
+  }, [data, internalTwitterUsername, currentUser]);
+
 
   useEffect(() => {
     // If props change, update state, but only if state wasn't successfully set by user interaction?
@@ -132,8 +199,8 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
 
         if (profiles.length > 0) {
              // Sort/shuffle
-            //  const shuffled = profiles.sort(() => 0.5 - Math.random());
-             setData(profiles);
+             const shuffled = profiles.sort(() => 0.5 - Math.random());
+             setData(shuffled.slice(0, 50));
         } else {
              // Empty subcollection
              setData([]); 
@@ -195,12 +262,19 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
 
   const handleGenerateGraph = async (twitterUsername: string) => {
       if (!twitterUsername) return;
+      if (!neynarUser) {
+          alert("Please sign in with Farcaster to generate your social graph.");
+          return;
+      }
       
       setIsGenerating(true);
       try {
           // Trigger the generation process
           await axios.post(`${process.env.NEXT_PUBLIC_SONGJAM_SERVER}/social-graph/process-farcaster`, {
-              twitterUsername
+              twitterUsername,
+              fid: neynarUser.fid,
+              pfpUrl: neynarUser.pfp_url || '',
+              farcasterUsername: neynarUser.username
           });
           
           // Once the request is successful, we set the internal state which triggers the firebase listeners
@@ -242,7 +316,7 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
                    {totalCount > 0 && (
                       <div className="flex items-center gap-2">
                           <span className="text-slate-400">Found:</span>
-                          <span className="text-cyan-400 font-bold">{totalCount} users</span>
+                          <span className="text-cyan-400 font-bold">{totalCount} fascasters</span>
                       </div>
                   )}
                   {metadata.updatedAt && (
@@ -265,139 +339,28 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
             </div>
           )}
 
+
           <div className="relative w-full h-full flex items-center justify-center">
-            <AnimatePresence>
-              {/* Central User Node */}
-              <motion.div
-                key="central-node"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", duration: 0.8, bounce: 0.5 }}
-                className="z-20 relative flex flex-col items-center justify-center"
-              >
-                 {/* Pulse rings */}
-                 <div className="absolute -inset-4 rounded-full border border-purple-500/30 animate-ping opacity-20" />
-                 <div className="absolute -inset-8 rounded-full border border-cyan-500/20 animate-pulse opacity-10" />
-
-                <div className="w-24 h-24 rounded-full bg-slate-900 border-4 border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.4)] overflow-hidden relative z-10 group cursor-pointer">
-                   {internalTwitterUsername ? (
-                      <img 
-                         src={`https://unavatar.io/twitter/${internalTwitterUsername}`} 
-                         alt={internalTwitterUsername} 
-                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                            // Fallback if unavatar fails
-                            (e.target as HTMLImageElement).src = currentUser?.pfp_url || '';
+             {/* Loading indication if needed, though graph handles it gracefully mostly */}
+             
+             {dimensions.width > 0 && dimensions.height > 0 && (
+                <div className="absolute inset-0 z-10">
+                    <SocialGraphVisualization
+                        data={graphData}
+                        width={dimensions.width}
+                        height={dimensions.height}
+                        onNodeClick={(node) => {
+                            if (node.id !== 'root') {
+                                // Maybe open profile or something?
+                                // For now, handleFollow logic logic maybe?
+                                // handleFollow(node.farcasterId);
+                                window.open(`https://warpcast.com/${node.farcasterUsername}`, '_blank');
+                            }
                         }}
-                     />
-                  ) : currentUser?.pfp_url ? (
-                    <img src={currentUser?.pfp_url} alt={currentUser?.username} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-600 text-2xl font-bold text-white">
-                      {currentUser?.username?.slice(0, 2).toUpperCase() || "?"}
-                    </div>
-                  )}
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-xs font-medium text-white">View</span>
-                  </div>
+                    />
                 </div>
-                {(internalTwitterUsername || currentUser?.username) &&  <motion.div
-                   className="mt-4 px-3 py-1 bg-slate-800/80 rounded-full border border-slate-700 text-xs text-purple-300 font-mono"
-                   initial={{ opacity: 0, y: -10 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   transition={{ delay: 0.5 }}
-                >
-                    @{internalTwitterUsername || currentUser?.username}
-                </motion.div>}
-              </motion.div>
+             )}
 
-              {!loading && (data.length > 0 || (metadata && metadata.status !== 'completed')) && (
-                <>
-                  {/* Connection Lines (Optional) */}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">
-                    <g transform="translate(50% 50%)"> 
-                      {/* Lines could go here */}
-                    </g>
-                  </svg>
-
-
-
-                  {/* Network Nodes */}
-                  {data.map((user, i) => {
-                    // Adjusted radius for layout constraint
-                    const { x, y } = getPosition(i, data.length, isMobile ? 100 : 160); 
-                    
-                    return (
-                      <motion.div
-                        key={`${user.farcasterId}-${i}`}
-                        className="absolute z-10"
-                        initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
-                        animate={{ 
-                          x, 
-                          y, 
-                          scale: 1, 
-                          opacity: 1,
-                          transition: { 
-                            type: "spring",
-                            damping: 12,
-                            stiffness: 100,
-                            delay: i * 0.05 
-                          }
-                        }}
-                        style={{
-                           // Center the node
-                           left: 'calc(50% - 24px)', 
-                           top: 'calc(50% - 24px)',
-                        }}
-                      >
-                         {/* Floating animation */}
-                         <motion.div
-                            animate={{
-                                y: [0, -8, 0],
-                            }}
-                            transition={{
-                                duration: 3 + Math.random() * 2,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                                delay: Math.random() * 2
-                            }}
-                            className="group relative"
-                         >
-                            <div className={`
-                                w-12 h-12 rounded-full border-2 overflow-hidden shadow-lg transition-all duration-300
-                                border-pink-500 shadow-pink-500/20
-                                group-hover:scale-125 group-hover:border-white group-hover:z-50
-                                bg-slate-900
-                            `}>
-                                 {user.pfpUrl ? (
-                                    <img src={user.pfpUrl} alt={user.farcasterUsername} className="w-full h-full object-cover" />
-                                 ) : (
-                                    <div className={`w-full h-full flex items-center justify-center text-[10px] font-bold text-white
-                                        bg-gradient-to-br from-pink-700 to-rose-800
-                                    `}>
-                                        {user.farcasterUsername.slice(0, 2).toUpperCase()}
-                                    </div>
-                                 )}
-                            </div>
-
-                            {/* Tooltip */}
-                            <div className="absolute top-14 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                <div className="bg-slate-900/90 text-white text-xs px-2 py-1 rounded border border-slate-700 shadow-xl flex flex-col items-center">
-                                    <span className="font-bold">@{user.farcasterUsername}</span>
-                                    <span className="text-[10px] text-pink-400">
-                                        {user.type}
-                                    </span>
-                                </div>
-                            </div>
-                         </motion.div>
-                      </motion.div>
-                    );
-                  })}
-                </>
-              )}
-            </AnimatePresence>
-            
             {!loading && data.length === 0 && !error && (
                 <div className="absolute flex flex-col items-center justify-center p-6 text-center z-20 mt-80">
                     {internalTwitterUsername ? (
