@@ -8,6 +8,7 @@ import { subscribeToAllLiveSpaces, LiveSpaceDoc } from "@/services/db/liveSpaces
 import { autoDeployToken } from "@/hooks/useSongjamSpace";
 import { getEmpireBuilder, getEmpireBuilderByHostSlug, subscribeToDeployedEmpireBuilders, EmpireBuilder } from "@/services/db/empireBuilder.db";
 import { useEthWallet } from "@/lib/hooks/useEthWallet";
+import { SocialGraph } from "@/components/SocialGraph";
 
 
 export default function SpacesPage() {
@@ -23,6 +24,9 @@ export default function SpacesPage() {
   const [deployedTokens, setDeployedTokens] = useState<EmpireBuilder[]>([]);
   const [isTokenDeployed, setIsTokenDeployed] = useState<boolean>(false);
   const [isDeploying, setIsDeploying] = useState(false);
+  const [deployStep, setDeployStep] = useState<'initial' | 'name' | 'symbol'>('initial');
+  const [tokenName, setTokenName] = useState('');
+  const [tokenSymbol, setTokenSymbol] = useState('');
 
   // Subscribe to all live spaces
   useEffect(() => {
@@ -91,10 +95,20 @@ export default function SpacesPage() {
       <header className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
-              Songjam
-            </h1>
-            <p className="text-sm text-slate-400">Voice-first social space</p>
+            <div className="flex items-center space-x-2">
+              <img src="/images/logo1.png" alt="Logo" className="h-8 w-8" />
+              <span
+                className="text-xl font-black text-white"
+                style={{
+                  fontFamily: "Audiowide, cursive",
+                  textShadow: "0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.2)",
+                  letterSpacing: "0.1em",
+                  fontWeight: 400,
+                }}
+              >
+                SONGJAM
+              </span>
+            </div>
           </div>
           
           {isAuthenticated && neynarUser ? (
@@ -118,8 +132,8 @@ export default function SpacesPage() {
       {isTokenDeployed === false && (
       <section className="px-6 mb-6">
         <div className="p-4 rounded-xl bg-gradient-to-r from-purple-900/40 to-cyan-900/40 border border-purple-500/30 hover:border-purple-500/50 transition-all">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="w-full md:w-auto">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-lg">🚀</span>
                 <h2 className="text-lg font-semibold text-white">Empire Builder Token</h2>
@@ -133,7 +147,7 @@ export default function SpacesPage() {
             {!isConnected ? (
               <button
                 onClick={connectWallet}
-                className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"
+                className="w-full md:w-auto justify-center px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"
               >
                 <span>Connect Wallet</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,53 +155,111 @@ export default function SpacesPage() {
                 </svg>
               </button>
             ) : (
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-slate-400">
-                  {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
-                </span>
-                <button
-                  onClick={async () => {
-                    if (!hostFid || !walletAddress) return;
-                    setIsDeploying(true);
-                    try {
-                      // Sign message before deployment
-                      const deployMessage = `Authorize token deployment for ${neynarUser?.username || hostFid}`;
-                      const signResult = await signMessage(deployMessage);
-                      
-                      if (!signResult) {
-                        console.error('Signing cancelled or failed');
-                        return;
-                      }
-
-                      const result = await autoDeployToken({
-                        twitterId: hostFid,
-                        username: neynarUser?.username || `host_${hostFid.slice(0, 8)}`,
-                        displayName: neynarUser?.display_name || undefined,
-                        fid: neynarUser?.fid?.toString(),
-                        creatorAddress: walletAddress,
-                        ownerAddress: walletAddress,
-                        signature: signResult.signature,
-                        message: signResult.message,
-                      });
-                      if (result.success) {
-                        setIsTokenDeployed(true);
-                      }
-                    } catch (error) {
-                      console.error('Deployment failed:', error);
-                    } finally {
-                      setIsDeploying(false);
-                    }
-                  }}
-                  disabled={isDeploying || isSigning}
-                  className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span>{isSigning ? 'Signing...' : isDeploying ? 'Deploying...' : 'Deploy'}</span>
-                  {!isDeploying && !isSigning && (
+              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                
+                {deployStep === 'initial' && (
+                  <button
+                    onClick={() => {
+                      setTokenName(neynarUser?.username || '');
+                      setDeployStep('name');
+                    }}
+                    disabled={isDeploying || isSigning}
+                    className="w-full md:w-auto justify-center px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span>Deploy</span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
-                  )}
-                </button>
+                  </button>
+                )}
+
+                {deployStep === 'name' && (
+                  <div className="flex items-center gap-2 w-full md:w-auto animate-in fade-in slide-in-from-right-4 duration-300">
+                    <input
+                      type="text"
+                      value={tokenName}
+                      onChange={(e) => setTokenName(e.target.value)}
+                      placeholder="Token Name"
+                      className="flex-1 md:flex-none px-3 py-2 text-sm bg-slate-800/80 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-purple-500/50 w-full md:w-40"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => setDeployStep('symbol')}
+                      className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+
+                {deployStep === 'symbol' && (
+                  <div className="flex items-center gap-2 w-full md:w-auto animate-in fade-in slide-in-from-right-4 duration-300">
+                    <button
+                      onClick={() => setDeployStep('name')}
+                      className="p-2 text-slate-400 hover:text-slate-300 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <input
+                      type="text"
+                      value={tokenSymbol}
+                      onChange={(e) => setTokenSymbol(e.target.value.toUpperCase())}
+                      placeholder="Symbol"
+                      className="flex-1 md:flex-none px-3 py-2 text-sm bg-slate-800/80 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-purple-500/50 w-full md:w-24"
+                      autoFocus
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!hostFid || !walletAddress) return;
+                        setIsDeploying(true);
+                        try {
+                          // Sign message before deployment
+                          const deployMessage = `Authorize token deployment for ${neynarUser?.username || hostFid}`;
+                          const signResult = await signMessage(deployMessage);
+                          
+                          if (!signResult) {
+                            console.error('Signing cancelled or failed');
+                            setIsDeploying(false);
+                            return;
+                          }
+
+                          const result = await autoDeployToken({
+                            twitterId: hostFid,
+                            username: neynarUser?.username || `host_${hostFid.slice(0, 8)}`,
+                            displayName: neynarUser?.display_name || undefined,
+                            fid: neynarUser?.fid?.toString(),
+                            creatorAddress: walletAddress,
+                            ownerAddress: walletAddress,
+                            signature: signResult.signature,
+                            message: signResult.message,
+                            tokenName: tokenName,
+                            tokenSymbol: tokenSymbol,
+                          });
+                          if (result.success) {
+                            setIsTokenDeployed(true);
+                          }
+                        } catch (error) {
+                          console.error('Deployment failed:', error);
+                        } finally {
+                          setIsDeploying(false);
+                        }
+                      }}
+                      disabled={isDeploying || isSigning || !tokenSymbol}
+                      className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span>{isSigning ? 'Signing...' : isDeploying ? 'Deploying...' : 'Deploy'}</span>
+                      {!isDeploying && !isSigning && (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -337,6 +409,20 @@ export default function SpacesPage() {
             </div>
           )}
         </div>
+
+        {/* Your Social Graph Section */}
+        {isAuthenticated && neynarUser && (
+          <div className="mb-12">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-lg">🕸️</span>
+              <h2 className="text-lg font-semibold text-white">Your Social Graph</h2>
+            </div>
+            <p className="text-sm text-slate-400 mb-6 max-w-2xl">
+              Visualize your Farcaster connections in real-time. This interactive graph shows your followers and who you follow.
+            </p>
+            <SocialGraph currentUser={neynarUser} />
+          </div>
+        )}
       </main>
     </div>
   );

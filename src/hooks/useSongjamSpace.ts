@@ -30,6 +30,8 @@ export interface HostInfo {
   ownerAddress?: string;
   signature?: string;
   message?: string;
+  tokenName?: string;
+  tokenSymbol?: string;
 }
 
 // Default token params - can be changed later
@@ -45,8 +47,8 @@ export async function autoDeployToken(hostInfo: HostInfo): Promise<{ success: bo
   const hostSlug = username;
   
   // Create default token params with host-specific values
-  const tokenName = displayName ? `${displayName} - Songjam Host` : DEFAULT_TOKEN_PARAMS.name;
-  const tokenSymbol = username.slice(0, 4).toUpperCase() || DEFAULT_TOKEN_PARAMS.symbol;
+  const tokenName = hostInfo.tokenName || (displayName ? `${displayName} - Songjam Host` : DEFAULT_TOKEN_PARAMS.name);
+  const tokenSymbol = hostInfo.tokenSymbol || (username.slice(0, 4).toUpperCase() || DEFAULT_TOKEN_PARAMS.symbol);
   const imageUrl = ``;
 
   try {
