@@ -45,6 +45,7 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
   const [data, setData] = useState<ProcessFarcasterProfile[]>([]);
   const [metadata, setMetadata] = useState<ProcessMetadata | null>(null);
   const [loading, setLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [followingState, setFollowingState] = useState<Record<string, boolean>>({}); // fid -> isFollowing/Loading
   const [followLoading, setFollowLoading] = useState<Record<string, boolean>>({});
@@ -88,6 +89,7 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
         }));
         
         setData(mockProfiles);
+        setTotalCount(142); // Mock count
         return;
     }
 
@@ -121,6 +123,7 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
     const unsubscribe = onSnapshot(collectionRef, (querySnapshot) => {
         setLoading(false);
         const profiles: ProcessFarcasterProfile[] = [];
+        setTotalCount(querySnapshot.size);
         
         querySnapshot.forEach((doc) => {
             // Data validation could go here, but casting for now as per reliable source assumption
@@ -129,8 +132,8 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
 
         if (profiles.length > 0) {
              // Sort/shuffle
-             const shuffled = profiles.sort(() => 0.5 - Math.random());
-             setData(shuffled.slice(0, 15));
+            //  const shuffled = profiles.sort(() => 0.5 - Math.random());
+             setData(profiles);
         } else {
              // Empty subcollection
              setData([]); 
@@ -236,6 +239,12 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
                           {metadata.status}
                       </span>
                   </div>
+                   {totalCount > 0 && (
+                      <div className="flex items-center gap-2">
+                          <span className="text-slate-400">Found:</span>
+                          <span className="text-cyan-400 font-bold">{totalCount} users</span>
+                      </div>
+                  )}
                   {metadata.updatedAt && (
                       <div className="text-slate-500">
                           Updated: {formatDate(metadata.updatedAt)}
