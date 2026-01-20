@@ -59,7 +59,7 @@ export default function AboutShort() {
       </div>
       <div className="text-sm text-center mt-12">
         <div className="text-center text-sm text-white/60">
-          COPYRIGHT © 2025 SONGJAM
+          COPYRIGHT © 2026 SONGJAM
         </div>
         <br />
         <Link href="/terms" className="text-sm text-white hover:text-white/70">
