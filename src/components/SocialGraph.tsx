@@ -138,29 +138,6 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
   useEffect(() => {
     if (!internalTwitterUsername) return;
 
-    if (internalTwitterUsername === 'mock') {
-        setMetadata({
-            status: 'completed',
-            updatedAt: Date.now(),
-            createdAt: Date.now() - 3600000
-        });
-        
-        // Generate mock profiles
-        const mockProfiles: ProcessFarcasterProfile[] = Array.from({ length: 15 }).map((_, i) => ({
-            twitterId: `mock-twitter-${i}`,
-            twitterUsername: `user_${i}`,
-            farcasterId: `fid-${i}`,
-            farcasterUsername: `caster_${i}`,
-            farcasterName: `Mock User ${i}`,
-            type: i % 3 === 0 ? "following" : "follower",
-            pfpUrl: `https://unavatar.io/twitter/user_${i}`
-        }));
-        
-        setData(mockProfiles);
-        setTotalCount(142); // Mock count
-        return;
-    }
-
     // Listen to metadata (parent document)
     const docRef = doc(db, PROCESS_FARCASTER_COLLECTION, internalTwitterUsername);
     const unsubscribeDoc = onSnapshot(docRef, (docSnap) => {
@@ -175,8 +152,8 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
   }, [internalTwitterUsername]);
 
   useEffect(() => {
-    if (!internalTwitterUsername || internalTwitterUsername === 'mock') {
-        // If no twitterUsername provided or using mock, we don't attach listener.
+    if (!internalTwitterUsername) {
+        // If no twitterUsername provided, we don't attach listener.
         return;
     }
 
@@ -239,7 +216,7 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
   };
 
   const handleFollow = async (fid: string) => {
-      if (!signerUuid && internalTwitterUsername !== 'mock') {
+      if (!signerUuid) {
           alert("Please sign in with Farcaster to follow users.");
           return;
       }
@@ -247,13 +224,8 @@ export function SocialGraph({ currentUser, twitterUsername }: SocialGraphProps) 
       setFollowLoading(prev => ({ ...prev, [fid]: true }));
 
       try {
-          if (internalTwitterUsername === 'mock') {
-              // Mock success
-              await new Promise(resolve => setTimeout(resolve, 1000));
-          } else {
-             await neynarClient.publishFollow(signerUuid, parseInt(fid));
-          }
-          setFollowingState(prev => ({ ...prev, [fid]: true }));
+           await neynarClient.publishFollow(signerUuid, parseInt(fid));
+           setFollowingState(prev => ({ ...prev, [fid]: true }));
       } catch (err) {
           console.error("Follow failed", err);
           alert("Failed to follow user.");
