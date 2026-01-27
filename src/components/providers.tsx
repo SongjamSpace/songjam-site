@@ -3,6 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NeynarContextProvider, Theme } from "@neynar/react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { PrivyProvider } from "@privy-io/react-auth";
+import { base } from "viem/chains";
 
 import { auth } from "@/services/firebase.service";
 import { onAuthStateChanged, TwitterAuthProvider, signInWithPopup, User } from "firebase/auth";
@@ -88,27 +90,46 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (
-    <NeynarContextProvider
-      settings={{
-        clientId: process.env.NEXT_PUBLIC_NEYNAR_CLIENT_ID || "",
-        defaultTheme: Theme.Dark,
-        eventsCallbacks: {
-          onAuthSuccess: (params) => {
-            console.log("Neynar auth success", params);
-          },
-          onSignout: () => {
-            console.log("Neynar signout");
+    <PrivyProvider
+      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
+      config={{
+        appearance: {
+          theme: "dark",
+          accentColor: "#7c3aed",
+        },
+        supportedChains: [base],
+        defaultChain: base,
+        embeddedWallets: {
+          ethereum: {
+            createOnLogin: "users-without-wallets",
           },
         },
       }}
     >
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      </AuthProvider>
-    </NeynarContextProvider>
+      <NeynarContextProvider
+        settings={{
+          clientId: process.env.NEXT_PUBLIC_NEYNAR_CLIENT_ID || "",
+          defaultTheme: Theme.Dark,
+          eventsCallbacks: {
+            onAuthSuccess: (params) => {
+              console.log("Neynar auth success", params);
+            },
+            onSignout: () => {
+              console.log("Neynar signout");
+            },
+          },
+        }}
+      >
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        </AuthProvider>
+      </NeynarContextProvider>
+    </PrivyProvider>
   );
 }
+
