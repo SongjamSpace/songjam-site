@@ -1,6 +1,6 @@
 "use client";
-import { motion } from "framer-motion";
-import { useState, useMemo, type ReactNode } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useMemo, type ReactNode } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import Link from "next/link";
 import LiveAudioRoom from "./LiveAudioRoom";
@@ -18,6 +18,8 @@ interface LeaderboardRow {
   pointsWithoutMultiplier?: number;
   songjamSpacePoints?: number;
   zabalBalance?: string; // Zabal balance as bigint string
+  farcasterPoints?: number;
+  tlPoints?: number;
 }
 
 // Mindshare data will be generated dynamically from leaderboard data
@@ -275,6 +277,7 @@ export default function MindshareLeaderboard({
   const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>(
     timeframes[0]
   );
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   // Resolve endpoint per timeframe
   const getEndpointForTimeframe = (timeframe: Timeframe) => {
@@ -371,6 +374,8 @@ export default function MindshareLeaderboard({
   const showZabalBalance =
     projectId === "bettercallzall_s2" &&
     sortedAllUsers.some((u) => u.zabalBalance && u.zabalBalance !== "0"); // Show $ZABAL column for bettercallzall_s2 only if at least one user has a balance
+
+  const showFarcasterPoints = sortedAllUsers.some((u) => u.farcasterPoints !== undefined);
 
   const handleTimeframeChange = (timeframe: Timeframe) => {
     setSelectedTimeframe(timeframe);
@@ -884,18 +889,7 @@ export default function MindshareLeaderboard({
                         </div>
                       </th>
                     )}
-                    {showSpacePoints && (
-                      <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
-                        <span className="hidden md:inline">Space Points</span>
-                        <span className="md:hidden">Space</span>
-                      </th>
-                    )}
-                    {showSpacePoints && (
-                      <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
-                        <span className="hidden md:inline">Timeline Points</span>
-                        <span className="md:hidden">Timeline</span>
-                      </th>
-                    )}
+
                     {showSongjamPoints && (
                       <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap align-bottom">
                         <div className="flex flex-col items-end">
@@ -912,6 +906,7 @@ export default function MindshareLeaderboard({
                         <span>$ZABAL</span>
                       </th>
                     )}
+
                     <th className="px-2 md:px-6 py-2 md:py-3 text-right whitespace-nowrap">
                       <span className="hidden md:inline">Total Points</span>
                       <span className="md:hidden">Points</span>
@@ -920,11 +915,11 @@ export default function MindshareLeaderboard({
                 </thead>
                 <tbody>
                   {sortedAllUsers.map((u, idx) => (
-                    <tr
-                      key={u.userId}
-                      className={`${idx % 2 === 0 ? "bg-white/0" : "bg-white/[0.03]"
-                        } border-t border-white/10`}
-                    >
+                    <React.Fragment key={u.userId}>
+                      <tr
+                        className={`${idx % 2 === 0 ? "bg-white/0" : "bg-white/[0.03]"
+                          } border-t border-white/10`}
+                      >
                       <td className="px-2 md:px-6 py-2 md:py-3 align-middle">
                         <span
                           className="text-white font-medium text-xs md:text-sm"
@@ -981,26 +976,6 @@ export default function MindshareLeaderboard({
                           </span>
                         </td>
                       )}
-                      {showSpacePoints && (
-                        <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
-                          <span
-                            className="text-white/70 font-medium text-xs md:text-sm"
-                            style={{ fontFamily: "Inter, sans-serif" }}
-                          >
-                            {u.spacePoints?.toFixed(2) || "-"}
-                          </span>
-                        </td>
-                      )}
-                      {showSpacePoints && (
-                        <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
-                          <span
-                            className="text-white/70 font-medium text-xs md:text-sm"
-                            style={{ fontFamily: "Inter, sans-serif" }}
-                          >
-                            {((u.pointsWithoutMultiplier || u.totalPoints) - (u.spacePoints || 0))?.toFixed(2) || "0"}
-                          </span>
-                        </td>
-                      )}
                       {showSongjamPoints && (
                         <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
                           <span
@@ -1023,15 +998,62 @@ export default function MindshareLeaderboard({
                           </span>
                         </td>
                       )}
+
                       <td className="px-2 md:px-6 py-2 md:py-3 text-right align-middle">
-                        <span
-                          className="text-white font-medium text-xs md:text-sm"
-                          style={{ fontFamily: "Inter, sans-serif" }}
+                        <button
+                          onClick={() => setExpandedRow(expandedRow === u.userId ? null : u.userId)}
+                          className="inline-flex items-center justify-end px-2 py-1 rounded hover:bg-white/5 transition-colors gap-1.5"
+                          title="View points breakdown"
                         >
-                          {u.totalPoints.toFixed(2)}
-                        </span>
+                          <span
+                            className="text-white font-medium text-xs md:text-sm"
+                            style={{ fontFamily: "Inter, sans-serif" }}
+                          >
+                            {u.totalPoints.toFixed(2)}
+                          </span>
+                          {showSpacePoints && (
+                            <svg className={`w-3.5 h-3.5 text-white/50 transition-transform duration-200 ${expandedRow === u.userId ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          )}
+                        </button>
                       </td>
                     </tr>
+                    {showSpacePoints && (
+                      <AnimatePresence>
+                        {expandedRow === u.userId && (
+                          <tr className="bg-white/[0.08] border-t border-white/20">
+                            <td colSpan={10} className="px-2 md:px-6 py-0">
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                className="overflow-hidden"
+                              >
+                                <div className="py-4 flex justify-end gap-6 md:gap-12 mr-8">
+                                  {showFarcasterPoints && (
+                                    <div className="text-center">
+                                      <div className="text-white/60 text-[10px] md:text-xs mb-1" style={{ fontFamily: "Inter, sans-serif" }}>Farcaster</div>
+                                      <div className="text-white font-medium text-xs md:text-sm" style={{ fontFamily: "Inter, sans-serif" }}>{u.farcasterPoints?.toFixed(2) || "0.00"}</div>
+                                    </div>
+                                  )}
+                                  <div className="text-center">
+                                    <div className="text-white/60 text-[10px] md:text-xs mb-1" style={{ fontFamily: "Inter, sans-serif" }}>Space</div>
+                                    <div className="text-white font-medium text-xs md:text-sm" style={{ fontFamily: "Inter, sans-serif" }}>{u.spacePoints?.toFixed(2) || "0.00"}</div>
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="text-white/60 text-[10px] md:text-xs mb-1" style={{ fontFamily: "Inter, sans-serif" }}>Timeline</div>
+                                    <div className="text-white font-medium text-xs md:text-sm" style={{ fontFamily: "Inter, sans-serif" }}>{(u.tlPoints)?.toFixed(2) || "0.00"}</div>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            </td>
+                          </tr>
+                        )}
+                      </AnimatePresence>
+                    )}
+                  </React.Fragment>
                   ))}
                 </tbody>
               </table>

@@ -62,6 +62,7 @@ export default function Page() {
           minStakeStr="250,000"
           audioRoomEnabled
           lastUpdatedAt={lastUpdatedAt}
+          showSpacePoints
         />
       </div>
     </div>
