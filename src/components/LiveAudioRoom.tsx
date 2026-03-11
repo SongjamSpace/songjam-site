@@ -714,8 +714,9 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                 try {
                     const tracks = await getMusicUploadsByUserId('ad849d39-c425-4172-9eb9-bc5006f397d7');
                     setPlaylist(tracks);
-                } catch (error) {
+                } catch (error: any) {
                     console.error('Failed to fetch playlist', error);
+                    alert('Failed to fetch playlist, please try again, ' + error?.message);
                 }
             }
         };

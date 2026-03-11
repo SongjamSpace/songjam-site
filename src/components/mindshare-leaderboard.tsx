@@ -1039,8 +1039,12 @@ export default function MindshareLeaderboard({
                                     </div>
                                   )}
                                   <div className="text-center">
-                                    <div className="text-white/60 text-[10px] md:text-xs mb-1" style={{ fontFamily: "Inter, sans-serif" }}>Space</div>
+                                    <div className="text-white/60 text-[10px] md:text-xs mb-1" style={{ fontFamily: "Inter, sans-serif" }}>X Space</div>
                                     <div className="text-white font-medium text-xs md:text-sm" style={{ fontFamily: "Inter, sans-serif" }}>{u.spacePoints?.toFixed(2) || "0.00"}</div>
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="text-white/60 text-[10px] md:text-xs mb-1" style={{ fontFamily: "Inter, sans-serif" }}>Songjam Space</div>
+                                    <div className="text-white font-medium text-xs md:text-sm" style={{ fontFamily: "Inter, sans-serif" }}>{u.songjamSpacePoints?.toFixed(2) || "0.00"}</div>
                                   </div>
                                   <div className="text-center">
                                     <div className="text-white/60 text-[10px] md:text-xs mb-1" style={{ fontFamily: "Inter, sans-serif" }}>Timeline</div>
