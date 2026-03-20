@@ -486,6 +486,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
 
     // DJ Playlist State
     const [playlist, setPlaylist] = useState<{ name: string; audioUrl: string }[]>([]);
+    const [isPlaylistLoading, setIsPlaylistLoading] = useState(false);
     const [currentTrack, setCurrentTrack] = useState<string | null>(null);
     const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
 
@@ -712,11 +713,14 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         const fetchPlaylist = async () => {
             if (isHost && user?.uid) {
                 try {
+                    setIsPlaylistLoading(true);
                     const tracks = await getMusicUploadsByUserId('ad849d39-c425-4172-9eb9-bc5006f397d7');
                     setPlaylist(tracks);
                 } catch (error: any) {
                     console.error('Failed to fetch playlist', error);
                     alert('Failed to fetch playlist, please try again, ' + error?.message);
+                } finally {
+                    setIsPlaylistLoading(false);
                 }
             }
         };
@@ -1292,6 +1296,7 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             isAudioEnabled={isAudioEnabled}
                             authenticated={authenticated}
                             playlist={playlist}
+                            isPlaylistLoading={isPlaylistLoading}
                             sessionPoints={sessionPoints}
                             currentTrack={currentTrack}
                             onGoLive={handleGoLive}

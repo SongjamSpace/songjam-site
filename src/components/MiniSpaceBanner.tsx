@@ -87,6 +87,7 @@ interface MiniSpaceBannerProps {
     onRemoveSpeaker: (peerId: string) => void;
     playlist: { name: string; audioUrl: string }[];
     currentTrack: string | null;
+    isPlaylistLoading: boolean;
     onPlayTrack: (url: string) => void;
     onStopTrack: () => void;
     showCaptions: boolean;
@@ -110,6 +111,7 @@ export default function MiniSpaceBanner({
     isAudioEnabled,
     authenticated,
     playlist,
+    isPlaylistLoading,
     currentTrack,
     onGoLive,
     onJoin,
@@ -437,12 +439,26 @@ export default function MiniSpaceBanner({
                                                     )}
                                                 </div>
                                                 <div className="max-h-80 overflow-y-auto p-1">
-                                                    {playlist.length === 0 ? (
+                                                    {isPlaylistLoading ? (
+                                                        <div className="p-8 flex flex-col items-center justify-center gap-3">
+                                                            <div className="relative w-8 h-8">
+                                                                <div className="absolute inset-0 border-2 border-white/10 rounded-full" />
+                                                                <motion.div
+                                                                    className="absolute inset-0 border-2 border-t-purple-500 rounded-full"
+                                                                    animate={{ rotate: 360 }}
+                                                                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                                                />
+                                                            </div>
+                                                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest animate-pulse">
+                                                                Fetching Tracks...
+                                                            </span>
+                                                        </div>
+                                                    ) : playlist.length === 0 ? (
                                                         <div className="p-4 text-center text-xs text-white/40 italic">
                                                             No tracks found. Upload music to start DJing! 🎧
                                                         </div>
                                                     ) : (
-                                                        playlist.map((track, idx) => {
+                                                        playlist.map((track: { name: string; audioUrl: string }, idx: number) => {
                                                             const isPlaying = currentTrack === track.audioUrl;
                                                             return (
                                                                 <div key={idx} className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isPlaying ? 'bg-purple-500/10 border border-purple-500/20' : 'hover:bg-white/5'}`}>

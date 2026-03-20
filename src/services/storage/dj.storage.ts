@@ -8,18 +8,26 @@ export const uploadMusic = async (file: File, uid: string) => {
     return getDownloadURL(storageRef);
 };
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const getMusicUploadsByUserId = async (
     uid: string
 ): Promise<{ name: string; audioUrl: string }[]> => {
     const storageRef = ref(storage, `music-agent-uploads/${uid}`);
     // const storageRef = ref(storage, `music-agent-uploads/038a1646-8a77-400c-9a4b-0acbefbcfd3e`);
     const list = await listAll(storageRef);
-    // get the name of the file
-    const names = list.items.map((item) => item.name);
-    const urls = await Promise.all(
-        list.items.map(async (item) => await getDownloadURL(item))
-    );
-    return names.map((name, index) => ({ name, audioUrl: urls[index] }));
+
+    const results: { name: string; audioUrl: string }[] = [];
+    for (const item of list.items) {
+        try {
+            const audioUrl = await getDownloadURL(item);
+            results.push({ name: item.name, audioUrl });
+            await delay(100); // Small delay to avoid rate limiting
+        } catch (error) {
+            console.error(`Failed to get download URL for ${item.name}`, error);
+        }
+    }
+    return results;
 };
 
 export const getUploadedAudioPaths = async (
@@ -38,11 +46,18 @@ export const getUploadedAudioPaths = async (
 export const getDefaultSoundFiles = async () => {
     const storageRef = ref(storage, `dj-default-sounds`);
     const list = await listAll(storageRef);
-    const names = list.items.map((item) => item.name);
-    const urls = await Promise.all(
-        list.items.map(async (item) => await getDownloadURL(item))
-    );
-    return names.map((name, index) => ({ name, audioUrl: urls[index] }));
+
+    const results: { name: string; audioUrl: string }[] = [];
+    for (const item of list.items) {
+        try {
+            const audioUrl = await getDownloadURL(item);
+            results.push({ name: item.name, audioUrl });
+            await delay(100); // Small delay to avoid rate limiting
+        } catch (error) {
+            console.error(`Failed to get download URL for ${item.name}`, error);
+        }
+    }
+    return results;
 };
 
 export const deleteMusicUpload = async (
