@@ -14,7 +14,7 @@ import {
     LiveSpaceDoc 
 } from '@/services/db/liveSpaces.db';
 import { NeynarAuthButton, useNeynarContext, SIWN_variant } from '@neynar/react';
-import { Mic, MicOff, Users, LogOut, Radio, Crown, Loader2, Send, Wifi } from 'lucide-react';
+import { Mic, MicOff, Users, LogOut, Radio, Crown, Loader2, Send, Wifi, Monitor, MonitorOff } from 'lucide-react';
 
 // Loading component
 const LoadingSpinner = () => (
@@ -221,6 +221,9 @@ const RoomContent = ({
     const localParticipant = useLocalParticipant();
     const participantIds = useParticipantIds();
     const [isMicEnabled, setIsMicEnabled] = useState(false);
+    const [isScreenSharing, setIsScreenSharing] = useState(false);
+    const [hasScreenShareTrack, setHasScreenShareTrack] = useState(false);
+    const screenVideoRef = useRef<HTMLVideoElement>(null);
 
     const handleToggleMic = useCallback(() => {
         if (!daily) return;
@@ -229,10 +232,64 @@ const RoomContent = ({
         setIsMicEnabled(newState);
     }, [daily, isMicEnabled]);
 
+    const handleToggleScreenShare = useCallback(async () => {
+        if (!daily) return;
+        try {
+            if (isScreenSharing) {
+                daily.stopScreenShare();
+                setIsScreenSharing(false);
+            } else {
+                await daily.startScreenShare();
+                setIsScreenSharing(true);
+            }
+        } catch (err) {
+            console.error('Screen share failed:', err);
+            setIsScreenSharing(false);
+        }
+    }, [daily, isScreenSharing]);
+
+    // Listen for screen share events from any participant
+    useEffect(() => {
+        if (!daily) return;
+
+        const handleTrackStarted = (event: any) => {
+            if (event?.track?.kind === 'video' && event?.participant?.screen) {
+                if (screenVideoRef.current && event.track) {
+                    const stream = new MediaStream([event.track]);
+                    screenVideoRef.current.srcObject = stream;
+                    setHasScreenShareTrack(true);
+                }
+            }
+        };
+
+        const handleTrackStopped = (event: any) => {
+            if (event?.participant?.screen) {
+                if (screenVideoRef.current) {
+                    screenVideoRef.current.srcObject = null;
+                }
+                setHasScreenShareTrack(false);
+                if (event.participant.local) {
+                    setIsScreenSharing(false);
+                }
+            }
+        };
+
+        daily.on('track-started', handleTrackStarted);
+        daily.on('track-stopped', handleTrackStopped);
+
+        return () => {
+            daily.off('track-started', handleTrackStarted);
+            daily.off('track-stopped', handleTrackStopped);
+        };
+    }, [daily]);
+
     const handleLeave = useCallback(() => {
+        if (isScreenSharing) {
+            daily?.stopScreenShare();
+        }
         daily?.leave();
         onLeave();
-    }, [daily, onLeave]);
+    }, [daily, onLeave, isScreenSharing]);
 
     return (
         <div className="flex flex-col h-screen bg-slate-950 text-white">
@@ -270,13 +327,27 @@ const RoomContent = ({
                         onClick={handleToggleMic}
                         className={`
                             p-3 rounded-full transition-all
-                            ${isMicEnabled 
-                                ? 'bg-green-500 hover:bg-green-600' 
+                            ${isMicEnabled
+                                ? 'bg-green-500 hover:bg-green-600'
                                 : 'bg-slate-700 hover:bg-slate-600'
                             }
                         `}
                     >
                         {isMicEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+                    </button>
+
+                    <button
+                        onClick={handleToggleScreenShare}
+                        className={`
+                            p-3 rounded-full transition-all
+                            ${isScreenSharing
+                                ? 'bg-blue-500 hover:bg-blue-600'
+                                : 'bg-slate-700 hover:bg-slate-600'
+                            }
+                        `}
+                        title={isScreenSharing ? 'Stop sharing' : 'Share screen'}
+                    >
+                        {isScreenSharing ? <MonitorOff className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
                     </button>
                     
                     {isHost && (
@@ -296,6 +367,23 @@ const RoomContent = ({
                     </button>
                 </div>
             </motion.div>
+
+            {/* Screen Share Display */}
+            {hasScreenShareTrack && (
+                <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="border-b border-slate-800 bg-black"
+                >
+                    <video
+                        ref={screenVideoRef}
+                        autoPlay
+                        playsInline
+                        className="w-full max-h-[50vh] object-contain"
+                    />
+                </motion.div>
+            )}
 
             {/* Main content - Participants */}
             <div className="flex-1 p-6 overflow-hidden">
