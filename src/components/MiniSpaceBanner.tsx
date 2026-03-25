@@ -97,6 +97,8 @@ interface MiniSpaceBannerProps {
     isRecordingOn?: boolean;
     onToggleRecording?: () => void;
     sessionPoints?: number;
+    onToggleScreenShare?: () => void;
+    isScreenSharing?: boolean;
 }
 
 export default function MiniSpaceBanner({
@@ -132,7 +134,9 @@ export default function MiniSpaceBanner({
     onMuteAll,
     isRecordingOn = false,
     onToggleRecording,
-    sessionPoints = 0
+    sessionPoints = 0,
+    onToggleScreenShare,
+    isScreenSharing = false
 }: MiniSpaceBannerProps) {
     const [showRequests, setShowRequests] = React.useState(false);
     const [showSpeakers, setShowSpeakers] = React.useState(false);
@@ -388,6 +392,22 @@ export default function MiniSpaceBanner({
                             >
                                 <span className="text-sm font-bold">CC</span>
                             </button> */}
+
+                            {/* Screen Share Toggle */}
+                            {(isHost || isSpeaker) && onToggleScreenShare && (
+                                <button
+                                    onClick={onToggleScreenShare}
+                                    className={`p-2 rounded-full transition-all ${isScreenSharing
+                                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+                                        : 'bg-white/10 hover:bg-white/20 text-white'
+                                        }`}
+                                    title={isScreenSharing ? "Stop Sharing" : "Share Screen"}
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                            )}
 
                             {/* Host: Recording Toggle */}
                             {/* {isHost && onToggleRecording && (

@@ -447,7 +447,7 @@ export default function MindshareLeaderboard({
           >
             {moto}
           </motion.p>
-          {audioRoomEnabled && <div className="flex items-center justify-center gap-4 mt-2 md:mt-4">
+          {audioRoomEnabled && <div className="gap-4 mt-2 md:mt-4">
             <LiveAudioRoom projectId={projectId} />
           </div>}
         </div>

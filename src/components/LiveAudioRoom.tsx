@@ -12,6 +12,8 @@ import {
     selectLocalPeer,
     selectRoomState,
     selectDominantSpeaker,
+    selectPeerScreenSharing,
+    selectScreenShareByPeerID,
     HMSRoomState,
     useTranscript,
     selectIsTranscriptionEnabled,
@@ -442,6 +444,8 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     const localPeer = useHMSStore(selectLocalPeer);
     const isAudioEnabled = useHMSStore(selectIsPeerAudioEnabled(localPeer?.id || ''));
     const dominantSpeaker = useHMSStore(selectDominantSpeaker);
+    const screenSharingPeer = useHMSStore(selectPeerScreenSharing);
+    const screenShareTrack = useHMSStore(selectScreenShareByPeerID(screenSharingPeer?.id || ''));
     const messages = useHMSStore(selectHMSMessages);
     const { user, authenticated, login, twitterObj } = useAuth();
 
@@ -970,6 +974,14 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         await hmsActions.setLocalAudioEnabled(!isAudioEnabled);
     };
 
+    const handleToggleScreenShare = async () => {
+        try {
+            await hmsActions.setScreenShareEnabled(!screenSharingPeer?.isLocal);
+        } catch (err) {
+            console.error('Screen share failed:', err);
+        }
+    };
+
     const handleLeave = async () => {
         await hmsActions.leave();
     };
@@ -1304,6 +1316,8 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             onLeave={handleLeave}
                             onEndRoom={handleEndRoom}
                             onToggleMic={handleToggleMic}
+                            onToggleScreenShare={handleToggleScreenShare}
+                            isScreenSharing={!!screenSharingPeer?.isLocal}
                             onRaiseHand={handleRaiseHand}
                             onLogin={login}
                             onApproveRequest={handleApproveRequest}
@@ -1360,6 +1374,33 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                     </div>
                 </div>
             </div>
+
+                {/* Screen Share Display */}
+                {screenSharingPeer && screenShareTrack && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mb-4 rounded-2xl overflow-hidden bg-black ring-1 ring-white/10"
+                    >
+                        <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 border-b border-blue-500/20">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                            <span className="text-xs text-blue-400 font-medium">
+                                {screenSharingPeer.name || 'Someone'} is sharing their screen
+                            </span>
+                        </div>
+                        <video
+                            ref={(el) => {
+                                if (el && screenShareTrack?.id) {
+                                    hmsActions.attachVideo(screenShareTrack.id, el);
+                                }
+                            }}
+                            autoPlay
+                            playsInline
+                            className="w-full max-h-[50vh] object-contain"
+                        />
+                    </motion.div>
+                )}
 
             {/* Captions Overlay */}
             <AnimatePresence>
