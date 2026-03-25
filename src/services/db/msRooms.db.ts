@@ -15,6 +15,7 @@ import {
     setDoc,
     increment,
     arrayUnion,
+    arrayRemove,
 } from 'firebase/firestore';
 
 export interface MSRoom {
@@ -30,6 +31,32 @@ export interface MSRoom {
     pinnedLinks?: PinnedItem[];
     isMusicPlaying?: boolean;
     speakers?: SpeakerDetails[];
+    /**
+     * Room settings — configurable by the host before or during a live session.
+     * All fields optional for backwards compatibility with existing rooms.
+     */
+    settings?: RoomSettings;
+    /**
+     * Co-host user IDs — these users get host-level controls (mute, approve speakers,
+     * manage room) without being the original room creator. Stored as an array of
+     * user IDs (twitterId format) so we can check membership with .includes().
+     */
+    coHostIds?: string[];
+}
+
+/**
+ * Room settings that the host can configure.
+ * Stored as a sub-object on the MSRoom document in Firestore.
+ */
+export interface RoomSettings {
+    /** Room title displayed in the banner */
+    title?: string;
+    /** Room description / topic for the session */
+    description?: string;
+    /** Room rules displayed to participants on join */
+    rules?: string;
+    /** Max seconds a speaker can talk before auto-reminder. 0 = no limit. */
+    speakerTimeLimitSeconds?: number;
 }
 
 export interface SpeakerDetails {
@@ -174,6 +201,60 @@ export async function endMSRoom(roomId: string): Promise<void> {
     } catch (error) {
         console.error('Error ending room:', error);
         throw new Error('Failed to end room');
+    }
+}
+
+/**
+ * Update room settings (title, description, rules, speaker time limit).
+ * Merges with existing settings — only overwrites fields you pass.
+ */
+export async function updateRoomSettings(
+    roomId: string,
+    settings: Partial<RoomSettings>
+): Promise<void> {
+    try {
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+        // Use dot notation to merge into the settings sub-object
+        const updates: Record<string, any> = {};
+        for (const [key, value] of Object.entries(settings)) {
+            updates[`settings.${key}`] = value;
+        }
+        await updateDoc(docRef, updates);
+    } catch (error) {
+        console.error('Error updating room settings:', error);
+        throw new Error('Failed to update room settings');
+    }
+}
+
+/**
+ * Add a co-host to the room. Co-hosts get host-level controls.
+ * Uses Firestore arrayUnion to prevent duplicates.
+ */
+export async function addCoHost(roomId: string, userId: string): Promise<void> {
+    try {
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+        await updateDoc(docRef, {
+            coHostIds: arrayUnion(userId),
+        });
+    } catch (error) {
+        console.error('Error adding co-host:', error);
+        throw new Error('Failed to add co-host');
+    }
+}
+
+/**
+ * Remove a co-host from the room.
+ * Uses Firestore arrayRemove for atomic removal.
+ */
+export async function removeCoHost(roomId: string, userId: string): Promise<void> {
+    try {
+        const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+        await updateDoc(docRef, {
+            coHostIds: arrayRemove(userId),
+        });
+    } catch (error) {
+        console.error('Error removing co-host:', error);
+        throw new Error('Failed to remove co-host');
     }
 }
 

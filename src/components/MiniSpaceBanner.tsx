@@ -98,6 +98,21 @@ interface MiniSpaceBannerProps {
     sessionPoints?: number;
     onToggleScreenShare?: () => void;
     isScreenSharing?: boolean;
+    /** Mute All — inline confirmation replaces window.confirm() */
+    showMuteAllConfirm?: boolean;
+    onMuteAllConfirmed?: () => void;
+    onMuteAllCancelled?: () => void;
+    /** Room settings — host can configure title, description, rules, speaker time limit */
+    roomSettings?: { title?: string; description?: string; rules?: string; speakerTimeLimitSeconds?: number };
+    onUpdateRoomSettings?: (settings: Partial<{ title?: string; description?: string; rules?: string; speakerTimeLimitSeconds?: number }>) => void;
+    /** Co-host management */
+    coHostIds?: string[];
+    onAddCoHost?: (userId: string) => void;
+    onRemoveCoHost?: (userId: string) => void;
+    /** Speaker timers — key: peerId, value: seconds spoken */
+    speakerTimers?: Record<string, number>;
+    /** All peers in the room — needed for co-host promotion */
+    peers?: any[];
 }
 
 export default function MiniSpaceBanner({
@@ -134,13 +149,25 @@ export default function MiniSpaceBanner({
     onToggleRecording,
     sessionPoints = 0,
     onToggleScreenShare,
-    isScreenSharing = false
+    isScreenSharing = false,
+    showMuteAllConfirm = false,
+    onMuteAllConfirmed,
+    onMuteAllCancelled,
+    roomSettings,
+    onUpdateRoomSettings,
+    coHostIds = [],
+    onAddCoHost,
+    onRemoveCoHost,
+    speakerTimers = {},
+    peers = []
 }: MiniSpaceBannerProps) {
     const [showRequests, setShowRequests] = React.useState(false);
     const [showSpeakers, setShowSpeakers] = React.useState(false);
     const [showPlaylist, setShowPlaylist] = React.useState(false);
     const [showReactions, setShowReactions] = React.useState(false);
     const [reactionText, setReactionText] = React.useState('');
+    const [showSettingsPanel, setShowSettingsPanel] = React.useState(false);
+    const [coHostInput, setCoHostInput] = React.useState('');
 
 
     // Animation variants
@@ -408,7 +435,7 @@ export default function MiniSpaceBanner({
                             )}
 
                             {/* Host: Recording Toggle */}
-                            {/* {isHost && onToggleRecording && (
+                            {isHost && onToggleRecording && (
                                 <button
                                     onClick={onToggleRecording}
                                     className={`p-2 rounded-full transition-all ${isRecordingOn
@@ -422,7 +449,150 @@ export default function MiniSpaceBanner({
                                         <span className="text-xs font-bold hidden sm:inline">{isRecordingOn ? 'REC' : 'REC'}</span>
                                     </div>
                                 </button>
-                            )} */}
+                            )}
+
+                            {/* Host: Room Settings */}
+                            {isHost && onUpdateRoomSettings && (
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowSettingsPanel(!showSettingsPanel)}
+                                        className={`p-2 rounded-full transition-all ${showSettingsPanel
+                                            ? 'bg-white/20 text-white'
+                                            : 'bg-white/10 hover:bg-white/20 text-white/60'
+                                            }`}
+                                        title="Room Settings"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </button>
+
+                                    {/* Settings Panel Dropdown */}
+                                    <AnimatePresence>
+                                        {showSettingsPanel && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                                className="fixed top-24 left-2 right-2 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:w-[400px] sm:mt-3 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[70]"
+                                            >
+                                                <div className="px-4 py-3 bg-white/5 border-b border-white/5">
+                                                    <h3 className="text-xs font-bold text-white/80">Room Settings</h3>
+                                                </div>
+                                                <div className="p-4 space-y-3">
+                                                    {/* Room Title */}
+                                                    <div>
+                                                        <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold">Title</label>
+                                                        <input
+                                                            type="text"
+                                                            defaultValue={roomSettings?.title || ''}
+                                                            placeholder="e.g. Weekly Music Review"
+                                                            maxLength={100}
+                                                            onBlur={(e) => onUpdateRoomSettings({ title: e.target.value })}
+                                                            className="w-full mt-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30"
+                                                        />
+                                                    </div>
+                                                    {/* Room Description */}
+                                                    <div>
+                                                        <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold">Description</label>
+                                                        <textarea
+                                                            defaultValue={roomSettings?.description || ''}
+                                                            placeholder="What's this session about?"
+                                                            maxLength={500}
+                                                            rows={2}
+                                                            onBlur={(e) => onUpdateRoomSettings({ description: e.target.value })}
+                                                            className="w-full mt-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30 resize-none"
+                                                        />
+                                                    </div>
+                                                    {/* Room Rules */}
+                                                    <div>
+                                                        <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold">Rules</label>
+                                                        <textarea
+                                                            defaultValue={roomSettings?.rules || ''}
+                                                            placeholder="e.g. Keep feedback constructive, 2 min per speaker"
+                                                            maxLength={300}
+                                                            rows={2}
+                                                            onBlur={(e) => onUpdateRoomSettings({ rules: e.target.value })}
+                                                            className="w-full mt-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30 resize-none"
+                                                        />
+                                                    </div>
+                                                    {/* Speaker Time Limit */}
+                                                    <div>
+                                                        <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold">Speaker Time Limit</label>
+                                                        <select
+                                                            defaultValue={roomSettings?.speakerTimeLimitSeconds || 0}
+                                                            onChange={(e) => onUpdateRoomSettings({ speakerTimeLimitSeconds: Number(e.target.value) })}
+                                                            className="w-full mt-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30"
+                                                        >
+                                                            <option value={0}>No limit</option>
+                                                            <option value={60}>1 minute</option>
+                                                            <option value={120}>2 minutes</option>
+                                                            <option value={180}>3 minutes</option>
+                                                            <option value={300}>5 minutes</option>
+                                                        </select>
+                                                        <p className="text-[10px] text-white/30 mt-1">Auto-reminder sent when a speaker hits the limit</p>
+                                                    </div>
+                                                    {/* Co-Hosts */}
+                                                    <div>
+                                                        <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold">Co-Hosts</label>
+                                                        <p className="text-[10px] text-white/30 mb-2">Co-hosts can mute, approve speakers, and manage the room</p>
+                                                        {/* Current co-hosts */}
+                                                        {coHostIds.length > 0 && (
+                                                            <div className="space-y-1 mb-2">
+                                                                {coHostIds.map((id) => {
+                                                                    const peer = peers.find((p: any) => p.customerUserId === id);
+                                                                    return (
+                                                                        <div key={id} className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-1.5">
+                                                                            <span className="text-xs text-white">{peer?.name || id}</span>
+                                                                            <button
+                                                                                onClick={() => onRemoveCoHost?.(id)}
+                                                                                className="text-[10px] text-red-400 hover:text-red-300"
+                                                                            >
+                                                                                Remove
+                                                                            </button>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                        {/* Add co-host from current speakers */}
+                                                        {onAddCoHost && (
+                                                            <div className="flex gap-2">
+                                                                <select
+                                                                    value={coHostInput}
+                                                                    onChange={(e) => setCoHostInput(e.target.value)}
+                                                                    className="flex-1 bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30"
+                                                                >
+                                                                    <option value="">Select a speaker...</option>
+                                                                    {peers
+                                                                        .filter((p: any) => p.roleName === 'speaker' && !p.isLocal && !coHostIds.includes(p.customerUserId))
+                                                                        .map((p: any) => (
+                                                                            <option key={p.id} value={p.customerUserId}>{p.name}</option>
+                                                                        ))
+                                                                    }
+                                                                </select>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (coHostInput) {
+                                                                            onAddCoHost(coHostInput);
+                                                                            setCoHostInput('');
+                                                                        }
+                                                                    }}
+                                                                    disabled={!coHostInput}
+                                                                    className="px-3 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-bold disabled:opacity-30 transition-colors"
+                                                                >
+                                                                    Add
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            )}
 
                             {/* Host: DJ Console */}
                             {isHost && (
@@ -530,7 +700,7 @@ export default function MiniSpaceBanner({
                                                 <div className="px-3 py-2 bg-white/5 border-b border-white/5 flex items-center justify-between">
                                                     <h3 className="text-xs font-bold text-white/80">Active Speakers</h3>
                                                     <div className="flex gap-2">
-                                                        {onMuteAll && (
+                                                        {onMuteAll && !showMuteAllConfirm && (
                                                             <button
                                                                 onClick={onMuteAll}
                                                                 className="px-2 py-0.5 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 rounded text-[10px] font-bold transition-colors"
@@ -538,6 +708,23 @@ export default function MiniSpaceBanner({
                                                             >
                                                                 Mute All
                                                             </button>
+                                                        )}
+                                                        {showMuteAllConfirm && (
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="text-[10px] text-yellow-400">Mute all?</span>
+                                                                <button
+                                                                    onClick={onMuteAllConfirmed}
+                                                                    className="px-2 py-0.5 bg-red-500 text-white rounded text-[10px] font-bold"
+                                                                >
+                                                                    Yes
+                                                                </button>
+                                                                <button
+                                                                    onClick={onMuteAllCancelled}
+                                                                    className="px-2 py-0.5 bg-white/10 text-white rounded text-[10px] font-bold"
+                                                                >
+                                                                    No
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
