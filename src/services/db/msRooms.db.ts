@@ -15,6 +15,7 @@ import {
     setDoc,
     increment,
     arrayUnion,
+    arrayRemove,
 } from 'firebase/firestore';
 
 export interface MSRoom {
@@ -30,6 +31,19 @@ export interface MSRoom {
     pinnedLinks?: PinnedItem[];
     isMusicPlaying?: boolean;
     speakers?: SpeakerDetails[];
+    /** Room settings — configurable by host. All optional for backwards compat. */
+    settings?: RoomSettings;
+    /** Co-host user IDs — get host-level controls without being the room creator. */
+    coHostIds?: string[];
+}
+
+/** Room settings stored as a sub-object on the MSRoom Firestore document. */
+export interface RoomSettings {
+    title?: string;
+    description?: string;
+    rules?: string;
+    /** Max seconds a speaker can talk before auto-reminder. 0 = no limit. */
+    speakerTimeLimitSeconds?: number;
 }
 
 export interface SpeakerDetails {
@@ -175,6 +189,28 @@ export async function endMSRoom(roomId: string): Promise<void> {
         console.error('Error ending room:', error);
         throw new Error('Failed to end room');
     }
+}
+
+/** Update room settings. Uses dot-notation merge — only overwrites fields you pass. */
+export async function updateRoomSettings(roomId: string, settings: Partial<RoomSettings>): Promise<void> {
+    const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+    const updates: Record<string, any> = {};
+    for (const [key, value] of Object.entries(settings)) {
+        updates[`settings.${key}`] = value;
+    }
+    await updateDoc(docRef, updates);
+}
+
+/** Add a co-host. Uses arrayUnion to prevent duplicates. */
+export async function addCoHost(roomId: string, userId: string): Promise<void> {
+    const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+    await updateDoc(docRef, { coHostIds: arrayUnion(userId) });
+}
+
+/** Remove a co-host. Uses arrayRemove for atomic removal. */
+export async function removeCoHost(roomId: string, userId: string): Promise<void> {
+    const docRef = doc(db, MS_ROOMS_COLLECTION, roomId);
+    await updateDoc(docRef, { coHostIds: arrayRemove(userId) });
 }
 
 /**

@@ -47,6 +47,10 @@ import {
     RoomParticipant,
     SpeakerRequest,
     MSRoom,
+    RoomSettings,
+    updateRoomSettings,
+    addCoHost,
+    removeCoHost,
 } from '@/services/db/msRooms.db';
 import { getMusicUploadsByUserId } from '@/services/storage/dj.storage';
 import MiniSpaceBanner from './MiniSpaceBanner';
@@ -502,19 +506,29 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
     // Caption State
     const [showCaptions, setShowCaptions] = useState(false);
 
+    // Speaker Timer — tracks seconds each speaker has been talking
+    const [speakerTimers, setSpeakerTimers] = useState<Record<string, number>>({});
+    const speakerTimerInterval = useRef<NodeJS.Timeout | null>(null);
+
+    // Mute All — inline confirmation replaces window.confirm()
+    const [showMuteAllConfirm, setShowMuteAllConfirm] = useState(false);
+
     // Reaction State
     const [activeReactions, setActiveReactions] = useState<Record<string, { content: string; timestamp: number }>>({});
     const reactionTimeouts = useRef<Record<string, NodeJS.Timeout>>({});
 
     // Check if current user is the host of the active room
-    // This handles the refresh case where user is logged in but not connected to 100ms yet
-    const isHostUser = activeRoom?.hostId === (twitterObj?.twitterId || user?.uid);
+    const currentUserId = twitterObj?.twitterId || user?.uid;
+    const isHostUser = activeRoom?.hostId === currentUserId;
+
+    // Co-host check: user ID is in the coHostIds array
+    const isCoHost = !!(currentUserId && activeRoom?.coHostIds?.includes(currentUserId));
 
     // Check if connected as host role
     const isConnectedHost = localPeer?.roleName?.toLowerCase() === 'host';
 
-    // Effective host check: either connected as host OR is the host user (for re-join UI)
-    const isHost = isConnectedHost || isHostUser;
+    // Effective host check: original host, co-host, or connected with host role
+    const isHost = isConnectedHost || isHostUser || isCoHost;
 
     // Sound Effect for Speaker Requests
     useEffect(() => {
@@ -542,6 +556,34 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         isSpeaking: isSpeakingForPoints,
         isConnected: isConnected
     });
+
+    // Speaker Timer — auto-reminder when speaker exceeds configured time limit
+    useEffect(() => {
+        if (!isHost || !isConnected) return;
+        const timeLimit = activeRoom?.settings?.speakerTimeLimitSeconds;
+        if (!timeLimit || timeLimit <= 0) return;
+
+        if (speakerTimerInterval.current) clearInterval(speakerTimerInterval.current);
+
+        if (dominantSpeaker && dominantSpeaker.roleName === 'speaker') {
+            const speakerId = dominantSpeaker.id;
+            speakerTimerInterval.current = setInterval(() => {
+                setSpeakerTimers(prev => {
+                    const current = (prev[speakerId] || 0) + 1;
+                    if (current === timeLimit) {
+                        hmsActions.sendBroadcastMessage(
+                            `⏰ @${dominantSpeaker.name} — your ${timeLimit}s speaker time is up!`,
+                            'REACTION'
+                        );
+                    }
+                    return { ...prev, [speakerId]: current };
+                });
+            }, 1000);
+        } else {
+            setSpeakerTimers({});
+        }
+        return () => { if (speakerTimerInterval.current) clearInterval(speakerTimerInterval.current); };
+    }, [dominantSpeaker?.id, isHost, isConnected, activeRoom?.settings?.speakerTimeLimitSeconds]);
 
     // Join Notifications Logic
     useEffect(() => {
@@ -982,6 +1024,34 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         }
     };
 
+    const handleUpdateRoomSettings = async (settings: Partial<RoomSettings>) => {
+        if (!firestoreRoomId) return;
+        try { await updateRoomSettings(firestoreRoomId, settings); }
+        catch (err) { console.error('Failed to update room settings:', err); }
+    };
+
+    const handleAddCoHost = async (userId: string) => {
+        if (!firestoreRoomId) return;
+        try { await addCoHost(firestoreRoomId, userId); }
+        catch (err) { console.error('Failed to add co-host:', err); }
+    };
+
+    const handleRemoveCoHost = async (userId: string) => {
+        if (!firestoreRoomId) return;
+        try { await removeCoHost(firestoreRoomId, userId); }
+        catch (err) { console.error('Failed to remove co-host:', err); }
+    };
+
+    const handleMuteAllConfirmed = async () => {
+        try {
+            const remoteSpeakers = peers.filter(p => !p.isLocal && p.roleName?.toLowerCase() === 'speaker');
+            for (const speaker of remoteSpeakers) {
+                if (speaker.audioTrack) await hmsActions.setRemoteTrackEnabled(speaker.audioTrack, false);
+            }
+        } catch (err) { console.error('Failed to mute all:', err); }
+        setShowMuteAllConfirm(false);
+    };
+
     const handleLeave = async () => {
         await hmsActions.leave();
     };
@@ -1360,23 +1430,19 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             onStopTrack={handleStopTrack}
                             showCaptions={showCaptions}
                             onSendReaction={handleSendReaction}
-                            onMuteAll={async () => {
-                                if (window.confirm("Are you sure you want to mute all speakers?")) {
-                                    try {
-                                        // Get all remote speakers
-                                        const remoteSpeakers = peers.filter(p => !p.isLocal && p.roleName?.toLowerCase() === 'speaker');
-                                        for (const speaker of remoteSpeakers) {
-                                            if (speaker.audioTrack) {
-                                                await hmsActions.setRemoteTrackEnabled(speaker.audioTrack, false);
-                                            }
-                                        }
-                                    } catch (err) {
-                                        console.error("Failed to mute all speakers", err);
-                                    }
-                                }
-                            }}
+                            onMuteAll={() => setShowMuteAllConfirm(true)}
+                            showMuteAllConfirm={showMuteAllConfirm}
+                            onMuteAllConfirmed={handleMuteAllConfirmed}
+                            onMuteAllCancelled={() => setShowMuteAllConfirm(false)}
                             isRecordingOn={!!isRecordingOn}
                             onToggleRecording={handleToggleRecording}
+                            roomSettings={activeRoom?.settings}
+                            onUpdateRoomSettings={handleUpdateRoomSettings}
+                            coHostIds={activeRoom?.coHostIds || []}
+                            onAddCoHost={handleAddCoHost}
+                            onRemoveCoHost={handleRemoveCoHost}
+                            speakerTimers={speakerTimers}
+                            peers={peers}
                             onToggleCaptions={async () => {
                                 const nextState = !showCaptions;
                                 setShowCaptions(nextState);
