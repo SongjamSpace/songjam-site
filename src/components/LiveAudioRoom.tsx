@@ -50,6 +50,7 @@ import {
 } from '@/services/db/msRooms.db';
 import { getMusicUploadsByUserId } from '@/services/storage/dj.storage';
 import MiniSpaceBanner from './MiniSpaceBanner';
+import InteractiveMediaOverlay from './InteractiveMediaOverlay';
 import { Jumbotron } from './Jumbotron';
 import { motion, AnimatePresence } from 'framer-motion';
 import DevicePreviewModal from './DevicePreviewModal';
@@ -982,7 +983,27 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
         }
     };
 
+    // Camera toggle — enables local video for picture-in-picture overlay
+    const [isCameraOn, setIsCameraOn] = useState(false);
+    const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
+
+    const handleToggleCamera = async () => {
+        try {
+            const newState = !isCameraOn;
+            await hmsActions.setLocalVideoEnabled(newState);
+            setIsCameraOn(newState);
+
+            // Attach the local video track to the camera PiP element
+            if (newState && localPeer?.videoTrack && cameraVideoRef.current) {
+                await hmsActions.attachVideo(localPeer.videoTrack, cameraVideoRef.current);
+            }
+        } catch (err) {
+            console.error('Camera toggle failed:', err);
+        }
+    };
+
     const handleLeave = async () => {
+        if (isCameraOn) await hmsActions.setLocalVideoEnabled(false);
         await hmsActions.leave();
     };
 
@@ -1318,6 +1339,8 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                             onToggleMic={handleToggleMic}
                             onToggleScreenShare={handleToggleScreenShare}
                             isScreenSharing={!!screenSharingPeer?.isLocal}
+                            onToggleCamera={handleToggleCamera}
+                            isCameraOn={isCameraOn}
                             onRaiseHand={handleRaiseHand}
                             onLogin={login}
                             onApproveRequest={handleApproveRequest}
@@ -1375,31 +1398,25 @@ const LiveAudioRoomInner = ({ projectId }: { projectId: string }) => {
                 </div>
             </div>
 
-                {/* Screen Share Display */}
+                {/* Interactive Screen Share + Camera Overlay */}
                 {screenSharingPeer && screenShareTrack && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="mb-4 rounded-2xl overflow-hidden bg-black ring-1 ring-white/10"
-                    >
-                        <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 border-b border-blue-500/20">
-                            <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                            <span className="text-xs text-blue-400 font-medium">
-                                {screenSharingPeer.name || 'Someone'} is sharing their screen
-                            </span>
-                        </div>
-                        <video
-                            ref={(el) => {
-                                if (el && screenShareTrack?.id) {
-                                    hmsActions.attachVideo(screenShareTrack.id, el);
-                                }
-                            }}
-                            autoPlay
-                            playsInline
-                            className="w-full max-h-[50vh] object-contain"
-                        />
-                    </motion.div>
+                    <InteractiveMediaOverlay
+                        sharerName={screenSharingPeer.name || 'Someone'}
+                        onScreenVideoRef={(el) => {
+                            if (el && screenShareTrack?.id) {
+                                hmsActions.attachVideo(screenShareTrack.id, el);
+                            }
+                        }}
+                        isCameraOn={isCameraOn}
+                        onToggleCamera={handleToggleCamera}
+                        onCameraVideoRef={(el) => {
+                            cameraVideoRef.current = el;
+                            if (el && isCameraOn && localPeer?.videoTrack) {
+                                hmsActions.attachVideo(localPeer.videoTrack, el);
+                            }
+                        }}
+                        canUseCamera={isHost || isSpeaker}
+                    />
                 )}
 
             {/* Captions Overlay */}
