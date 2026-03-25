@@ -434,7 +434,7 @@ export default function MiniSpaceBanner({
                                 </button>
                             )}
 
-                            {/* Host: Recording Toggle */}
+                            {/* Host: Recording Toggle — disabled for now (100ms charges after 300 free mins/month)
                             {isHost && onToggleRecording && (
                                 <button
                                     onClick={onToggleRecording}
@@ -449,7 +449,7 @@ export default function MiniSpaceBanner({
                                         <span className="text-xs font-bold hidden sm:inline">{isRecordingOn ? 'REC' : 'REC'}</span>
                                     </div>
                                 </button>
-                            )}
+                            )} */}
 
                             {/* Host: Room Settings */}
                             {isHost && onUpdateRoomSettings && (
