@@ -25,8 +25,8 @@ export default function middleware(request: NextRequest, event: NextFetchEvent) 
       tags: { 
         category: bot?.category || "human",
         name: bot?.name || "unknown",
-        is_ai: isAI ? "true" : "false",
-        siteName: "songjam.space"
+        ai: isAI ? "true" : "false",
+        site: "songjam.space"
       }
     })
   }).catch(err => console.error("LogSnag Error:", err));
