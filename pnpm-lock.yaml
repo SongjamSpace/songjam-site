@@ -20,6 +20,9 @@ importers:
       '@elevenlabs/react':
         specifier: ^0.11.0
         version: 0.11.0(@types/dom-mediacapture-record@1.0.22)(react@19.1.0)
+      '@munerate/bot-id':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@neynar/react':
         specifier: ^1.2.22
         version: 1.2.22(@farcaster/miniapp-sdk@0.2.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(swr@2.3.7(react@19.1.0))(typescript@5.8.3)
@@ -944,6 +947,9 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  '@munerate/bot-id@0.1.0':
+    resolution: {integrity: sha512-xfumS/mmRp6oi375W+C/uHLp3udFJb5YKmbuuwD8kC+YrbMoRLcGR23/TwrOtRRpbfjldwheDw6y1J9m95Tweg==}
 
   '@napi-rs/wasm-runtime@0.2.11':
     resolution: {integrity: sha512-9DPkXtvHydrcOsopiYpUgPHpmj0HWZKMUnL2dZqpvC42lsratuBG06V5ipyno0fUek5VlFsNQ+AcFATSrJXgMA==}
@@ -5884,6 +5890,8 @@ snapshots:
       react-is: 19.2.1
     optionalDependencies:
       '@types/react': 19.1.8
+
+  '@munerate/bot-id@0.1.0': {}
 
   '@napi-rs/wasm-runtime@0.2.11':
     dependencies:

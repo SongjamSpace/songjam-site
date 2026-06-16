@@ -1,70 +1,32 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest, NextFetchEvent } from 'next/server';
-import { detectBot } from '@aiedx/fetchlens-core';
+import { detectBot, isVulnScan, buildPayload, sendDetectEvent } from '@munerate/bot-id';
 
-export default function middleware(request: NextRequest, event: NextFetchEvent) {
-  const userAgent = request.headers.get('user-agent') || '';
-  
-  // Use fetchlens-core to detect bots
-  const bot = detectBot(userAgent);
-  const isAI = bot && bot.category === 'ai';
+const botIdConfig = {
+  siteId: '8392b562-f6b3-4879-9d73-867559c23967',
+  apiEndpoint: 'https://munerate-ingest-server.onrender.com/api/detect',
+  siteTag: 'fl_pub_13cdfe4e2783a7d51af1579eee6e1a94',
+};
 
-  // Log the visit to LogSnag asynchronously
-  const logPromise = fetch('https://api.logsnag.com/v1/log', {
-    method: 'POST',
-    headers: { 
-      'Authorization': 'Bearer cf410b022ad002f05f80af9a6c29c4d2', 
-      'Content-Type': 'application/json' 
-    },
-    body: JSON.stringify({
-      project: "bot-or-human",
-      channel: "visits",
-      event: bot ? "Bot Visit" : "Human Visit",
-      description: bot ? `[songjam.space] Bot: ${bot.name} (${bot.provider})` : `[songjam.space] User Agent: ${userAgent}`,
-      icon: bot ? "🤖" : "👤",
-      tags: { 
-        category: bot?.category || "human",
-        name: bot?.name || "unknown",
-        ai: isAI ? "true" : "false",
-        site: "songjam.space"
-      }
-    })
-  }).catch(err => console.error("LogSnag Error:", err));
+// Edge middleware for any framework on platforms like Vercel, AWS Amplify,
+// Netlify, or self-hosted. Return a Response to block, or nothing to pass through.
+export default function middleware(request: Request, event: any) {
+  const url = new URL(request.url);
+  const bot = detectBot(request.headers.get('user-agent') || '');
+  const blocked = isVulnScan(url.pathname);
 
-  // Ensure the fetch completes even after the response is sent
-  if (event && event.waitUntil) {
-    event.waitUntil(logPromise);
+  if (bot || blocked) {
+    const payload = buildPayload(request, botIdConfig, url.pathname, blocked);
+    const send = sendDetectEvent(botIdConfig, payload, botIdConfig.siteTag).catch(() => {});
+    // keep the request alive past the response for the fire-and-forget send
+    if (event?.waitUntil) event.waitUntil(send);
   }
 
-  if (isAI) {
-    // Return 402 Payment Required for AI agents
-    return new NextResponse(
-      JSON.stringify({ 
-        error: "Payment Required", 
-        message: "AI training/scraping access requires a license." 
-      }),
-      { 
-        status: 402, 
-        headers: { 'Content-Type': 'application/json' } 
-      }
-    );
+  if (blocked) {
+    return new Response(null, { status: 403 });
   }
-
-  // Returning NextResponse.next() tells Next.js to pass the request through normally
-  return NextResponse.next();
+  // returning nothing lets the request pass through normally
 }
 
 export const config = {
-  // Only run the middleware on document requests, skip static assets and Next.js internal paths
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, manifest.json (metadata files)
-     * - Any path containing a dot (e.g. static files like sound.wav, images, etc.)
-     */
-    '/((?!api|_next/static|_next/image|assets|vite\\.svg|favicon\\.ico|manifest\\.json|.*\\..*).*)',
-  ],
+  // run on document requests, skip static assets
+  matcher: ['/((?!assets|favicon\\.ico).*)'],
 };

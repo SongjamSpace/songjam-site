@@ -13,6 +13,7 @@
     "@100mslive/react-sdk": "^0.10.39",
     "@aiedx/fetchlens-core": "^0.1.2",
     "@elevenlabs/react": "^0.11.0",
+    "@munerate/bot-id": "^0.1.0",
     "@neynar/react": "^1.2.22",
     "@pigment-css/react": "^0.0.30",
     "@privy-io/react-auth": "^3.3.0",
