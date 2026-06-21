@@ -2,7 +2,7 @@ import { detectBot, isVulnScan, buildPayload, sendDetectEvent } from '@munerate/
 
 const botIdConfig = {
   siteId: '8392b562-f6b3-4879-9d73-867559c23967',
-  apiEndpoint: 'https://munerate-ingest-server.onrender.com/api/detect',
+  apiEndpoint: 'https://munerate-ingest-server.onrender.com',
   siteTag: 'fl_pub_13cdfe4e2783a7d51af1579eee6e1a94',
 };
 
